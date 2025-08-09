@@ -1,0 +1,432 @@
+/* 7P Education Corporate Typography System */
+/* Udemy-Inspired Professional Typography Scale */
+
+/* Import Professional Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Corporate Font Families */
+  --font-family-corporate: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  --font-family-corporate-mono: 'JetBrains Mono', 'SF Mono', Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+
+  /* Corporate Typography Scale - Mobile First */
+  
+  /* Display Typography (Hero sections, major headings) */
+  --font-size-display-sm: 2.25rem;    /* 36px */
+  --line-height-display-sm: 2.5rem;   /* 40px */
+  --letter-spacing-display-sm: -0.025em;
+  
+  --font-size-display-md: 2.875rem;   /* 46px */
+  --line-height-display-md: 3rem;     /* 48px */
+  --letter-spacing-display-md: -0.025em;
+  
+  --font-size-display-lg: 3.75rem;    /* 60px */
+  --line-height-display-lg: 4rem;     /* 64px */
+  --letter-spacing-display-lg: -0.025em;
+
+  /* Heading Typography */
+  --font-size-h1: 1.875rem;          /* 30px */
+  --line-height-h1: 2.25rem;         /* 36px */
+  --letter-spacing-h1: -0.025em;
+  --font-weight-h1: 700;
+  
+  --font-size-h2: 1.5rem;            /* 24px */
+  --line-height-h2: 2rem;            /* 32px */
+  --letter-spacing-h2: -0.025em;
+  --font-weight-h2: 600;
+  
+  --font-size-h3: 1.25rem;           /* 20px */
+  --line-height-h3: 1.75rem;         /* 28px */
+  --letter-spacing-h3: -0.025em;
+  --font-weight-h3: 600;
+  
+  --font-size-h4: 1.125rem;          /* 18px */
+  --line-height-h4: 1.75rem;         /* 28px */
+  --letter-spacing-h4: -0.025em;
+  --font-weight-h4: 600;
+  
+  --font-size-h5: 1rem;              /* 16px */
+  --line-height-h5: 1.5rem;          /* 24px */
+  --letter-spacing-h5: -0.025em;
+  --font-weight-h5: 600;
+  
+  --font-size-h6: 0.875rem;          /* 14px */
+  --line-height-h6: 1.25rem;         /* 20px */
+  --letter-spacing-h6: -0.025em;
+  --font-weight-h6: 600;
+
+  /* Body Typography */
+  --font-size-body-lg: 1.125rem;     /* 18px */
+  --line-height-body-lg: 1.75rem;    /* 28px */
+  --letter-spacing-body-lg: 0em;
+  --font-weight-body-lg: 400;
+  
+  --font-size-body: 1rem;            /* 16px */
+  --line-height-body: 1.5rem;        /* 24px */
+  --letter-spacing-body: 0em;
+  --font-weight-body: 400;
+  
+  --font-size-body-sm: 0.875rem;     /* 14px */
+  --line-height-body-sm: 1.25rem;    /* 20px */
+  --letter-spacing-body-sm: 0em;
+  --font-weight-body-sm: 400;
+
+  /* Caption and Label Typography */
+  --font-size-caption: 0.75rem;      /* 12px */
+  --line-height-caption: 1rem;       /* 16px */
+  --letter-spacing-caption: 0.025em;
+  --font-weight-caption: 500;
+  
+  --font-size-label: 0.875rem;       /* 14px */
+  --line-height-label: 1.25rem;      /* 20px */
+  --letter-spacing-label: 0.025em;
+  --font-weight-label: 500;
+
+  /* Corporate Font Weights */
+  --font-weight-thin: 100;
+  --font-weight-extralight: 200;
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+}
+
+/* Desktop Typography Scale Adjustments */
+@media (min-width: 1024px) {
+  :root {
+    /* Enhanced Display Typography for Desktop */
+    --font-size-display-sm: 3rem;      /* 48px */
+    --line-height-display-sm: 3.5rem;  /* 56px */
+    
+    --font-size-display-md: 3.75rem;   /* 60px */
+    --line-height-display-md: 4rem;    /* 64px */
+    
+    --font-size-display-lg: 4.5rem;    /* 72px */
+    --line-height-display-lg: 5rem;    /* 80px */
+
+    /* Enhanced Heading Typography */
+    --font-size-h1: 2.25rem;          /* 36px */
+    --line-height-h1: 2.5rem;         /* 40px */
+    
+    --font-size-h2: 1.875rem;         /* 30px */
+    --line-height-h2: 2.25rem;        /* 36px */
+    
+    --font-size-h3: 1.5rem;           /* 24px */
+    --line-height-h3: 2rem;           /* 32px */
+  }
+}
+
+/* Corporate Typography Classes */
+
+/* Display Typography */
+.display-sm {
+  font-family: var(--font-family-corporate);
+  font-size: var(--font-size-display-sm);
+  line-height: var(--line-height-display-sm);
+  letter-spacing: var(--letter-spacing-display-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.display-md {
+  font-family: var(--font-family-corporate);
+  font-size: var(--font-size-display-md);
+  line-height: var(--line-height-display-md);
+  letter-spacing: var(--letter-spacing-display-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.display-lg {
+  font-family: var(--font-family-corporate);
+  font-size: var(--font-size-display-lg);
+  line-height: var(--line-height-display-lg);
+  letter-spacing: var(--letter-spacing-display-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+/* Heading Typography */
+.heading-1 {
+  font-family: var(--font-family-corporate);
+  font-size: var(--font-size-h1);
+  line-height: var(--line-height-h1);
+  letter-spacing: var(--letter-spacing-h1);
+  font-weight: var(--font-weight-h1);
+  color: var(--color-text-primary);
+}
+
+.heading-2 {
+  font-family: var(--font-family-corporate);
+  font-size: var(--font-size-h2);
+  line-height: var(--line-height-h2);
+  letter-spacing: var(--letter-spacing-h2);
+  font-weight: var(--font-weight-h2);
+  color: var(--color-text-primary);
+}
+
+.heading-3 {
+  font-family: var(--font-family-corporate);
+  font-size: var(--font-size-h3);
+  line-height: var(--line-height-h3);
+  letter-spacing: var(--letter-spacing-h3);
+  font-weight: var(--font-weight-h3);
+  color: var(--color-text-primary);
+}
+
+.heading-4 {
+  font-family: var(--font-family-corporate);
+  font-size: var(--font-size-h4);
+  line-height: var(--line-height-h4);
+  letter-spacing: var(--letter-spacing-h4);
+  font-weight: var(--font-weight-h4);
+  color: var(--color-text-primary);
+}
+
+.heading-5 {
+  font-family: var(--font-family-corporate);
+  font-size: var(--font-size-h5);
+  line-height: var(--line-height-h5);
+  letter-spacing: var(--letter-spacing-h5);
+  font-weight: var(--font-weight-h5);
+  color: var(--color-text-primary);
+}
+
+.heading-6 {
+  font-family: var(--font-family-corporate);
+  font-size: var(--font-size-h6);
+  line-height: var(--line-height-h6);
+  letter-spacing: var(--letter-spacing-h6);
+  font-weight: var(--font-weight-h6);
+  color: var(--color-text-primary);
+}
+
+/* Body Typography */
+.body-large {
+  font-family: var(--font-family-corporate);
+  font-size: var(--font-size-body-lg);
+  line-height: var(--line-height-body-lg);
+  letter-spacing: var(--letter-spacing-body-lg);
+  font-weight: var(--font-weight-body-lg);
+  color: var(--color-text-primary);
+}
+
+.body-default {
+  font-family: var(--font-family-corporate);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-body);
+  font-weight: var(--font-weight-body);
+  color: var(--color-text-primary);
+}
+
+.body-small {
+  font-family: var(--font-family-corporate);
+  font-size: var(--font-size-body-sm);
+  line-height: var(--line-height-body-sm);
+  letter-spacing: var(--letter-spacing-body-sm);
+  font-weight: var(--font-weight-body-sm);
+  color: var(--color-text-secondary);
+}
+
+/* Label and Caption Typography */
+.label {
+  font-family: var(--font-family-corporate);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
+  letter-spacing: var(--letter-spacing-label);
+  font-weight: var(--font-weight-label);
+  color: var(--color-text-primary);
+}
+
+.caption {
+  font-family: var(--font-family-corporate);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+  letter-spacing: var(--letter-spacing-caption);
+  font-weight: var(--font-weight-caption);
+  color: var(--color-text-muted);
+}
+
+/* Monospace Typography */
+.code {
+  font-family: var(--font-family-corporate-mono);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 400;
+  color: var(--color-corporate-deep);
+  background-color: var(--color-gray-100);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+}
+
+.code-block {
+  font-family: var(--font-family-corporate-mono);
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+  font-weight: 400;
+  color: var(--color-text-primary);
+  background-color: var(--color-gray-900);
+  color: var(--color-gray-100);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+
+/* Typography Variants */
+.text-primary { color: var(--color-text-primary); }
+.text-secondary { color: var(--color-text-secondary); }
+.text-muted { color: var(--color-text-muted); }
+.text-inverse { color: var(--color-text-inverse); }
+.text-corporate { color: var(--color-corporate-primary); }
+.text-success { color: var(--color-success); }
+.text-warning { color: var(--color-warning); }
+.text-error { color: var(--color-error); }
+
+/* Font Weight Utilities */
+.font-thin { font-weight: var(--font-weight-thin); }
+.font-extralight { font-weight: var(--font-weight-extralight); }
+.font-light { font-weight: var(--font-weight-light); }
+.font-normal { font-weight: var(--font-weight-normal); }
+.font-medium { font-weight: var(--font-weight-medium); }
+.font-semibold { font-weight: var(--font-weight-semibold); }
+.font-bold { font-weight: var(--font-weight-bold); }
+.font-extrabold { font-weight: var(--font-weight-extrabold); }
+.font-black { font-weight: var(--font-weight-black); }
+
+/* Text Decoration Utilities */
+.underline { text-decoration: underline; }
+.no-underline { text-decoration: none; }
+.line-through { text-decoration: line-through; }
+
+/* Text Transform Utilities */
+.uppercase { text-transform: uppercase; }
+.lowercase { text-transform: lowercase; }
+.capitalize { text-transform: capitalize; }
+.normal-case { text-transform: none; }
+
+/* Text Alignment Utilities */
+.text-left { text-align: left; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-justify { text-align: justify; }
+
+/* Typography for Interactive Elements */
+.link {
+  color: var(--color-corporate-primary);
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.link:hover {
+  color: var(--color-corporate-deep);
+  text-decoration: underline;
+}
+
+.link:focus {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Button Typography */
+.button-text {
+  font-family: var(--font-family-corporate);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.025em;
+}
+
+.button-text-large {
+  font-family: var(--font-family-corporate);
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.025em;
+}
+
+/* Form Typography */
+.form-label {
+  font-family: var(--font-family-corporate);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.form-input {
+  font-family: var(--font-family-corporate);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  font-weight: var(--font-weight-normal);
+  color: var(--color-text-primary);
+}
+
+.form-helper {
+  font-family: var(--font-family-corporate);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+  font-weight: var(--font-weight-normal);
+  color: var(--color-text-muted);
+}
+
+.form-error {
+  font-family: var(--font-family-corporate);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-error);
+}
+
+/* Reading Typography Optimization */
+.prose {
+  max-width: 65ch;
+  line-height: 1.7;
+  color: var(--color-text-primary);
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+  margin-top: 2em;
+  margin-bottom: 0.5em;
+  line-height: 1.2;
+}
+
+.prose p {
+  margin-bottom: 1.25em;
+}
+
+.prose strong {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.prose em {
+  font-style: italic;
+  color: var(--color-text-primary);
+}
+
+/* Responsive Typography Utilities */
+@media (max-width: 640px) {
+  .responsive-text-sm { font-size: 0.875rem; }
+  .responsive-text-base { font-size: 1rem; }
+  .responsive-text-lg { font-size: 1.125rem; }
+  .responsive-text-xl { font-size: 1.25rem; }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .responsive-text-sm { font-size: 1rem; }
+  .responsive-text-base { font-size: 1.125rem; }
+  .responsive-text-lg { font-size: 1.25rem; }
+  .responsive-text-xl { font-size: 1.5rem; }
+}
+
+@media (min-width: 1025px) {
+  .responsive-text-sm { font-size: 1.125rem; }
+  .responsive-text-base { font-size: 1.25rem; }
+  .responsive-text-lg { font-size: 1.5rem; }
+  .responsive-text-xl { font-size: 1.875rem; }
+}
