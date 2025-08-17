@@ -8,6 +8,10 @@ export * from './courses';
 export * from './settings';
 export * from './dashboard';
 
+// Mock exports for legacy compatibility
+export const ALL_DISCUSSIONS: any[] = [];
+export const ALL_LIBRARY_RESOURCES: any[] = [];
+
 // Re-export commonly used types
 export type {
   Course,

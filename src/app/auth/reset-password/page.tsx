@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth/context';
@@ -36,7 +36,7 @@ interface PasswordRequirement {
   test: (password: string) => boolean;
 }
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const [step, setStep] = useState<'request' | 'reset' | 'success'>('request');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -483,5 +483,17 @@ export default function ResetPasswordPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-hero flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }
