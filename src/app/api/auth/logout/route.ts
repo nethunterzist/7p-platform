@@ -1,3 +1,4 @@
+import { mockApi } from '@/lib/mock-api';
 /**
  * Authentication Logout API Endpoint
  * Secure JWT token invalidation and session cleanup

@@ -3,8 +3,9 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
+import { mockApi } from '@/lib/mock-api';
 import { Button } from '@/components/ui/button';
+import { getCurrentUser } from '@/lib/simple-auth';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,9 +17,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   Search, 
-  Bell, 
   Menu, 
-  User, 
   Settings, 
   LogOut, 
   BookOpen,
@@ -28,6 +27,7 @@ import {
   GraduationCap
 } from 'lucide-react';
 import { cn, getInitials } from '@/lib/utils';
+import { ThemeToggle } from './theme-toggle';
 import type { DashboardUser } from './DashboardLayout';
 
 interface DashboardHeaderProps {
@@ -45,9 +45,28 @@ export default function DashboardHeader({
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
+  const switchToRole = (newRole: 'student' | 'admin') => {
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      // Update user role in localStorage
+      const updatedUser = { ...currentUser, role: newRole };
+      localStorage.setItem('auth_user', JSON.stringify(updatedUser));
+      
+      // Navigate to appropriate dashboard with forced navigation
+      if (newRole === 'admin') {
+        window.location.href = '/admin/dashboard';
+      } else {
+        window.location.href = '/dashboard';
+      }
+    }
+  };
+
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut();
+      await mockApi.auth.signOut();
+      // Also clear legacy tokens
+      document.cookie = 'auth_token=; path=/; max-age=0';
+      localStorage.removeItem('auth_user');
       router.push('/login');
     } catch (error) {
       console.error('Error signing out:', error);
@@ -65,7 +84,7 @@ export default function DashboardHeader({
   const userInitials = user?.full_name ? getInitials(user.full_name) : user?.email?.substring(0, 2).toUpperCase() || 'U';
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-30 h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-corporate-sm">
+    <header className="fixed top-0 left-0 right-0 z-30 h-16 bg-background/95 backdrop-blur-sm border-b border-border shadow-corporate-sm">
       <div className="flex h-full items-center justify-between px-4 lg:pl-0 lg:pr-6">
         {/* Left Section - Logo & Sidebar Toggle */}
         <div className="flex items-center lg:w-64 lg:flex-shrink-0">
@@ -106,7 +125,7 @@ export default function DashboardHeader({
               "relative transition-all duration-200",
               isSearchFocused && "transform scale-[1.02]"
             )}>
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
                 placeholder={isSearchFocused ? "Ara..." : "Kursları ara..."}
@@ -115,12 +134,12 @@ export default function DashboardHeader({
                 onFocus={() => setIsSearchFocused(true)}
                 onBlur={() => setIsSearchFocused(false)}
                 className={cn(
-                  "w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg",
-                  "bg-gray-50/50 backdrop-blur-sm",
+                  "w-full pl-10 pr-4 py-2.5 text-sm border border-border rounded-lg",
+                  "bg-muted/50 backdrop-blur-sm text-foreground",
                   "focus:outline-none focus:ring-2 focus:ring-corporate-primary focus:border-transparent",
-                  "focus:bg-white focus:shadow-corporate-md",
+                  "focus:bg-background focus:shadow-corporate-md",
                   "transition-all duration-200",
-                  "placeholder:text-gray-400",
+                  "placeholder:text-muted-foreground",
                   "touch-manipulation", // Better touch responsiveness
                   "min-h-[44px] sm:min-h-[40px]" // 44px minimum touch target on mobile
                 )}
@@ -131,84 +150,32 @@ export default function DashboardHeader({
 
         {/* Right Section - Actions & User Menu */}
         <div className="flex items-center space-x-2 lg:space-x-3">
-          {/* Quick Actions */}
-          <div className="hidden md:flex items-center space-x-2">
-            <Button variant="ghost" size="sm" className="min-h-[40px] touch-manipulation" asChild>
-              <Link href="/courses">
-                <BookOpen className="h-4 w-4 mr-2" />
-                Kurslar
-              </Link>
+
+          {/* Panel Geçiş Butonları */}
+          <div className="flex items-center space-x-1 bg-muted rounded-lg p-1">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="min-h-[36px] px-2 sm:px-3 py-1.5 rounded-md text-xs"
+              onClick={() => switchToRole('student')}
+            >
+              <GraduationCap className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Öğrenci</span>
             </Button>
             
-            {user?.role === 'admin' && (
-              <Button variant="ghost" size="sm" className="min-h-[40px] touch-manipulation" asChild>
-                <Link href="/admin/dashboard">
-                  <Shield className="h-4 w-4 mr-2" />
-                  Yönetici
-                </Link>
-              </Button>
-            )}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="min-h-[36px] px-2 sm:px-3 py-1.5 rounded-md text-xs"
+              onClick={() => switchToRole('admin')}
+            >
+              <Shield className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Yönetici</span>
+            </Button>
           </div>
 
-          {/* Notifications */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className={cn(
-                  "relative",
-                  "min-w-[44px] min-h-[44px]", // 44px touch target
-                  "touch-manipulation",
-                  "hover:bg-corporate-50 active:bg-corporate-100",
-                  "transition-colors duration-150"
-                )}
-                aria-label="Bildirimler"
-              >
-                <Bell className="h-5 w-5" />
-                {/* Notification Badge */}
-                <span className="absolute -top-0.5 -right-0.5 h-4 w-4 bg-corporate-primary rounded-full flex items-center justify-center">
-                  <span className="text-[10px] text-white font-medium">2</span>
-                </span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80 max-w-[calc(100vw-2rem)] mx-4 sm:mx-0">
-              <DropdownMenuLabel className="font-semibold">Bildirimler</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              
-              <div className="max-h-96 overflow-y-auto">
-                {/* Sample Notifications */}
-                <div className="p-3 hover:bg-gray-50 cursor-pointer border-b">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-2 h-2 bg-corporate-primary rounded-full mt-2 flex-shrink-0"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">Yeni kurs mevcut</p>
-                      <p className="text-xs text-gray-600">İleri React Kalıpları yeni başlatıldı</p>
-                      <p className="text-xs text-gray-400 mt-1">2 saat önce</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="p-3 hover:bg-gray-50 cursor-pointer">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-2 h-2 bg-success-500 rounded-full mt-2 flex-shrink-0"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">Ödev tamamlandı</p>
-                      <p className="text-xs text-gray-600">JavaScript Temelleri kursunu tamamladınız</p>
-                      <p className="text-xs text-gray-400 mt-1">1 gün önce</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <DropdownMenuSeparator />
-              <div className="p-2">
-                <Button variant="ghost" size="sm" className="w-full">
-                  Tüm bildirimleri görüntüle
-                </Button>
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Theme Toggle */}
+          <ThemeToggle />
 
           {/* User Profile Menu */}
           <DropdownMenu>
@@ -231,14 +198,14 @@ export default function DashboardHeader({
                     </AvatarFallback>
                   </Avatar>
                   <div className="hidden sm:block text-left">
-                    <p className="text-sm font-medium text-gray-900 truncate max-w-[120px]">
+                    <p className="text-sm font-medium text-foreground truncate max-w-[120px]">
                       {userDisplayName}
                     </p>
-                    <p className="text-xs text-gray-500 capitalize">
+                    <p className="text-xs text-muted-foreground capitalize">
                       {user?.role === 'admin' ? 'Yönetici' : 'Öğrenci'}
                     </p>
                   </div>
-                  <ChevronDown className="h-4 w-4 text-gray-400" />
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
                 </div>
               </Button>
             </DropdownMenuTrigger>
@@ -273,13 +240,6 @@ export default function DashboardHeader({
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               
-              {/* Profile Actions */}
-              <DropdownMenuItem asChild>
-                <Link href="/profile">
-                  <User className="mr-2 h-4 w-4" />
-                  Profil Ayarları
-                </Link>
-              </DropdownMenuItem>
               
               <DropdownMenuItem asChild>
                 <Link href="/dashboard">
@@ -305,13 +265,6 @@ export default function DashboardHeader({
                   Ayarlar
                 </Link>
               </DropdownMenuItem>
-              
-              <DropdownMenuItem asChild>
-                <Link href="/help">
-                  <HelpCircle className="mr-2 h-4 w-4" />
-                  Yardım ve Destek
-                </Link>
-              </DropdownMenuItem>
 
               <DropdownMenuSeparator />
               
@@ -323,6 +276,7 @@ export default function DashboardHeader({
           </DropdownMenu>
         </div>
       </div>
+
     </header>
   );
 }

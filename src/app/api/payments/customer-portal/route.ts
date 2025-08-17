@@ -1,3 +1,4 @@
+import { mockApi } from '@/lib/mock-api';
 import { NextRequest, NextResponse } from 'next/server';
 import { createPortalSession, handleStripeError } from '@/lib/stripe';
 import { getStripeCustomerByUserId, logPaymentEvent } from '@/lib/payments';

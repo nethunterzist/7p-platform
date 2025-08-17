@@ -1,8 +1,3 @@
-/* Import Corporate Design System Styles */
-@import '../design-system/colors/colors.css';
-@import '../design-system/typography/typography.css';
-@import '../design-system/layout/grid-system.css';
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -65,29 +60,22 @@
   }
   
   body {
-    @apply bg-background text-foreground font-corporate;
-    font-feature-settings: 'cv01', 'cv02', 'cv03', 'cv04';
+    @apply bg-background text-foreground;
     /* Mobile optimizations */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
   
-  /* Corporate Typography Defaults */
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-corporate;
-    font-feature-settings: 'cv01', 'cv02', 'cv03', 'cv04';
-  }
-  
   /* Enhanced Focus Styles for Mobile */
   *:focus-visible {
-    @apply outline-none ring-2 ring-corporate-accent ring-offset-2;
+    @apply outline-none ring-2 ring-ring ring-offset-2;
   }
   
   /* Mobile-specific focus styles */
   @media (pointer: coarse) {
     *:focus {
-      @apply outline-none ring-2 ring-corporate-accent ring-offset-1;
+      @apply outline-none ring-2 ring-ring ring-offset-1;
     }
   }
   
@@ -99,9 +87,9 @@
     overscroll-behavior-y: none;
   }
   
-  /* Corporate Link Styles */
+  /* Link Styles */
   .corporate-link {
-    @apply text-corporate-primary hover:text-corporate-deep transition-colors;
+    @apply text-primary hover:text-primary/80 transition-colors;
     /* Better touch targets */
     min-height: 44px;
     display: inline-flex;
@@ -141,10 +129,10 @@
 }
 
 @layer components {
-  /* Corporate Button Base with Mobile Optimizations */
+  /* Button Base with Mobile Optimizations */
   .btn-corporate {
     @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors;
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-corporate-accent;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
     @apply disabled:pointer-events-none disabled:opacity-50;
     @apply min-h-[44px] min-w-[44px] touch-manipulation;
     /* Prevent text selection on mobile */
@@ -152,18 +140,18 @@
     user-select: none;
   }
   
-  /* Corporate Card Base with Mobile Optimizations */
+  /* Card Base with Mobile Optimizations */
   .card-corporate {
-    @apply rounded-lg border border-gray-200 bg-white shadow-corporate;
+    @apply rounded-lg border border-border bg-card;
     @apply transition-all duration-300;
     /* Better performance on mobile */
     @apply will-change-transform;
   }
   
-  /* Corporate Input Base with Mobile Optimizations */
+  /* Input Base with Mobile Optimizations */
   .input-corporate {
-    @apply flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-base;
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-corporate-accent;
+    @apply flex w-full rounded-md border border-input bg-background px-3 py-2 text-base;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
     @apply disabled:cursor-not-allowed disabled:opacity-50;
     @apply min-h-[44px] touch-manipulation;
     /* Prevent zoom on iOS */
@@ -172,7 +160,7 @@
   
   /* Mobile Navigation */
   .mobile-nav {
-    @apply fixed inset-x-0 top-0 z-50 bg-white border-b border-gray-200;
+    @apply fixed inset-x-0 top-0 z-50 bg-background border-b border-border;
     @apply safe-top;
   }
   
@@ -196,25 +184,54 @@
 }
 
 @layer utilities {
-  /* Corporate Gradient Utilities */
-  .bg-gradient-corporate-hero {
-    background: var(--gradient-hero);
+  
+  /* Dark Mode Utility Classes */
+  .bg-app {
+    @apply bg-slate-50 dark:bg-slate-950;
   }
   
-  .bg-gradient-corporate-card {
-    background: var(--gradient-card);
+  .card {
+    @apply bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-lg;
   }
   
-  .bg-gradient-corporate-subtle {
-    background: var(--gradient-subtle);
+  .section {
+    @apply bg-white/70 dark:bg-slate-900/60 backdrop-blur border border-slate-200 dark:border-slate-800 rounded-lg;
   }
   
-  /* Text Gradient Utilities */
-  .text-gradient-corporate {
-    background: var(--gradient-card);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  .text-muted {
+    @apply text-slate-600 dark:text-slate-400;
+  }
+  
+  .text-primary {
+    @apply text-slate-900 dark:text-slate-100;
+  }
+  
+  .badge {
+    @apply bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-2 py-1 rounded-full text-xs font-medium;
+  }
+  
+  .badge-success {
+    @apply bg-emerald-100/60 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 px-2 py-1 rounded-full text-xs font-medium;
+  }
+  
+  .btn-ghost-dark {
+    @apply bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700;
+  }
+  
+  .btn-primary-dark {
+    @apply bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-400 text-white;
+  }
+  
+  .input-dark {
+    @apply bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-slate-200 dark:focus:ring-slate-700 text-slate-900 dark:text-slate-100;
+  }
+  
+  .progress-track {
+    @apply bg-slate-200 dark:bg-slate-800;
+  }
+  
+  .progress-fill {
+    @apply bg-blue-600 dark:bg-blue-500;
   }
   
   /* Line Clamp Utilities */

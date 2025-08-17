@@ -1,3 +1,4 @@
+import { mockApi } from '@/lib/mock-api';
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserPaymentHistory } from '@/lib/payments';
 import { supabase } from '@/lib/supabase';

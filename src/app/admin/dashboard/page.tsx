@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import { useAdmin } from '@/lib/useAdmin';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -77,42 +76,46 @@ export default function AdminDashboardPage() {
     try {
       setLoading(true);
 
-      // Fetch user statistics
-      const { data: users, error: usersError } = await supabase
-        .from('profiles')
-        .select('id, created_at')
-        .order('created_at', { ascending: false });
+      // Mock data instead of Supabase queries
+      const mockUsers = [
+        { id: '1', created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() }, // 2 days ago
+        { id: '2', created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() }, // 5 days ago
+        { id: '3', created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString() }, // 10 days ago
+        { id: '4', created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString() }, // 15 days ago
+        { id: '5', created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString() }, // 30 days ago
+      ];
 
-      if (usersError) throw usersError;
+      const mockCourses = [
+        { id: '1', name: 'React Temelleri', is_published: true },
+        { id: '2', name: 'JavaScript İleri Seviye', is_published: true },
+        { id: '3', name: 'Node.js Backend', is_published: true },
+        { id: '4', name: 'Database Design', is_published: false },
+        { id: '5', name: 'UI/UX Tasarım', is_published: true },
+      ];
 
-      // Fetch course statistics
-      const { data: courses, error: coursesError } = await supabase
-        .from('courses')
-        .select('id, name, is_published')
-        .order('created_at', { ascending: false });
+      const mockEnrollments = [
+        { id: '1', status: 'completed', enrolled_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
+        { id: '2', status: 'in_progress', enrolled_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
+        { id: '3', status: 'completed', enrolled_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() },
+        { id: '4', status: 'in_progress', enrolled_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
+        { id: '5', status: 'completed', enrolled_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString() },
+        { id: '6', status: 'completed', enrolled_at: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString() },
+        { id: '7', status: 'in_progress', enrolled_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() },
+        { id: '8', status: 'completed', enrolled_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString() },
+      ];
 
-      if (coursesError) throw coursesError;
-
-      // Fetch enrollment statistics
-      const { data: enrollments, error: enrollmentsError } = await supabase
-        .from('enrollments')
-        .select('id, status, enrolled_at')
-        .order('enrolled_at', { ascending: false });
-
-      if (enrollmentsError) throw enrollmentsError;
-
-      // Calculate stats
-      const totalUsers = users?.length || 0;
-      const activeUsers = users?.filter(u => {
+      // Calculate stats from mock data
+      const totalUsers = mockUsers.length;
+      const activeUsers = mockUsers.filter(u => {
         const lastWeek = new Date();
         lastWeek.setDate(lastWeek.getDate() - 7);
         return new Date(u.created_at) > lastWeek;
-      }).length || 0;
+      }).length;
 
-      const totalCourses = courses?.length || 0;
-      const activeCourses = courses?.filter(c => c.is_published).length || 0;
-      const totalEnrollments = enrollments?.length || 0;
-      const completedEnrollments = enrollments?.filter(e => e.status === 'completed').length || 0;
+      const totalCourses = mockCourses.length;
+      const activeCourses = mockCourses.filter(c => c.is_published).length;
+      const totalEnrollments = mockEnrollments.length;
+      const completedEnrollments = mockEnrollments.filter(e => e.status === 'completed').length;
       const completionRate = totalEnrollments > 0 ? Math.round((completedEnrollments / totalEnrollments) * 100) : 0;
 
       setStats({
@@ -158,7 +161,7 @@ export default function AdminDashboardPage() {
       ]);
 
     } catch (error) {
-      console.error('Error fetching admin data:', error);
+      console.error('Error loading admin data:', error);
     } finally {
       setLoading(false);
     }
@@ -216,18 +219,8 @@ export default function AdminDashboardPage() {
     <DashboardLayout
       title="Yönetici Paneli"
       subtitle="Sistem özeti ve yönetim araçları"
-      breadcrumbs={[
-        { label: 'Yönetici', href: '/admin' },
-        { label: 'Panel' }
-      ]}
       actions={
         <div className="flex space-x-3">
-          <Button variant="outline" asChild>
-            <a href="/admin/analytics">
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Analitikleri Görüntüle
-            </a>
-          </Button>
           <Button asChild>
             <a href="/admin/users">
               <Users className="h-4 w-4 mr-2" />
@@ -298,12 +291,6 @@ export default function AdminDashboardPage() {
                 <a href="/admin/courses">
                   <BookOpen className="h-4 w-4 mr-3" />
                   Kursları Yönet
-                </a>
-              </Button>
-              <Button variant="outline" className="w-full justify-start" asChild>
-                <a href="/admin/analytics">
-                  <BarChart3 className="h-4 w-4 mr-3" />
-                  Analitikleri Görüntüle
                 </a>
               </Button>
               <Button variant="outline" className="w-full justify-start" asChild>

@@ -8,7 +8,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { useEducationAnalytics } from './useEducationAnalytics';
+// useEducationAnalytics removed
 import {
   trackCourseViewPurchasePage,
   trackCourseAddToCart,
@@ -53,7 +53,7 @@ export interface SubscriptionPlan {
 }
 
 export function useStripeAnalytics(props: StripeAnalyticsProps = {}) {
-  const { trackPurchase, trackSubscriptionStart } = useEducationAnalytics(props);
+  // useEducationAnalytics removed
 
   // Helper to get user context
   const getUserContext = useCallback(() => ({
@@ -139,20 +139,8 @@ export function useStripeAnalytics(props: StripeAnalyticsProps = {}) {
 
     trackCoursePurchase(purchaseData, getUserContext());
 
-    // Also track through education analytics
-    trackPurchase(
-      transactionId,
-      [{
-        itemId: courseData.id,
-        itemName: courseData.name,
-        itemCategory: courseData.category || 'course',
-        price: finalPrice,
-        quantity: 1,
-      }],
-      finalPrice,
-      'USD'
-    );
-  }, [getUserContext, trackPurchase]);
+    // Education analytics removed
+  }, [getUserContext]);
 
   /**
    * SUBSCRIPTION TRACKING
@@ -182,15 +170,8 @@ export function useStripeAnalytics(props: StripeAnalyticsProps = {}) {
 
     trackSubscriptionPurchase(subscriptionData, getUserContext());
 
-    // Also track through education analytics
-    trackSubscriptionStart(
-      subscriptionId,
-      planData.name,
-      finalPrice,
-      planData.billingPeriod,
-      'USD'
-    );
-  }, [getUserContext, trackSubscriptionStart]);
+    // Education analytics removed
+  }, [getUserContext]);
 
   /**
    * PAYMENT PROCESS TRACKING

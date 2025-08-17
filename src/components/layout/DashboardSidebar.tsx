@@ -12,21 +12,13 @@ import {
   Users,
   Settings,
   GraduationCap,
-  Trophy,
-  Calendar,
-  MessageSquare,
-  FileText,
-  Shield,
-  Database,
-  Cog,
-  TrendingUp,
-  Star,
-  Clock,
-  Target,
-  BookMarked,
   ChevronRight,
   Home,
-  User
+  ShoppingCart,
+  Shield,
+  MessageSquare,
+  FileText,
+  HelpCircle
 } from 'lucide-react';
 import type { DashboardUser } from './DashboardLayout';
 
@@ -59,43 +51,30 @@ const studentNavigation: NavigationSection[] = [
         name: 'Kurslarım',
         href: '/courses',
         icon: BookOpen,
-        description: 'Kayıtlı kurslar'
+        description: 'Sahip olduğum kurslar'
       },
       {
-        name: 'İlerleme',
-        href: '/progress',
-        icon: TrendingUp,
-        description: 'Öğrenme analitiği'
-      },
-      {
-        name: 'Program',
-        href: '/schedule',
-        icon: Calendar,
-        description: 'Çalışma takvimi'
+        name: 'Kurs Mağazası',
+        href: '/marketplace',
+        icon: ShoppingCart,
+        description: 'Yeni kurslar satın al'
       }
     ]
   },
   {
-    name: 'Kaynaklar',
+    name: 'Destek',
     items: [
       {
-        name: 'Kütüphane',
-        href: '/library',
-        icon: BookMarked,
-        description: 'Kurs materyalleri'
+        name: 'Soru & Cevaplarım',
+        href: '/student/questions',
+        icon: HelpCircle,
+        description: 'Sorularım ve cevaplar'
       },
       {
-        name: 'Tartışmalar',
-        href: '/discussions',
-        icon: MessageSquare,
-        badge: '3',
-        description: 'Topluluk forumları'
-      },
-      {
-        name: 'Notlar',
-        href: '/notes',
+        name: 'Materyallerim',
+        href: '/student/materials',
         icon: FileText,
-        description: 'Kişisel notlar'
+        description: 'Kurs materyalleri'
       }
     ]
   },
@@ -103,16 +82,10 @@ const studentNavigation: NavigationSection[] = [
     name: 'Hesap',
     items: [
       {
-        name: 'Profil',
-        href: '/profile',
-        icon: User,
-        description: 'Kişisel bilgiler'
-      },
-      {
         name: 'Ayarlar',
         href: '/settings',
         icon: Settings,
-        description: 'Tercihler'
+        description: 'Profil ve tercihler'
       }
     ]
   }
@@ -129,12 +102,6 @@ const adminNavigation: NavigationSection[] = [
         description: 'Sistem özeti'
       },
       {
-        name: 'Analitikler',
-        href: '/admin/analytics',
-        icon: TrendingUp,
-        description: 'Platform analizleri'
-      },
-      {
         name: 'Kullanıcı Yönetimi',
         href: '/admin/users',
         icon: Users,
@@ -144,64 +111,30 @@ const adminNavigation: NavigationSection[] = [
         name: 'Kurs Yönetimi',
         href: '/admin/courses',
         icon: BookOpen,
-        description: 'Kursları yönet'
+        description: 'Kurs ve materyal yönetimi'
+      },
+      {
+        name: 'Soru & Cevap',
+        href: '/admin/qna',
+        icon: MessageSquare,
+        description: 'Öğrenci sorularını yönet'
+      },
+      {
+        name: 'Ödeme Yönetimi',
+        href: '/admin/payments',
+        icon: ShoppingCart,
+        description: 'Ödeme işlemleri'
       }
-    ]
-  },
-  {
-    name: 'İçerik',
-    items: [
-      {
-        name: 'İçerik Kütüphanesi',
-        href: '/admin/content',
-        icon: BookMarked,
-        description: 'Kurs içeriği'
-      },
-      {
-        name: 'Değerlendirmeler',
-        href: '/admin/assessments',
-        icon: FileText,
-        description: 'Testler ve sınavlar'
-      },
     ]
   },
   {
     name: 'Sistem',
     items: [
       {
-        name: 'Veritabanı',
-        href: '/admin/database',
-        icon: Database,
-        description: 'Veri yönetimi'
-      },
-      {
-        name: 'Güvenlik',
-        href: '/admin/security',
-        icon: Shield,
-        description: 'Güvenlik ayarları'
-      },
-      {
-        name: 'Sistem Ayarları',
+        name: 'Ayarlar',
         href: '/admin/settings',
-        icon: Cog,
-        description: 'Platform yapılandırması'
-      }
-    ]
-  },
-  {
-    name: 'Öğrenme (Öğrenci Görünümü)',
-    items: [
-      {
-        name: 'Öğrenimim',
-        href: '/dashboard',
-        icon: GraduationCap,
-        description: 'Öğrenci paneli'
-      },
-      {
-        name: 'Kursları Gözat',
-        href: '/courses',
-        icon: BookOpen,
-        description: 'Tüm kurslar'
+        icon: Settings,
+        description: 'Platform ayarları'
       }
     ]
   }
@@ -231,14 +164,14 @@ export default function DashboardSidebar({
         onClick={onClose}
         className={cn(
           "group flex items-center justify-between px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200",
-          "hover:bg-corporate-50 hover:text-corporate-deep",
+          "hover:bg-corporate-50 dark:hover:bg-gray-800 hover:text-corporate-deep dark:hover:text-white",
           "focus:outline-none focus:ring-2 focus:ring-corporate-primary focus:ring-offset-2",
           "touch-manipulation", // Better touch responsiveness
           "min-h-[48px]", // 48px minimum touch target for navigation
-          "active:bg-corporate-100", // Active state for touch
+          "active:bg-corporate-100 dark:active:bg-gray-700", // Active state for touch
           isActive
             ? "bg-gradient-to-r from-corporate-primary to-corporate-accent text-white shadow-corporate-md"
-            : "text-gray-700 hover:text-corporate-deep"
+            : "text-gray-700 dark:text-gray-300 hover:text-corporate-deep dark:hover:text-white"
         )}
       >
         <div className="flex items-center space-x-3">
@@ -289,7 +222,7 @@ export default function DashboardSidebar({
   const sidebarContent = (
     <div className="flex h-full flex-col">
       {/* Sidebar Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-corporate-deep to-corporate-primary">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-corporate-deep to-corporate-primary">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
             <GraduationCap className="h-5 w-5 text-white" />
@@ -299,7 +232,7 @@ export default function DashboardSidebar({
               {isAdmin ? 'Yönetici Paneli' : 'Öğrenme Merkezi'}
             </h2>
             <p className="text-xs text-white/80">
-              {user?.full_name || user?.email?.split('@')[0] || 'Öğrenci'}
+              {isAdmin ? 'Yönetici' : (user?.full_name || user?.email?.split('@')[0] || 'Öğrenci')}
             </p>
           </div>
         </div>
@@ -311,40 +244,12 @@ export default function DashboardSidebar({
         )}
       </div>
 
-      {/* User Quick Stats */}
-      <div className="p-4 bg-gradient-to-br from-corporate-50 to-white border-b border-gray-100">
-        <div className="grid grid-cols-2 gap-3">
-          {isAdmin ? (
-            <>
-              <div className="text-center p-2 bg-white rounded-lg shadow-sm">
-                <div className="text-lg font-bold text-corporate-primary">156</div>
-                <div className="text-xs text-gray-600">Toplam Kullanıcı</div>
-              </div>
-              <div className="text-center p-2 bg-white rounded-lg shadow-sm">
-                <div className="text-lg font-bold text-success-600">24</div>
-                <div className="text-xs text-gray-600">Aktif Kurslar</div>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="text-center p-2 bg-white rounded-lg shadow-sm">
-                <div className="text-lg font-bold text-corporate-primary">85%</div>
-                <div className="text-xs text-gray-600">İlerleme</div>
-              </div>
-              <div className="text-center p-2 bg-white rounded-lg shadow-sm">
-                <div className="text-lg font-bold text-warning-600">7</div>
-                <div className="text-xs text-gray-600">Günlük Seri</div>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-4 space-y-6 overscroll-contain">
         {navigation.map((section) => (
           <div key={section.name}>
-            <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            <h3 className="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
               {section.name}
             </h3>
             <div className="space-y-1">
@@ -357,17 +262,7 @@ export default function DashboardSidebar({
       </nav>
 
       {/* Sidebar Footer */}
-      <div className="p-4 border-t border-gray-200 bg-gray-50">
-        {isAdmin && (
-          <div className="space-y-2">
-            <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-              <Link href="/dashboard">
-                <GraduationCap className="h-4 w-4 mr-2" />
-                Öğrenci Görünümüne Geç
-              </Link>
-            </Button>
-          </div>
-        )}
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
       </div>
     </div>
   );
@@ -375,7 +270,7 @@ export default function DashboardSidebar({
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 lg:top-16 bg-white border-r border-gray-200 shadow-corporate-sm">
+      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 lg:top-16 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 shadow-corporate-sm">
         {sidebarContent}
       </aside>
 
@@ -383,7 +278,7 @@ export default function DashboardSidebar({
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-30 w-64 max-w-[85vw] transform transition-transform duration-300 ease-in-out lg:hidden",
-          "bg-white border-r border-gray-200 shadow-corporate-lg",
+          "bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 shadow-corporate-lg",
           "overflow-hidden", // Prevent content overflow
           open ? "translate-x-0" : "-translate-x-full"
         )}

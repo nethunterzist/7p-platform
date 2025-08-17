@@ -1,3 +1,4 @@
+import { mockApi } from '@/lib/mock-api';
 /**
  * Password Reset API Endpoint
  * Secure password reset with email verification

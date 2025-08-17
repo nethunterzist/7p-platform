@@ -192,9 +192,9 @@ export class AuditLogger {
       if (error) {
         console.error('Failed to insert audit logs:', {
           error: error.message,
-          code: error.code,
-          details: error.details,
-          hint: error.hint,
+          code: error.message,
+          details: error.message,
+          hint: error.message,
           entriesCount: entries.length,
           sampleEntry: entries[0]
         });

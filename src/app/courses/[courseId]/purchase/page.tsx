@@ -48,19 +48,21 @@ export default function CoursePurchasePage() {
 
   const checkAuthAndLoadData = async () => {
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      
-      if (authError || !user) {
-        router.push('/login');
-        return;
-      }
-
-      setUser(user);
+      // Always load course data first (public access)
       await Promise.all([
         loadCourse(),
-        loadCoursePrice(),
-        checkCourseAccess(user.id)
+        loadCoursePrice()
       ]);
+
+      // Check for authentication (optional for viewing, required for purchasing)
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (!authError && user) {
+        setUser(user);
+        await checkCourseAccess(user.id);
+      }
+      // If no user, they can still view the purchase page but will need to login to buy
+      
     } catch (err: any) {
       setError(err.message || 'Failed to load course data');
     } finally {
@@ -111,6 +113,12 @@ export default function CoursePurchasePage() {
   };
 
   const createPaymentIntent = async () => {
+    // Check authentication before creating payment intent
+    if (!user) {
+      router.push('/login?redirect=' + encodeURIComponent(window.location.pathname));
+      return;
+    }
+
     try {
       setError('');
       
@@ -147,6 +155,12 @@ export default function CoursePurchasePage() {
   };
 
   const handleCheckoutRedirect = async () => {
+    // Check authentication before proceeding to checkout
+    if (!user) {
+      router.push('/login?redirect=' + encodeURIComponent(window.location.pathname));
+      return;
+    }
+
     try {
       const response = await fetch('/api/payments/create-checkout-session', {
         method: 'POST',
@@ -173,19 +187,7 @@ export default function CoursePurchasePage() {
     }
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Authentication Required</h2>
-          <p className="text-gray-600 mb-6">Please sign in to purchase this course.</p>
-          <Button onClick={() => router.push('/login')}>
-            Sign In
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  // Remove the blocking for non-authenticated users - they can view the page
 
   if (loading) {
     return (
@@ -322,11 +324,27 @@ export default function CoursePurchasePage() {
               </h3>
 
               <div className="space-y-4">
+                {!user && (
+                  <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-blue-800 text-sm">
+                      <span className="font-medium">Sign in required:</span> Please sign in to purchase this course.
+                    </p>
+                    <Button 
+                      onClick={() => router.push('/login?redirect=' + encodeURIComponent(window.location.pathname))}
+                      className="mt-3 w-full"
+                      size="sm"
+                    >
+                      Sign In to Purchase
+                    </Button>
+                  </div>
+                )}
+                
                 {/* Stripe Checkout (Recommended) */}
                 <Button
                   onClick={handleCheckoutRedirect}
                   className="w-full justify-between"
                   size="lg"
+                  disabled={!user}
                 >
                   <span>Pay with Stripe Checkout</span>
                   <Badge variant="outline">Recommended</Badge>
@@ -347,7 +365,7 @@ export default function CoursePurchasePage() {
                   variant="outline"
                   className="w-full"
                   size="lg"
-                  disabled={!!clientSecret}
+                  disabled={!!clientSecret || !user}
                 >
                   {clientSecret ? 'Payment Form Ready' : 'Use Custom Payment Form'}
                 </Button>

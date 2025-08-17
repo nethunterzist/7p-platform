@@ -1,3 +1,4 @@
+import { mockApi } from '@/lib/mock-api';
 /**
  * User Registration API Endpoint
  * Secure user registration with password validation and rate limiting

@@ -1,15 +1,9 @@
 "use client";
 
 import React from 'react';
-import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { ChevronRight, Home } from 'lucide-react';
+import { Instagram, Youtube, Linkedin } from 'lucide-react';
 
-interface Breadcrumb {
-  label: string;
-  href?: string;
-}
 
 interface DashboardContentProps {
   children: React.ReactNode;
@@ -17,8 +11,7 @@ interface DashboardContentProps {
   title?: string;
   subtitle?: string;
   actions?: React.ReactNode;
-  breadcrumbs?: Breadcrumb[];
-  sidebarOpen: boolean;
+  sidebarOpen?: boolean;
 }
 
 export default function DashboardContent({
@@ -27,69 +20,41 @@ export default function DashboardContent({
   title,
   subtitle,
   actions,
-  breadcrumbs,
   sidebarOpen
 }: DashboardContentProps) {
-  const hasHeader = title || subtitle || actions || breadcrumbs;
+  const hasHeader = title || subtitle || actions;
 
   return (
-    <main
-      className={cn(
-        "flex-1 flex flex-col min-h-0 transition-all duration-300",
-        "lg:ml-80" // Account for fixed sidebar on desktop
+    <div className="w-full">
+      {/* Mobile overlay when sidebar is open */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          onClick={() => {/* handled by parent */}}
+        />
       )}
-    >
       {/* Content Header */}
       {hasHeader && (
-        <div className="flex-shrink-0 bg-white border-b border-gray-200 shadow-corporate-sm">
-          <div className="px-4 lg:px-6 py-4">
-            {/* Breadcrumbs */}
-            {breadcrumbs && breadcrumbs.length > 0 && (
-              <nav className="flex items-center space-x-1 text-sm text-gray-500 mb-3">
-                <Link
-                  href="/dashboard"
-                  className="flex items-center hover:text-corporate-primary transition-colors"
-                >
-                  <Home className="h-4 w-4" />
-                </Link>
-                
-                {breadcrumbs.map((crumb, index) => (
-                  <React.Fragment key={index}>
-                    <ChevronRight className="h-4 w-4 text-gray-400" />
-                    {crumb.href ? (
-                      <Link
-                        href={crumb.href}
-                        className="hover:text-corporate-primary transition-colors"
-                      >
-                        {crumb.label}
-                      </Link>
-                    ) : (
-                      <span className="text-gray-900 font-medium">
-                        {crumb.label}
-                      </span>
-                    )}
-                  </React.Fragment>
-                ))}
-              </nav>
-            )}
+        <div className="flex-shrink-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-corporate-sm">
+          <div className="px-4 lg:px-6 pt-6 pb-4">
 
             {/* Header Content */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div className="flex-1 min-w-0">
                 {title && (
-                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1 break-words">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2 break-words">
                     {title}
                   </h1>
                 )}
                 {subtitle && (
-                  <p className="text-gray-600 text-sm lg:text-base break-words">
+                  <p className="text-gray-600 dark:text-gray-300 text-sm lg:text-base break-words">
                     {subtitle}
                   </p>
                 )}
               </div>
               
               {actions && (
-                <div className="flex-shrink-0">
+                <div className="flex-shrink-0 self-start">
                   <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                     {actions}
                   </div>
@@ -101,16 +66,59 @@ export default function DashboardContent({
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-auto">
+      <div className="w-full">
         <div className={cn(
-          "h-full",
-          hasHeader ? "p-4 lg:p-6" : "",
+          "w-full",
+          hasHeader ? "p-4 lg:p-6" : "p-4 lg:p-6",
           className
         )}>
           {children}
         </div>
+        
+        {/* Footer */}
+        <footer className="mt-12 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+          <div className="px-4 lg:px-6 py-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              {/* Copyright */}
+              <div className="text-sm text-gray-600 dark:text-gray-300">
+                © 2024 7P Education. Tüm hakları saklıdır.
+              </div>
+              
+              {/* Social Media Links */}
+              <div className="flex items-center space-x-4">
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-pink-500 transition-colors duration-200"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="h-5 w-5" />
+                </a>
+                <a
+                  href="https://youtube.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-red-500 transition-colors duration-200"
+                  aria-label="YouTube"
+                >
+                  <Youtube className="h-5 w-5" />
+                </a>
+                <a
+                  href="https://linkedin.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-blue-600 transition-colors duration-200"
+                  aria-label="LinkedIn"
+                >
+                  <Linkedin className="h-5 w-5" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </footer>
       </div>
-    </main>
+    </div>
   );
 }
 
@@ -143,7 +151,7 @@ export function DashboardCard({
 }) {
   return (
     <div className={cn(
-      "bg-white rounded-xl border border-gray-200 shadow-corporate hover:shadow-corporate-md transition-all duration-300",
+      "bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-corporate hover:shadow-corporate-md transition-all duration-300",
       padding && "p-6",
       className
     )}>
@@ -171,13 +179,13 @@ export function DashboardStats({
       className
     )}>
       {stats.map((stat, index) => (
-        <DashboardCard key={index}>
+        <DashboardCard key={`stat-${index}-${stat.label}`}>
           <div className="flex items-center justify-between">
             <div className="flex-1">
-              <p className="text-sm font-medium text-gray-600 mb-1">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                 {stat.label}
               </p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {stat.value}
               </p>
               {stat.change && (
@@ -220,11 +228,11 @@ export function DashboardSection({
     <section className={cn("space-y-6", className)}>
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             {title}
           </h2>
           {subtitle && (
-            <p className="text-gray-600 text-sm mt-1">
+            <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">
               {subtitle}
             </p>
           )}
@@ -261,10 +269,10 @@ export function DashboardEmptyState({
       <div className="w-20 h-20 bg-corporate-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
         <Icon className="h-10 w-10 text-corporate-primary" />
       </div>
-      <h3 className="text-xl font-semibold text-gray-900 mb-3">
+      <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
         {title}
       </h3>
-      <p className="text-gray-600 mb-6 max-w-md mx-auto">
+      <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-md mx-auto">
         {description}
       </p>
       {action && (

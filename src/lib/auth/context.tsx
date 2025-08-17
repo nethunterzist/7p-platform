@@ -18,7 +18,8 @@ import {
   AuthError 
 } from '@/lib/types/auth';
 import { clientGoogleSSO, clientMicrosoftSSO } from '@/lib/auth/providers/client-safe';
-import { clientMFAService } from '@/lib/auth/mfa-client';
+// MFA sistemi MVP'de kaldırıldı
+const clientMFAService = null;
 // Security service removed from client-side to prevent JWT secret exposure
 import { auditLogger } from '@/lib/auth/audit';
 import { AUDIT_EVENTS } from '@/lib/auth/config-client';
@@ -169,10 +170,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
           
           // Extract user info from session
           const userEmail = newSession.user.email;
-          const userName = newSession.user.user_metadata?.name || 
-                          newSession.user.user_metadata?.full_name || 
+          const userName = newSession.user.role?.name || 
+                          newSession.user.role?.full_name || 
                           userEmail.split('@')[0];
-          const avatarUrl = newSession.user.user_metadata?.avatar_url;
+          const avatarUrl = newSession.user.role?.avatar_url;
           
           // Try to create user profile
           const { data: newUser, error: createError } = await retryAuthOperation(
@@ -187,7 +188,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 created_at: newSession.user.created_at,
                 updated_at: new Date().toISOString(),
                 last_login: new Date().toISOString(),
-                metadata: newSession.user.user_metadata || {}
+                metadata: newSession.user.role || {}
               })
               .select()
               .single(),
@@ -208,7 +209,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
               created_at: newSession.user.created_at,
               updated_at: new Date().toISOString(),
               last_login: new Date().toISOString(),
-              metadata: newSession.user.user_metadata || {}
+              metadata: newSession.user.role || {}
             };
             console.log('Using fallback user data for session');
           } else {
@@ -221,15 +222,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
           userData = {
             id: newSession.user.id,
             email: newSession.user.email,
-            name: newSession.user.user_metadata?.name || newSession.user.email.split('@')[0],
-            avatar_url: newSession.user.user_metadata?.avatar_url,
+            name: newSession.user.role?.name || newSession.user.email.split('@')[0],
+            avatar_url: newSession.user.role?.avatar_url,
             role: 'student',
             organization_id: null,
             email_verified: newSession.user.email_confirmed_at !== null,
             created_at: newSession.user.created_at,
             updated_at: new Date().toISOString(),
             last_login: new Date().toISOString(),
-            metadata: newSession.user.user_metadata || {}
+            metadata: newSession.user.role || {}
           };
           console.warn('Using fallback user data due to profile fetch error');
         }

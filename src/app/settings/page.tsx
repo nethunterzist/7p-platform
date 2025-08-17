@@ -1,97 +1,62 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { DashboardCard } from '@/components/layout/DashboardContent';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import toast, { Toaster } from 'react-hot-toast';
+import {
+  getUserProfile,
+  getPlatformPreferences,
+  getNotificationSettings,
+  getActiveDevices,
+  getSubscription,
+  getInvoices,
+  getPaymentMethods,
+  getSecuritySettings,
+  AVAILABLE_LANGUAGES,
+  AVAILABLE_TIMEZONES,
+  LANDING_PAGE_OPTIONS,
+  THEME_OPTIONS,
+  type UserProfile,
+  type PlatformPreferences,
+  type NotificationSettings,
+  type SecuritySettings,
+  type ActiveDevice,
+  type Subscription,
+  type Invoice,
+  type PaymentMethod
+} from '@/data';
 
 import { 
   Settings,
   User,
-  Shield,
-  Bell,
-  Eye,
-  Palette,
-  Globe,
-  Clock,
-  Lock,
-  Download,
-  Camera,
   Save,
-  AlertTriangle,
-  Check,
-  X,
+  Camera,
+  Mail,
+  Smartphone,
   Sun,
   Moon,
-  Smartphone,
-  Mail,
-  MessageSquare,
-  Volume2
+  Bell,
+  Shield,
+  CreditCard,
+  Lock,
+  Monitor,
+  Download,
+  Trash2,
+  Plus,
+  Eye,
+  EyeOff,
+  X
 } from 'lucide-react';
 
-// Interfaces for type safety
-interface UserProfile {
-  full_name: string;
-  email: string;
-  phone: string;
-  bio: string;
-  avatar_url: string | null;
-  learning_goals: string[];
-  interests: string[];
-  timezone: string;
-  language: string;
-}
-
-interface SecuritySettings {
-  two_factor_enabled: boolean;
-  login_sessions: Array<{
-    id: string;
-    device: string;
-    location: string;
-    last_active: string;
-    current: boolean;
-  }>;
-}
-
-interface NotificationSettings {
-  email_course_updates: boolean;
-  email_assignments: boolean;
-  email_messages: boolean;
-  email_marketing: boolean;
-  push_enabled: boolean;
-  push_assignments: boolean;
-  push_messages: boolean;
-  sms_enabled: boolean;
-  sms_reminders: boolean;
-  frequency: 'immediate' | 'daily' | 'weekly';
-}
-
-interface LearningPreferences {
-  preferred_study_time: string;
-  reminder_enabled: boolean;
-  reminder_time: string;
-  difficulty_level: 'beginner' | 'intermediate' | 'advanced';
-  content_language: 'tr' | 'en';
-  subtitles_enabled: boolean;
-  autoplay_videos: boolean;
-}
-
-interface PrivacySettings {
-  profile_visibility: 'public' | 'private' | 'friends';
-  progress_visibility: 'public' | 'private' | 'friends';
-  contact_sharing: boolean;
-  data_collection: boolean;
-  analytics_tracking: boolean;
-}
-
-interface PlatformPreferences {
-  theme: 'light' | 'dark' | 'system';
-  sidebar_collapsed: boolean;
-  dashboard_layout: 'grid' | 'list';
-  default_landing_page: string;
-  animations_enabled: boolean;
+// Security interface for password changes
+interface PasswordChangeForm {
+  current_password: string;
+  new_password: string;
+  confirm_password: string;
 }
 
 // Toggle Switch Component
@@ -102,1414 +67,901 @@ interface ToggleSwitchProps {
   label?: string;
 }
 
-const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ 
-  enabled, 
-  onChange, 
-  disabled = false,
-  label 
-}) => (
-  <div className="flex items-center space-x-3">
-    <button
-      type="button"
-      onClick={() => !disabled && onChange(!enabled)}
-      disabled={disabled}
-      className={cn(
-        "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50",
-        enabled ? "bg-blue-600" : "bg-gray-200"
-      )}
-    >
-      <span
-        className={cn(
-          "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
-          enabled ? "translate-x-6" : "translate-x-1"
-        )}
-      />
-    </button>
-    {label && (
-      <span className={cn(
-        "text-sm font-medium",
-        disabled ? "text-gray-400" : "text-gray-900"
-      )}>
-        {label}
-      </span>
-    )}
-  </div>
-);
-
-// Select Component
-interface SelectProps {
-  value: string;
-  onChange: (value: string) => void;
-  options: Array<{ value: string; label: string }>;
-  className?: string;
-  disabled?: boolean;
-}
-
-const Select: React.FC<SelectProps> = ({ 
-  value, 
-  onChange, 
-  options, 
-  className,
-  disabled = false 
-}) => (
-  <select
-    value={value}
-    onChange={(e) => onChange(e.target.value)}
-    disabled={disabled}
-    className={cn(
-      "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
-      className
-    )}
-  >
-    {options.map((option) => (
-      <option key={option.value} value={option.value}>
-        {option.label}
-      </option>
-    ))}
-  </select>
-);
-
-// File Upload Component
-interface FileUploadProps {
-  onFileSelect: (file: File | null) => void;
-  currentImage?: string | null;
-  className?: string;
-}
-
-const FileUpload: React.FC<FileUploadProps> = ({ 
-  onFileSelect, 
-  currentImage,
-  className 
-}) => {
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] || null;
-    onFileSelect(file);
-  };
-
+const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ enabled, onChange, disabled = false, label }) => {
   return (
-    <div className={cn("flex items-center space-x-4", className)}>
-      <div className="relative">
-        <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
-          {currentImage ? (
-            <img 
-              src={currentImage} 
-              alt="Avatar" 
-              className="w-full h-full object-cover" 
-            />
-          ) : (
-            <User className="w-8 h-8 text-gray-400" />
+    <label className="flex items-center space-x-3 cursor-pointer">
+      <div
+        className={cn(
+          "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+          enabled ? "bg-green-500" : "bg-gray-200",
+          disabled && "opacity-50 cursor-not-allowed"
+        )}
+        onClick={() => !disabled && onChange(!enabled)}
+      >
+        <span
+          className={cn(
+            "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+            enabled ? "translate-x-6" : "translate-x-1"
           )}
-        </div>
-        <label 
-          htmlFor="avatar-upload" 
-          className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-colors"
-        >
-          <Camera className="w-4 h-4" />
-        </label>
-        <input
-          id="avatar-upload"
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-          className="hidden"
         />
       </div>
-    </div>
-  );
-};
-
-// Confirmation Dialog Component
-interface ConfirmationDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  title: string;
-  description: string;
-  type: 'danger' | 'warning' | 'info';
-}
-
-const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
-  isOpen,
-  onClose,
-  onConfirm,
-  title,
-  description,
-  type
-}) => {
-  if (!isOpen) return null;
-
-  const getTypeStyles = () => {
-    switch (type) {
-      case 'danger':
-        return {
-          icon: AlertTriangle,
-          iconColor: 'text-red-600',
-          bgColor: 'bg-red-50',
-          buttonColor: 'bg-red-600 hover:bg-red-700'
-        };
-      case 'warning':
-        return {
-          icon: AlertTriangle,
-          iconColor: 'text-yellow-600',
-          bgColor: 'bg-yellow-50',
-          buttonColor: 'bg-yellow-600 hover:bg-yellow-700'
-        };
-      default:
-        return {
-          icon: AlertTriangle,
-          iconColor: 'text-blue-600',
-          bgColor: 'bg-blue-50',
-          buttonColor: 'bg-blue-600 hover:bg-blue-700'
-        };
-    }
-  };
-
-  const styles = getTypeStyles();
-  const IconComponent = styles.icon;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-        <div className="flex items-start space-x-4">
-          <div className={cn("w-12 h-12 rounded-full flex items-center justify-center", styles.bgColor)}>
-            <IconComponent className={cn("w-6 h-6", styles.iconColor)} />
-          </div>
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {title}
-            </h3>
-            <p className="text-gray-600 mb-6">
-              {description}
-            </p>
-            <div className="flex space-x-3">
-              <Button
-                onClick={onConfirm}
-                className={cn("text-white", styles.buttonColor)}
-              >
-                Onayla
-              </Button>
-              <Button variant="outline" onClick={onClose}>
-                İptal
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Toast Notification Component
-interface ToastProps {
-  message: string;
-  type: 'success' | 'error' | 'info';
-  isVisible: boolean;
-  onClose: () => void;
-}
-
-const Toast: React.FC<ToastProps> = ({ message, type, isVisible, onClose }) => {
-  useEffect(() => {
-    if (isVisible) {
-      const timer = setTimeout(() => {
-        onClose();
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [isVisible, onClose]);
-
-  if (!isVisible) return null;
-
-  const getTypeStyles = () => {
-    switch (type) {
-      case 'success':
-        return {
-          bg: 'bg-green-50 border-green-200',
-          text: 'text-green-800',
-          icon: Check,
-          iconColor: 'text-green-500'
-        };
-      case 'error':
-        return {
-          bg: 'bg-red-50 border-red-200',
-          text: 'text-red-800',
-          icon: X,
-          iconColor: 'text-red-500'
-        };
-      default:
-        return {
-          bg: 'bg-blue-50 border-blue-200',
-          text: 'text-blue-800',
-          icon: Check,
-          iconColor: 'text-blue-500'
-        };
-    }
-  };
-
-  const styles = getTypeStyles();
-  const IconComponent = styles.icon;
-
-  return (
-    <div className="fixed top-4 right-4 z-50">
-      <div className={cn(
-        "flex items-center space-x-3 p-4 rounded-lg border",
-        styles.bg
-      )}>
-        <IconComponent className={cn("w-5 h-5", styles.iconColor)} />
-        <p className={cn("font-medium", styles.text)}>
-          {message}
-        </p>
-        <button
-          onClick={onClose}
-          className={cn("ml-4", styles.iconColor)}
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-    </div>
+      {label && <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>}
+    </label>
   );
 };
 
 export default function SettingsPage() {
-  // State management
-  const [activeTab, setActiveTab] = useState('profile');
-  const [isSaving, setIsSaving] = useState(false);
-  const [hasChanges, setHasChanges] = useState(false);
+  // Load organized mock data
+  const [profile, setProfile] = useState<UserProfile>(getUserProfile());
+  const [platform, setPlatform] = useState<PlatformPreferences>(getPlatformPreferences());
+  const [notifications, setNotifications] = useState<NotificationSettings>(getNotificationSettings());
   
-  // Dialog states
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
-  const [showSessionDialog, setShowSessionDialog] = useState<string | null>(null);
-  
-  // Toast state
-  const [toast, setToast] = useState<{
-    message: string;
-    type: 'success' | 'error' | 'info';
-    isVisible: boolean;
-  }>({
-    message: '',
-    type: 'success',
-    isVisible: false
+  // Password change form state (separate from user profile)
+  const [passwordForm, setPasswordForm] = useState<PasswordChangeForm>({
+    current_password: '',
+    new_password: '',
+    confirm_password: ''
   });
 
-  // Settings states
-  const [profile, setProfile] = useState<UserProfile>({
-    full_name: 'Ahmet Yılmaz',
-    email: 'ahmet@example.com',
-    phone: '+90 555 123 45 67',
-    bio: 'E-ticaret ve dijital pazarlama konularında gelişim gösteren bir öğrenciyim.',
-    avatar_url: null,
-    learning_goals: ['E-ticaret Uzmanlığı', 'PPC Reklamcılığı', 'Ürün Araştırması'],
-    interests: ['Pazarlama', 'Teknoloji', 'Girişimcilik'],
-    timezone: 'Europe/Istanbul',
-    language: 'tr'
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false
   });
 
-  const [security, setSecurity] = useState<SecuritySettings>({
-    two_factor_enabled: false,
-    login_sessions: [
-      {
-        id: '1',
-        device: 'Chrome - Windows',
-        location: 'İstanbul, Türkiye',
-        last_active: '2 dakika önce',
-        current: true
-      },
-      {
-        id: '2',
-        device: 'Safari - iPhone',
-        location: 'İstanbul, Türkiye',
-        last_active: '1 saat önce',
-        current: false
-      }
-    ]
+  // Static data from organized mock data
+  const [activeDevices] = useState<ActiveDevice[]>(getActiveDevices());
+  const [subscription] = useState<Subscription>(getSubscription());
+  const [invoices] = useState<Invoice[]>(getInvoices());
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>(getPaymentMethods());
+
+  // Modal state
+  const [showAddCardModal, setShowAddCardModal] = useState(false);
+  const [newCard, setNewCard] = useState({
+    card_number: '',
+    expiry: '',
+    cvc: '',
+    name: ''
   });
 
-  const [notifications, setNotifications] = useState<NotificationSettings>({
-    email_course_updates: true,
-    email_assignments: true,
-    email_messages: true,
-    email_marketing: false,
-    push_enabled: true,
-    push_assignments: true,
-    push_messages: true,
-    sms_enabled: false,
-    sms_reminders: false,
-    frequency: 'immediate'
-  });
+  // UI state
+  const [activeTab, setActiveTab] = useState<'profile' | 'platform' | 'notifications' | 'security' | 'billing'>('profile');
+  const [isLoading, setIsLoading] = useState(false);
+  // Toast bildirimleri için saveMessage state'i artık gerekmiyor
 
-  const [learning, setLearning] = useState<LearningPreferences>({
-    preferred_study_time: '20:00',
-    reminder_enabled: true,
-    reminder_time: '19:00',
-    difficulty_level: 'intermediate',
-    content_language: 'tr',
-    subtitles_enabled: true,
-    autoplay_videos: false
-  });
-
-  const [privacy, setPrivacy] = useState<PrivacySettings>({
-    profile_visibility: 'private',
-    progress_visibility: 'private',
-    contact_sharing: false,
-    data_collection: true,
-    analytics_tracking: true
-  });
-
-  const [platform, setPlatform] = useState<PlatformPreferences>({
-    theme: 'light',
-    sidebar_collapsed: false,
-    dashboard_layout: 'grid',
-    default_landing_page: '/dashboard',
-    animations_enabled: true
-  });
-
-  // Password change state
-  const [passwordData, setPasswordData] = useState({
-    current: '',
-    new: '',
-    confirm: ''
-  });
-
-  // Handlers
-  const showToast = (message: string, type: 'success' | 'error' | 'info') => {
-    setToast({ message, type, isVisible: true });
-  };
-
-  const hideToast = () => {
-    setToast(prev => ({ ...prev, isVisible: false }));
-  };
-
-  const handleSave = async () => {
-    setIsSaving(true);
+  // Save handlers
+  const saveProfile = async () => {
+    setIsLoading(true);
     try {
-      // Simulate API call
+      // Simulated save - replace with actual API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Save to localStorage for persistence
-      const settings = {
-        profile,
-        security,
-        notifications,
-        learning,
-        privacy,
-        platform
-      };
-      localStorage.setItem('7p_user_settings', JSON.stringify(settings));
-      
-      setHasChanges(false);
-      showToast('Ayarlarınız başarıyla kaydedildi!', 'success');
+      toast.success('Profil bilgileri başarıyla kaydedildi!');
     } catch (error) {
-      showToast('Ayarlar kaydedilirken bir hata oluştu.', 'error');
+      toast.error('Profil kaydedilirken bir hata oluştu!');
     } finally {
-      setIsSaving(false);
+      setIsLoading(false);
     }
   };
 
-  const handlePasswordChange = async () => {
-    if (passwordData.new !== passwordData.confirm) {
-      showToast('Yeni şifreler eşleşmiyor.', 'error');
+  const savePlatform = async () => {
+    setIsLoading(true);
+    try {
+      // Simulated save - replace with actual API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast.success('Platform ayarları başarıyla kaydedildi!');
+    } catch (error) {
+      toast.error('Platform ayarları kaydedilirken bir hata oluştu!');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const saveNotifications = async () => {
+    setIsLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast.success('Bildirim ayarları başarıyla kaydedildi!');
+    } catch (error) {
+      toast.error('Bildirim ayarları kaydedilirken bir hata oluştu!');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const changePassword = async () => {
+    if (passwordForm.new_password !== passwordForm.confirm_password) {
+      toast.error('Yeni şifreler eşleşmiyor!');
       return;
     }
     
-    if (passwordData.new.length < 6) {
-      showToast('Şifre en az 6 karakter olmalıdır.', 'error');
-      return;
-    }
-
+    setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setPasswordData({ current: '', new: '', confirm: '' });
-      setShowPasswordDialog(false);
-      showToast('Şifreniz başarıyla değiştirildi!', 'success');
-    } catch (error) {
-      showToast('Şifre değiştirilirken bir hata oluştu.', 'error');
-    }
-  };
-
-  const handleSessionTerminate = async (sessionId: string) => {
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setSecurity(prev => ({
-        ...prev,
-        login_sessions: prev.login_sessions.filter(s => s.id !== sessionId)
-      }));
-      setShowSessionDialog(null);
-      showToast('Oturum sonlandırıldı.', 'success');
-    } catch (error) {
-      showToast('Oturum sonlandırılırken bir hata oluştu.', 'error');
-    }
-  };
-
-  const handleAccountDelete = async () => {
-    try {
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
-      setShowDeleteDialog(false);
-      showToast('Hesap silme talebiniz işleme alındı.', 'info');
+      toast.success('Şifre başarıyla değiştirildi!');
+      setPasswordForm({ current_password: '', new_password: '', confirm_password: '' });
     } catch (error) {
-      showToast('Hesap silinirken bir hata oluştu.', 'error');
+      toast.error('Şifre değiştirilemedi!');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleFileUpload = (file: File | null) => {
-    if (file) {
-      // Simulate file upload
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setProfile(prev => ({ ...prev, avatar_url: e.target?.result as string }));
-        setHasChanges(true);
-        showToast('Profil fotoğrafı güncellendi.', 'success');
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleDataExport = async () => {
+  const logoutDevice = async (deviceId: string) => {
     try {
-      // Simulate data export
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      const data = { profile, learning, privacy };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = '7p_education_data.json';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      showToast('Verileriniz indirildi.', 'success');
+      toast.success('Cihaz oturumu başarıyla kapatıldı!');
     } catch (error) {
-      showToast('Veri indirme hatası.', 'error');
+      toast.error('Oturum kapatılamadı!');
     }
   };
 
-  // Load settings from localStorage on mount
-  useEffect(() => {
-    const savedSettings = localStorage.getItem('7p_user_settings');
-    if (savedSettings) {
-      try {
-        const parsed = JSON.parse(savedSettings);
-        if (parsed.profile) setProfile(parsed.profile);
-        if (parsed.security) setSecurity(parsed.security);
-        if (parsed.notifications) setNotifications(parsed.notifications);
-        if (parsed.learning) setLearning(parsed.learning);
-        if (parsed.privacy) setPrivacy(parsed.privacy);
-        if (parsed.platform) setPlatform(parsed.platform);
-      } catch (error) {
-        console.error('Settings load error:', error);
-      }
+  const downloadInvoice = (invoice: Invoice) => {
+    // Simulated download
+    toast.success('Fatura indiriliyor...');
+  };
+
+  const removePaymentMethod = async (methodId: string) => {
+    try {
+      setPaymentMethods(methods => methods.filter(method => method.id !== methodId));
+      toast.success('Ödeme yöntemi başarıyla kaldırıldı!');
+    } catch (error) {
+      toast.error('Ödeme yöntemi kaldırılamadı!');
     }
-  }, []);
+  };
 
-  // Track changes
-  useEffect(() => {
-    setHasChanges(true);
-  }, [profile, security, notifications, learning, privacy, platform]);
+  const addPaymentMethod = async () => {
+    setIsLoading(true);
+    try {
+      const newMethod: PaymentMethod = {
+        id: Date.now().toString(),
+        type: 'card',
+        last_four: newCard.card_number.slice(-4),
+        brand: 'Visa', // In real app, detect from card number
+        expires: newCard.expiry,
+        is_default: paymentMethods.length === 0
+      };
+      
+      setPaymentMethods(methods => [...methods, newMethod]);
+      setNewCard({ card_number: '', expiry: '', cvc: '', name: '' });
+      setShowAddCardModal(false);
+      toast.success('Kart başarıyla eklendi!');
+    } catch (error) {
+      toast.error('Kart eklenemedi!');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  const tabs = [
-    { id: 'profile', label: 'Profil', icon: User },
-    { id: 'security', label: 'Güvenlik', icon: Shield },
-    { id: 'notifications', label: 'Bildirimler', icon: Bell },
-    { id: 'learning', label: 'Öğrenme', icon: Clock },
-    { id: 'privacy', label: 'Gizlilik', icon: Eye },
-    { id: 'platform', label: 'Platform', icon: Palette }
-  ];
-
-  const timeOptions = Array.from({ length: 24 }, (_, i) => ({
-    value: `${i.toString().padStart(2, '0')}:00`,
-    label: `${i.toString().padStart(2, '0')}:00`
-  }));
-
-  const timezoneOptions = [
-    { value: 'Europe/Istanbul', label: 'İstanbul (UTC+3)' },
-    { value: 'Europe/London', label: 'Londra (UTC+0)' },
-    { value: 'America/New_York', label: 'New York (UTC-5)' },
-    { value: 'Asia/Tokyo', label: 'Tokyo (UTC+9)' }
-  ];
-
-  const languageOptions = [
-    { value: 'tr', label: 'Türkçe' },
-    { value: 'en', label: 'English' }
-  ];
-
-  const difficultyOptions = [
-    { value: 'beginner', label: 'Başlangıç' },
-    { value: 'intermediate', label: 'Orta' },
-    { value: 'advanced', label: 'İleri' }
-  ];
-
-  const visibilityOptions = [
-    { value: 'public', label: 'Herkese Açık' },
-    { value: 'friends', label: 'Arkadaşlara Açık' },
-    { value: 'private', label: 'Gizli' }
-  ];
-
-  const frequencyOptions = [
-    { value: 'immediate', label: 'Hemen' },
-    { value: 'daily', label: 'Günlük Özet' },
-    { value: 'weekly', label: 'Haftalık Özet' }
-  ];
-
-  const themeOptions = [
-    { value: 'light', label: 'Açık Tema' },
-    { value: 'dark', label: 'Koyu Tema' },
-    { value: 'system', label: 'Sistem' }
-  ];
-
-  const layoutOptions = [
-    { value: 'grid', label: 'Izgara Görünümü' },
-    { value: 'list', label: 'Liste Görünümü' }
-  ];
-
-  const landingPageOptions = [
-    { value: '/dashboard', label: 'Dashboard' },
-    { value: '/courses', label: 'Eğitimler' },
-    { value: '/messages', label: 'Mesajlar' },
-    { value: '/profile', label: 'Profil' }
-  ];
+  // Load additional options from organized data
+  const securitySettings = getSecuritySettings();
 
   return (
     <DashboardLayout
       title="Ayarlar"
-      subtitle="Hesap tercihleri ve platform ayarlarınız"
-      breadcrumbs={[
-        { label: 'Ayarlar' }
-      ]}
-      actions={
-        hasChanges && (
-          <Button 
-            onClick={handleSave} 
-            disabled={isSaving}
-            className="flex items-center space-x-2"
-          >
-            <Save className="w-4 h-4" />
-            <span>{isSaving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}</span>
-          </Button>
-        )
-      }
+      subtitle="Profil ve platform tercihlerinizi yönetin"
     >
-      <div className="max-w-6xl mx-auto">
-        {/* Tab Navigation */}
-        <div className="bg-white rounded-lg border border-gray-200 mb-6">
-          <div className="overflow-x-auto">
-            <nav className="flex space-x-0">
-              {tabs.map((tab) => {
-                const IconComponent = tab.icon;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={cn(
-                      "flex items-center space-x-2 px-6 py-4 border-b-2 font-medium text-sm whitespace-nowrap transition-colors",
-                      activeTab === tab.id
-                        ? "border-blue-600 text-blue-600 bg-blue-50"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                    )}
-                  >
-                    <IconComponent className="w-4 h-4" />
-                    <span>{tab.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-        </div>
+      {/* Toast bildirimleri artık burada değil, sol üstte görünecek */}
 
-        {/* Tab Content */}
-        <div className="space-y-6">
-          {/* Profile Settings */}
-          {activeTab === 'profile' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <DashboardCard>
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <User className="w-5 h-5 mr-2" />
-                    Kişisel Bilgiler
-                  </h3>
-                  
-                  <div className="space-y-4">
-                    <FileUpload
-                      onFileSelect={handleFileUpload}
-                      currentImage={profile.avatar_url}
-                    />
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Ad Soyad
-                      </label>
-                      <Input
-                        value={profile.full_name}
-                        onChange={(e) => setProfile(prev => ({ ...prev, full_name: e.target.value }))}
-                        placeholder="Adınız ve soyadınız"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        E-posta
-                      </label>
-                      <Input
-                        value={profile.email}
-                        disabled
-                        className="bg-gray-50 cursor-not-allowed"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">
-                        E-posta adresiniz değiştirilemez
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Telefon
-                      </label>
-                      <Input
-                        value={profile.phone}
-                        onChange={(e) => setProfile(prev => ({ ...prev, phone: e.target.value }))}
-                        placeholder="+90 555 123 45 67"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Hakkımda
-                      </label>
-                      <textarea
-                        value={profile.bio}
-                        onChange={(e) => setProfile(prev => ({ ...prev, bio: e.target.value }))}
-                        rows={3}
-                        className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                        placeholder="Kendinizden bahsedin..."
-                      />
-                    </div>
-                  </div>
-                </div>
-              </DashboardCard>
-
-              <DashboardCard>
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <Globe className="w-5 h-5 mr-2" />
-                    Bölgesel Ayarlar
-                  </h3>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Zaman Dilimi
-                      </label>
-                      <Select
-                        value={profile.timezone}
-                        onChange={(value) => setProfile(prev => ({ ...prev, timezone: value }))}
-                        options={timezoneOptions}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Dil
-                      </label>
-                      <Select
-                        value={profile.language}
-                        onChange={(value) => setProfile(prev => ({ ...prev, language: value }))}
-                        options={languageOptions}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Öğrenme Hedefleri
-                      </label>
-                      <div className="flex flex-wrap gap-2">
-                        {profile.learning_goals.map((goal, index) => (
-                          <span
-                            key={index}
-                            className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
-                          >
-                            {goal}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        İlgi Alanları
-                      </label>
-                      <div className="flex flex-wrap gap-2">
-                        {profile.interests.map((interest, index) => (
-                          <span
-                            key={index}
-                            className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800"
-                          >
-                            {interest}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </DashboardCard>
-            </div>
-          )}
-
-          {/* Security Settings */}
-          {activeTab === 'security' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <DashboardCard>
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <Lock className="w-5 h-5 mr-2" />
-                    Şifre ve Güvenlik
-                  </h3>
-                  
-                  <div className="space-y-4">
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowPasswordDialog(true)}
-                      className="w-full justify-start"
-                    >
-                      <Lock className="w-4 h-4 mr-2" />
-                      Şifre Değiştir
-                    </Button>
-
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div>
-                        <h4 className="font-medium text-gray-900">İki Faktörlü Doğrulama</h4>
-                        <p className="text-sm text-gray-600">
-                          Hesabınızı ek güvenlik katmanı ile koruyun
-                        </p>
-                      </div>
-                      <ToggleSwitch
-                        enabled={security.two_factor_enabled}
-                        onChange={(enabled) => setSecurity(prev => ({ ...prev, two_factor_enabled: enabled }))}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </DashboardCard>
-
-              <DashboardCard>
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <Smartphone className="w-5 h-5 mr-2" />
-                    Aktif Oturumlar
-                  </h3>
-                  
-                  <div className="space-y-3">
-                    {security.login_sessions.map((session) => (
-                      <div 
-                        key={session.id}
-                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                      >
-                        <div>
-                          <h4 className="font-medium text-gray-900 flex items-center">
-                            {session.device}
-                            {session.current && (
-                              <span className="ml-2 px-2 py-1 text-xs bg-green-100 text-green-800 rounded">
-                                Mevcut
-                              </span>
-                            )}
-                          </h4>
-                          <p className="text-sm text-gray-600">
-                            {session.location} • {session.last_active}
-                          </p>
-                        </div>
-                        {!session.current && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setShowSessionDialog(session.id)}
-                          >
-                            Sonlandır
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </DashboardCard>
-
-              {/* Danger Zone */}
-              <DashboardCard className="lg:col-span-2">
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-red-600 mb-4 flex items-center">
-                    <AlertTriangle className="w-5 h-5 mr-2" />
-                    Tehlikeli İşlemler
-                  </h3>
-                  
-                  <div className="p-4 bg-red-50 rounded-lg border border-red-200">
-                    <h4 className="font-medium text-red-900 mb-2">
-                      Hesabı Sil
-                    </h4>
-                    <p className="text-sm text-red-700 mb-4">
-                      Bu işlem geri alınamaz. Tüm verileriniz kalıcı olarak silinir.
-                    </p>
-                    <Button
-                      variant="destructive"
-                      onClick={() => setShowDeleteDialog(true)}
-                    >
-                      Hesabımı Sil
-                    </Button>
-                  </div>
-                </div>
-              </DashboardCard>
-            </div>
-          )}
-
-          {/* Notification Settings */}
-          {activeTab === 'notifications' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <DashboardCard>
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <Mail className="w-5 h-5 mr-2" />
-                    E-posta Bildirimleri
-                  </h3>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">Kurs Güncellemeleri</h4>
-                        <p className="text-sm text-gray-600">Yeni dersler ve içerik</p>
-                      </div>
-                      <ToggleSwitch
-                        enabled={notifications.email_course_updates}
-                        onChange={(enabled) => setNotifications(prev => ({ ...prev, email_course_updates: enabled }))}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">Ödevler</h4>
-                        <p className="text-sm text-gray-600">Ödev teslim tarihleri</p>
-                      </div>
-                      <ToggleSwitch
-                        enabled={notifications.email_assignments}
-                        onChange={(enabled) => setNotifications(prev => ({ ...prev, email_assignments: enabled }))}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">Mesajlar</h4>
-                        <p className="text-sm text-gray-600">Öğretmen ve öğrenci mesajları</p>
-                      </div>
-                      <ToggleSwitch
-                        enabled={notifications.email_messages}
-                        onChange={(enabled) => setNotifications(prev => ({ ...prev, email_messages: enabled }))}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">Pazarlama</h4>
-                        <p className="text-sm text-gray-600">Yeni kurslar ve promosyonlar</p>
-                      </div>
-                      <ToggleSwitch
-                        enabled={notifications.email_marketing}
-                        onChange={(enabled) => setNotifications(prev => ({ ...prev, email_marketing: enabled }))}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </DashboardCard>
-
-              <DashboardCard>
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <Bell className="w-5 h-5 mr-2" />
-                    Anlık Bildirimler
-                  </h3>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">Push Bildirimleri</h4>
-                        <p className="text-sm text-gray-600">Tarayıcı bildirimleri</p>
-                      </div>
-                      <ToggleSwitch
-                        enabled={notifications.push_enabled}
-                        onChange={(enabled) => setNotifications(prev => ({ ...prev, push_enabled: enabled }))}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">Ödev Bildirimleri</h4>
-                        <p className="text-sm text-gray-600">Ödev teslim hatırlatmaları</p>
-                      </div>
-                      <ToggleSwitch
-                        enabled={notifications.push_assignments}
-                        onChange={(enabled) => setNotifications(prev => ({ ...prev, push_assignments: enabled }))}
-                        disabled={!notifications.push_enabled}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">Mesaj Bildirimleri</h4>
-                        <p className="text-sm text-gray-600">Yeni mesaj bildirimleri</p>
-                      </div>
-                      <ToggleSwitch
-                        enabled={notifications.push_messages}
-                        onChange={(enabled) => setNotifications(prev => ({ ...prev, push_messages: enabled }))}
-                        disabled={!notifications.push_enabled}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </DashboardCard>
-
-              <DashboardCard>
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <MessageSquare className="w-5 h-5 mr-2" />
-                    SMS Bildirimleri
-                  </h3>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">SMS Bildirimleri</h4>
-                        <p className="text-sm text-gray-600">Önemli güncellemeler</p>
-                      </div>
-                      <ToggleSwitch
-                        enabled={notifications.sms_enabled}
-                        onChange={(enabled) => setNotifications(prev => ({ ...prev, sms_enabled: enabled }))}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">Çalışma Hatırlatmaları</h4>
-                        <p className="text-sm text-gray-600">Günlük çalışma hatırlatmaları</p>
-                      </div>
-                      <ToggleSwitch
-                        enabled={notifications.sms_reminders}
-                        onChange={(enabled) => setNotifications(prev => ({ ...prev, sms_reminders: enabled }))}
-                        disabled={!notifications.sms_enabled}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </DashboardCard>
-
-              <DashboardCard>
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <Volume2 className="w-5 h-5 mr-2" />
-                    Bildirim Sıklığı
-                  </h3>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      E-posta Sıklığı
-                    </label>
-                    <Select
-                      value={notifications.frequency}
-                      onChange={(value) => setNotifications(prev => ({ ...prev, frequency: value as any }))}
-                      options={frequencyOptions}
-                    />
-                    <p className="text-sm text-gray-500 mt-1">
-                      Bildirimlerin hangi sıklıkta gönderilmesini istiyorsunuz?
-                    </p>
-                  </div>
-                </div>
-              </DashboardCard>
-            </div>
-          )}
-
-          {/* Learning Preferences */}
-          {activeTab === 'learning' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <DashboardCard>
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <Clock className="w-5 h-5 mr-2" />
-                    Çalışma Zamanı
-                  </h3>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Tercih Edilen Çalışma Saati
-                      </label>
-                      <Select
-                        value={learning.preferred_study_time}
-                        onChange={(value) => setLearning(prev => ({ ...prev, preferred_study_time: value }))}
-                        options={timeOptions}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">Günlük Hatırlatma</h4>
-                        <p className="text-sm text-gray-600">Çalışma zamanı hatırlatması</p>
-                      </div>
-                      <ToggleSwitch
-                        enabled={learning.reminder_enabled}
-                        onChange={(enabled) => setLearning(prev => ({ ...prev, reminder_enabled: enabled }))}
-                      />
-                    </div>
-
-                    {learning.reminder_enabled && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Hatırlatma Saati
-                        </label>
-                        <Select
-                          value={learning.reminder_time}
-                          onChange={(value) => setLearning(prev => ({ ...prev, reminder_time: value }))}
-                          options={timeOptions}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </DashboardCard>
-
-              <DashboardCard>
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <Globe className="w-5 h-5 mr-2" />
-                    İçerik Tercihleri
-                  </h3>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Zorluk Seviyesi
-                      </label>
-                      <Select
-                        value={learning.difficulty_level}
-                        onChange={(value) => setLearning(prev => ({ ...prev, difficulty_level: value as any }))}
-                        options={difficultyOptions}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        İçerik Dili
-                      </label>
-                      <Select
-                        value={learning.content_language}
-                        onChange={(value) => setLearning(prev => ({ ...prev, content_language: value as any }))}
-                        options={languageOptions}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">Alt Yazılar</h4>
-                        <p className="text-sm text-gray-600">Video alt yazılarını göster</p>
-                      </div>
-                      <ToggleSwitch
-                        enabled={learning.subtitles_enabled}
-                        onChange={(enabled) => setLearning(prev => ({ ...prev, subtitles_enabled: enabled }))}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">Otomatik Oynatma</h4>
-                        <p className="text-sm text-gray-600">Videoları otomatik başlat</p>
-                      </div>
-                      <ToggleSwitch
-                        enabled={learning.autoplay_videos}
-                        onChange={(enabled) => setLearning(prev => ({ ...prev, autoplay_videos: enabled }))}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </DashboardCard>
-            </div>
-          )}
-
-          {/* Privacy Settings */}
-          {activeTab === 'privacy' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <DashboardCard>
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <Eye className="w-5 h-5 mr-2" />
-                    Görünürlük Ayarları
-                  </h3>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Profil Görünürlüğü
-                      </label>
-                      <Select
-                        value={privacy.profile_visibility}
-                        onChange={(value) => setPrivacy(prev => ({ ...prev, profile_visibility: value as any }))}
-                        options={visibilityOptions}
-                      />
-                      <p className="text-sm text-gray-500 mt-1">
-                        Profilinizi kimler görebilir?
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Öğrenme İlerleme Durumu
-                      </label>
-                      <Select
-                        value={privacy.progress_visibility}
-                        onChange={(value) => setPrivacy(prev => ({ ...prev, progress_visibility: value as any }))}
-                        options={visibilityOptions}
-                      />
-                      <p className="text-sm text-gray-500 mt-1">
-                        Öğrenme ilerlemeni kimler görebilir?
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">İletişim Bilgileri</h4>
-                        <p className="text-sm text-gray-600">Telefon ve e-posta paylaşımı</p>
-                      </div>
-                      <ToggleSwitch
-                        enabled={privacy.contact_sharing}
-                        onChange={(enabled) => setPrivacy(prev => ({ ...prev, contact_sharing: enabled }))}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </DashboardCard>
-
-              <DashboardCard>
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <Shield className="w-5 h-5 mr-2" />
-                    Veri ve Analitik
-                  </h3>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">Veri Toplama</h4>
-                        <p className="text-sm text-gray-600">Öğrenme verilerinin toplanması</p>
-                      </div>
-                      <ToggleSwitch
-                        enabled={privacy.data_collection}
-                        onChange={(enabled) => setPrivacy(prev => ({ ...prev, data_collection: enabled }))}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">Analitik Takibi</h4>
-                        <p className="text-sm text-gray-600">Platform kullanım analizi</p>
-                      </div>
-                      <ToggleSwitch
-                        enabled={privacy.analytics_tracking}
-                        onChange={(enabled) => setPrivacy(prev => ({ ...prev, analytics_tracking: enabled }))}
-                      />
-                    </div>
-
-                    <Button
-                      variant="outline"
-                      onClick={handleDataExport}
-                      className="w-full justify-start"
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      Verilerimi İndir
-                    </Button>
-
-                    <div className="text-sm text-gray-500">
-                      <p className="mb-2">
-                        Kişisel verilerinizin işlenmesi hakkında detaylı bilgi için
-                        <a href="/privacy-policy" className="text-blue-600 hover:underline ml-1">
-                          Gizlilik Politikamızı
-                        </a> inceleyebilirsiniz.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </DashboardCard>
-            </div>
-          )}
-
-          {/* Platform Preferences */}
-          {activeTab === 'platform' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <DashboardCard>
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <Palette className="w-5 h-5 mr-2" />
-                    Görünüm Ayarları
-                  </h3>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Tema
-                      </label>
-                      <Select
-                        value={platform.theme}
-                        onChange={(value) => setPlatform(prev => ({ ...prev, theme: value as any }))}
-                        options={themeOptions}
-                      />
-                      <div className="flex items-center space-x-4 mt-2">
-                        <div className="flex items-center space-x-2">
-                          <Sun className="w-4 h-4 text-yellow-500" />
-                          <span className="text-sm text-gray-600">Açık</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Moon className="w-4 h-4 text-blue-500" />
-                          <span className="text-sm text-gray-600">Koyu</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Dashboard Düzeni
-                      </label>
-                      <Select
-                        value={platform.dashboard_layout}
-                        onChange={(value) => setPlatform(prev => ({ ...prev, dashboard_layout: value as any }))}
-                        options={layoutOptions}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">Animasyonlar</h4>
-                        <p className="text-sm text-gray-600">UI animasyonlarını etkinleştir</p>
-                      </div>
-                      <ToggleSwitch
-                        enabled={platform.animations_enabled}
-                        onChange={(enabled) => setPlatform(prev => ({ ...prev, animations_enabled: enabled }))}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </DashboardCard>
-
-              <DashboardCard>
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <Settings className="w-5 h-5 mr-2" />
-                    Navigasyon Ayarları
-                  </h3>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">Sidebar Durumu</h4>
-                        <p className="text-sm text-gray-600">Varsayılan olarak kapalı olsun</p>
-                      </div>
-                      <ToggleSwitch
-                        enabled={platform.sidebar_collapsed}
-                        onChange={(enabled) => setPlatform(prev => ({ ...prev, sidebar_collapsed: enabled }))}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Varsayılan Ana Sayfa
-                      </label>
-                      <Select
-                        value={platform.default_landing_page}
-                        onChange={(value) => setPlatform(prev => ({ ...prev, default_landing_page: value }))}
-                        options={landingPageOptions}
-                      />
-                      <p className="text-sm text-gray-500 mt-1">
-                        Giriş yaptıktan sonra hangi sayfaya yönlendirilmek istiyorsunuz?
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </DashboardCard>
-            </div>
-          )}
+      {/* Navigation Tabs */}
+      <div className="mb-8">
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            {[
+              { id: 'profile' as const, label: 'Kişisel Bilgiler', icon: User },
+              { id: 'platform' as const, label: 'Platform Ayarları', icon: Settings },
+              { id: 'notifications' as const, label: 'Bildirimler', icon: Bell },
+              { id: 'security' as const, label: 'Güvenlik', icon: Shield },
+              { id: 'billing' as const, label: 'Faturalandırma', icon: CreditCard }
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    "group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors",
+                    isActive
+                      ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                      : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
+                  )}
+                >
+                  <Icon className={cn(
+                    "mr-2 h-5 w-5",
+                    isActive ? "text-blue-500" : "text-gray-400 group-hover:text-gray-500"
+                  )} />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </nav>
         </div>
       </div>
 
-      {/* Password Change Dialog */}
-      {showPasswordDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Şifre Değiştir
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Mevcut Şifre
-                </label>
-                <Input
-                  type="password"
-                  value={passwordData.current}
-                  onChange={(e) => setPasswordData(prev => ({ ...prev, current: e.target.value }))}
-                  placeholder="Mevcut şifreniz"
-                />
+      {/* Profile Tab */}
+      {activeTab === 'profile' && (
+        <div className="space-y-6">
+          <DashboardCard>
+            <div className="p-6">
+              <div className="flex items-center mb-6">
+                <User className="h-6 w-6 text-gray-400 mr-3" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Temel Bilgiler</h3>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Yeni Şifre
-                </label>
-                <Input
-                  type="password"
-                  value={passwordData.new}
-                  onChange={(e) => setPasswordData(prev => ({ ...prev, new: e.target.value }))}
-                  placeholder="Yeni şifreniz"
-                />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Avatar Section */}
+                <div className="md:col-span-2 flex items-center space-x-6">
+                  <div className="relative">
+                    <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center">
+                      {profile.avatar_url ? (
+                        <img 
+                          src={profile.avatar_url} 
+                          alt="Profil fotoğrafı"
+                          className="w-24 h-24 rounded-full object-cover"
+                        />
+                      ) : (
+                        <User className="w-12 h-12 text-gray-400" />
+                      )}
+                    </div>
+                    <button className="absolute bottom-0 right-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors">
+                      <Camera className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900 dark:text-white">Profil Fotoğrafı</h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">JPG, PNG dosyaları desteklenir. Maksimum 2MB.</p>
+                  </div>
+                </div>
+
+                {/* Name Field */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Ad Soyad *
+                  </label>
+                  <Input
+                    type="text"
+                    value={profile.full_name}
+                    onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
+                    className="w-full"
+                    placeholder="Ad ve soyadınızı girin"
+                  />
+                </div>
+
+                {/* Email Field */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    E-posta Adresi *
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      type="email"
+                      value={profile.email}
+                      onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                      className="pl-10 w-full"
+                      placeholder="ornek@email.com"
+                    />
+                  </div>
+                </div>
+
+                {/* Phone Field */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Telefon Numarası
+                  </label>
+                  <div className="relative">
+                    <Smartphone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      type="tel"
+                      value={profile.phone}
+                      onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                      className="pl-10 w-full"
+                      placeholder="+90 555 123 45 67"
+                    />
+                  </div>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Yeni Şifre (Tekrar)
-                </label>
-                <Input
-                  type="password"
-                  value={passwordData.confirm}
-                  onChange={(e) => setPasswordData(prev => ({ ...prev, confirm: e.target.value }))}
-                  placeholder="Yeni şifrenizi tekrar girin"
-                />
+
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <Button 
+                  onClick={saveProfile} 
+                  disabled={isLoading}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {isLoading ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+                </Button>
               </div>
             </div>
+          </DashboardCard>
+        </div>
+      )}
+
+      {/* Platform Tab */}
+      {activeTab === 'platform' && (
+        <div className="space-y-6">
+          <DashboardCard>
+            <div className="p-6">
+              <div className="flex items-center mb-6">
+                <Settings className="h-6 w-6 text-gray-400 mr-3" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Platform Tercihleri</h3>
+              </div>
+
+              <div className="space-y-6">
+                {/* Theme Settings */}
+                <div>
+                  <h4 className="font-medium text-gray-900 dark:text-white mb-4">Görünüm Teması</h4>
+                  <div className="grid grid-cols-3 gap-4">
+                    {THEME_OPTIONS.map((theme) => {
+                      const isSelected = platform.theme === theme.value;
+                      
+                      return (
+                        <button
+                          key={theme.value}
+                          onClick={() => setPlatform({ ...platform, theme: theme.value as any })}
+                          className={cn(
+                            "p-4 border-2 rounded-lg text-center transition-all",
+                            isSelected 
+                              ? "border-blue-500 bg-blue-50 text-blue-700"
+                              : "border-gray-200 hover:border-gray-300"
+                          )}
+                        >
+                          <span className="text-2xl mb-2 block">{theme.icon}</span>
+                          <span className="text-sm font-medium">{theme.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Default Landing Page */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    Varsayılan Başlangıç Sayfası
+                  </label>
+                  <select
+                    value={platform.default_landing_page}
+                    onChange={(e) => setPlatform({ ...platform, default_landing_page: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    {LANDING_PAGE_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    Giriş yaptıktan sonra yönlendirilmek istediğiniz sayfa
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <Button 
+                  onClick={savePlatform} 
+                  disabled={isLoading}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {isLoading ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+                </Button>
+              </div>
+            </div>
+          </DashboardCard>
+        </div>
+      )}
+
+      {/* Notifications Tab */}
+      {activeTab === 'notifications' && (
+        <div className="space-y-6">
+          <DashboardCard>
+            <div className="p-6">
+              <div className="flex items-center mb-6">
+                <Bell className="h-6 w-6 text-gray-400 mr-3" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">E-posta Bildirim Tercihleri</h3>
+              </div>
+
+              <div className="space-y-6">
+                {/* Email Notifications */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
+                    <div>
+                      <h4 className="font-medium text-gray-900 dark:text-white">Yeni Kurs Bildirimleri</h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Platforma yeni kurs eklendiğĭnde e-posta al</p>
+                    </div>
+                    <ToggleSwitch
+                      enabled={notifications.new_courses}
+                      onChange={(enabled) => setNotifications({ ...notifications, new_courses: enabled })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
+                    <div>
+                      <h4 className="font-medium text-gray-900 dark:text-white">Kurs Güncellemeleri</h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Kayıtlı olduğunuz kurslar güncellendiğĭnde bilgilendir</p>
+                    </div>
+                    <ToggleSwitch
+                      enabled={notifications.course_updates}
+                      onChange={(enabled) => setNotifications({ ...notifications, course_updates: enabled })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
+                    <div>
+                      <h4 className="font-medium text-gray-900 dark:text-white">Yeni Yorumlar</h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Kurslarınıza veya yorumlarınıza cevap geldiğinde bilgilendir</p>
+                    </div>
+                    <ToggleSwitch
+                      enabled={notifications.new_comments}
+                      onChange={(enabled) => setNotifications({ ...notifications, new_comments: enabled })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
+                    <div>
+                      <h4 className="font-medium text-gray-900 dark:text-white">Sistem Bildirimleri</h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Güvenlik ve hesap değişiklikleri hakkında önemli bildirimler</p>
+                    </div>
+                    <ToggleSwitch
+                      enabled={notifications.system_notifications}
+                      onChange={(enabled) => setNotifications({ ...notifications, system_notifications: enabled })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between py-3">
+                    <div>
+                      <h4 className="font-medium text-gray-900 dark:text-white">Promosyon E-postaları</h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Indirim ve özel teklifler hakkında e-posta al</p>
+                    </div>
+                    <ToggleSwitch
+                      enabled={notifications.promotional_emails}
+                      onChange={(enabled) => setNotifications({ ...notifications, promotional_emails: enabled })}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <Button 
+                  onClick={saveNotifications} 
+                  disabled={isLoading}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {isLoading ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+                </Button>
+              </div>
+            </div>
+          </DashboardCard>
+        </div>
+      )}
+
+      {/* Security Tab */}
+      {activeTab === 'security' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Password Change */}
+          <DashboardCard>
+            <div className="p-6">
+              <div className="flex items-center mb-6">
+                <Lock className="h-6 w-6 text-gray-400 mr-3" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Şifre Değiştir</h3>
+              </div>
+
+              <div className="space-y-4 max-w-md">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Mevcut Şifre
+                  </label>
+                  <div className="relative">
+                    <Input
+                      type={showPasswords.current ? 'text' : 'password'}
+                      value={passwordForm.current_password}
+                      onChange={(e) => setPasswordForm({ ...passwordForm, current_password: e.target.value })}
+                      className="pr-10"
+                      placeholder="Mevcut şifrenizi girin"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPasswords.current ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Yeni Şifre
+                  </label>
+                  <div className="relative">
+                    <Input
+                      type={showPasswords.new ? 'text' : 'password'}
+                      value={passwordForm.new_password}
+                      onChange={(e) => setPasswordForm({ ...passwordForm, new_password: e.target.value })}
+                      className="pr-10"
+                      placeholder="Yeni şifrenizi girin"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPasswords({ ...showPasswords, new: !showPasswords.new })}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPasswords.new ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    En az 8 karakter, büyük/küçük harf ve sayı içermelidir
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Yeni Şifre Tekrar
+                  </label>
+                  <div className="relative">
+                    <Input
+                      type={showPasswords.confirm ? 'text' : 'password'}
+                      value={passwordForm.confirm_password}
+                      onChange={(e) => setPasswordForm({ ...passwordForm, confirm_password: e.target.value })}
+                      className="pr-10"
+                      placeholder="Yeni şifrenizi tekrar girin"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPasswords.confirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <Button 
+                  onClick={changePassword} 
+                  disabled={isLoading || !passwordForm.current_password || !passwordForm.new_password || !passwordForm.confirm_password}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Lock className="h-4 w-4 mr-2" />
+                  {isLoading ? 'Şifre Değiştiriliyor...' : 'Şifre Değiştir'}
+                </Button>
+              </div>
+            </div>
+          </DashboardCard>
+
+          {/* Active Devices */}
+          <DashboardCard>
+            <div className="p-6">
+              <div className="flex items-center mb-6">
+                <Monitor className="h-6 w-6 text-gray-400 mr-3" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Aktif Cihazlar</h3>
+              </div>
+
+              <div className="space-y-4">
+                {activeDevices.map((device) => (
+                  <div key={device.id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div className="flex items-start space-x-3">
+                      {device.device_name.toLowerCase().includes('iphone') || device.device_name.toLowerCase().includes('mobile') ? (
+                        <Smartphone className="h-5 w-5 text-gray-400 mt-1" />
+                      ) : (
+                        <Monitor className="h-5 w-5 text-gray-400 mt-1" />
+                      )}
+                      <div>
+                        <div className="space-y-1">
+                          <div className="flex items-center space-x-2">
+                            <h4 className="font-medium text-gray-900 dark:text-white">{device.device_name}</h4>
+                            {device.is_current && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Mevcut Cihaz
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">{device.browser}</p>
+                        </div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{device.location} • {device.last_active}</p>
+                      </div>
+                    </div>
+                    {!device.is_current && (
+                      <Button
+                        onClick={() => logoutDevice(device.id)}
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 border-red-200 hover:bg-red-50"
+                      >
+                        Çıkış Yap
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </DashboardCard>
+        </div>
+      )}
+
+      {/* Billing Tab */}
+      {activeTab === 'billing' && (
+        <div className="space-y-6">
+          {/* Subscription Info */}
+          <DashboardCard>
+            <div className="p-6">
+              <div className="flex items-center mb-6">
+                <CreditCard className="h-6 w-6 text-gray-400 mr-3" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Abonelik Bilgileri</h3>
+              </div>
+
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 p-6 rounded-lg border border-blue-200 dark:border-gray-600">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white">{subscription.plan_name}</h4>
+                  <span className={cn(
+                    "inline-flex items-center px-3 py-1 rounded-full text-sm font-medium",
+                    subscription.status === 'active' ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                  )}>
+                    {subscription.status === 'active' ? 'Aktif' : 'Pasif'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Başlangıç Tarihi</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{subscription.start_date}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Bitiş Tarihi</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{subscription.end_date}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Fiyat</p>
+                    <p className="font-medium text-gray-900 dark:text-white">₺{subscription.price}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </DashboardCard>
+
+          {/* Payment Methods */}
+          <DashboardCard>
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center">
+                  <CreditCard className="h-6 w-6 text-gray-400 mr-3" />
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Ödeme Yöntemleri</h3>
+                </div>
+                <Button 
+                  onClick={() => setShowAddCardModal(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Kart Ekle
+                </Button>
+              </div>
+
+              <div className="space-y-3">
+                {paymentMethods.map((method) => (
+                  <div key={method.id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-6 bg-blue-600 rounded flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">{method.brand}</span>
+                      </div>
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <p className="font-medium text-gray-900 dark:text-white">**** **** **** {method.last_four}</p>
+                          {method.is_default && (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              Varsayılan
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Son kullanma: {method.expires}</p>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => removePaymentMethod(method.id)}
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 border-red-200 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </DashboardCard>
+
+          {/* Invoice History */}
+          <DashboardCard>
+            <div className="p-6">
+              <div className="flex items-center mb-6">
+                <Download className="h-6 w-6 text-gray-400 mr-3" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Fatura Geçmişi</h3>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-200 dark:border-gray-700">
+                      <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Fatura No</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Tarih</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Tutar</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Durum</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">İşlemler</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {invoices.map((invoice) => (
+                      <tr key={invoice.id} className="border-b border-gray-100 dark:border-gray-700">
+                        <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">{invoice.id}</td>
+                        <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{invoice.date}</td>
+                        <td className="py-3 px-4 text-sm font-medium text-gray-900 dark:text-white">₺{invoice.amount}</td>
+                        <td className="py-3 px-4">
+                          <span className={cn(
+                            "inline-flex items-center px-2 py-1 rounded-full text-xs font-medium",
+                            invoice.status === 'paid' 
+                              ? "bg-green-100 text-green-800" 
+                              : invoice.status === 'pending'
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                          )}>
+                            {invoice.status === 'paid' ? 'Ödendi' : invoice.status === 'pending' ? 'Bekliyor' : 'Başarısız'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <Button
+                            onClick={() => downloadInvoice(invoice)}
+                            variant="outline"
+                            size="sm"
+                            className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                          >
+                            <Download className="h-4 w-4 mr-1" />
+                            indir
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </DashboardCard>
+        </div>
+      )}
+
+      {/* Add Card Modal */}
+      {showAddCardModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Yeni Kart Ekle</h3>
+              <button
+                onClick={() => setShowAddCardModal(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Kart Üzerindeki İsim
+                </label>
+                <Input
+                  type="text"
+                  value={newCard.name}
+                  onChange={(e) => setNewCard({ ...newCard, name: e.target.value })}
+                  placeholder="John Doe"
+                  className="w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Kart Numarası
+                </label>
+                <Input
+                  type="text"
+                  value={newCard.card_number}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
+                    if (value.replace(/\s/g, '').length <= 16) {
+                      setNewCard({ ...newCard, card_number: value });
+                    }
+                  }}
+                  placeholder="1234 5678 9012 3456"
+                  className="w-full"
+                  maxLength={19}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Son Kullanma
+                  </label>
+                  <Input
+                    type="text"
+                    value={newCard.expiry}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '').replace(/(\d{2})(\d)/, '$1/$2');
+                      if (value.length <= 5) {
+                        setNewCard({ ...newCard, expiry: value });
+                      }
+                    }}
+                    placeholder="MM/YY"
+                    className="w-full"
+                    maxLength={5}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    CVC
+                  </label>
+                  <Input
+                    type="text"
+                    value={newCard.cvc}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      if (value.length <= 3) {
+                        setNewCard({ ...newCard, cvc: value });
+                      }
+                    }}
+                    placeholder="123"
+                    className="w-full"
+                    maxLength={3}
+                  />
+                </div>
+              </div>
+            </div>
+
             <div className="flex space-x-3 mt-6">
-              <Button onClick={handlePasswordChange}>
-                Şifreyi Değiştir
-              </Button>
-              <Button variant="outline" onClick={() => setShowPasswordDialog(false)}>
+              <Button
+                onClick={() => setShowAddCardModal(false)}
+                variant="outline"
+                className="flex-1"
+              >
                 İptal
+              </Button>
+              <Button
+                onClick={addPaymentMethod}
+                disabled={!newCard.name || !newCard.card_number || !newCard.expiry || !newCard.cvc || isLoading}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {isLoading ? 'Ekleniyor...' : 'Kart Ekle'}
               </Button>
             </div>
           </div>
         </div>
       )}
-
-      {/* Confirmation Dialogs */}
-      <ConfirmationDialog
-        isOpen={showDeleteDialog}
-        onClose={() => setShowDeleteDialog(false)}
-        onConfirm={handleAccountDelete}
-        title="Hesabı Sil"
-        description="Bu işlem geri alınamaz. Tüm verileriniz kalıcı olarak silinir ve bu hesapla tekrar giriş yapamazsınız."
-        type="danger"
-      />
-
-      <ConfirmationDialog
-        isOpen={showSessionDialog !== null}
-        onClose={() => setShowSessionDialog(null)}
-        onConfirm={() => showSessionDialog && handleSessionTerminate(showSessionDialog)}
-        title="Oturumu Sonlandır"
-        description="Bu cihazdan oturum sonlandırılsın mı? Bu işlem geri alınamaz."
-        type="warning"
-      />
-
-      {/* Toast Notification */}
-      <Toast
-        message={toast.message}
-        type={toast.type}
-        isVisible={toast.isVisible}
-        onClose={hideToast}
+      
+      <Toaster
+        position="top-left"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#fff',
+            color: '#374151',
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+            border: '1px solid #e5e7eb',
+            borderRadius: '12px',
+            padding: '16px',
+            fontSize: '14px',
+            fontWeight: '500',
+          },
+          success: {
+            iconTheme: {
+              primary: '#10b981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
       />
     </DashboardLayout>
   );

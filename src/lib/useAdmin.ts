@@ -1,16 +1,15 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-import type { User } from '@supabase/supabase-js';
+import { getCurrentUser } from '@/lib/simple-auth';
 
 interface AdminStatus {
-  user: User | null;
+  user: any | null;
   isAdmin: boolean;
   loading: boolean;
   error: string | null;
 }
 
 export function useAdmin(): AdminStatus {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,23 +21,19 @@ export function useAdmin(): AdminStatus {
         setError(null);
 
         // Kullanıcıyı kontrol et
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        const currentUser = getCurrentUser();
         
-        if (userError) {
-          throw userError;
-        }
+        setUser(currentUser);
 
-        setUser(user);
-
-        if (!user) {
+        if (!currentUser) {
           setIsAdmin(false);
           return;
         }
 
         // Basit admin kontrolü
         const adminEmails = ['admin@7peducation.com', 'furkan@7peducation.com'];
-        const isUserAdmin = adminEmails.includes(user.email || '') || 
-                           user.user_metadata?.role === 'admin';
+        const isUserAdmin = adminEmails.includes(currentUser.email || '') || 
+                           currentUser.role === 'admin';
 
         setIsAdmin(isUserAdmin);
 

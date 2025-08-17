@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { getCurrentUser } from '@/lib/simple-auth';
 import DashboardHeader from './DashboardHeader';
 import DashboardSidebar from './DashboardSidebar';
 import DashboardContent from './DashboardContent';
@@ -25,10 +25,6 @@ interface DashboardLayoutProps {
   title?: string;
   subtitle?: string;
   actions?: React.ReactNode;
-  breadcrumbs?: Array<{
-    label: string;
-    href?: string;
-  }>;
 }
 
 export default function DashboardLayout({
@@ -36,8 +32,7 @@ export default function DashboardLayout({
   className,
   title,
   subtitle,
-  actions,
-  breadcrumbs
+  actions
 }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState<DashboardUser | null>(null);
@@ -61,121 +56,85 @@ export default function DashboardLayout({
     setUser(demoUser);
     setError(null);
     setLoading(false);
+    setAuthChecked(true);
   }, [router]);
 
   const handleAuthUser = useCallback((authUser: any) => {
     if (!authUser) {
-      console.log('🔍 No auth user, using demo user for development');
-      // For development, create a demo user instead of redirecting
-      const demoUser: DashboardUser = {
-        id: 'demo-user',
-        email: 'demo@7peducation.com',
-        full_name: 'Demo Kullanıcı',
-        avatar_url: null,
-        role: 'student'
-      };
-      setUser(demoUser);
-      setError(null);
-      setLoading(false);
+      console.log('🔍 No auth user, redirecting to login');
+      router.push('/login');
       return;
     }
 
     const dashboardUser: DashboardUser = {
       id: authUser.id,
       email: authUser.email || '',
-      full_name: authUser.user_metadata?.full_name || null,
-      avatar_url: authUser.user_metadata?.avatar_url || null,
-      role: authUser.email === 'admin@7peducation.com' || authUser.user_metadata?.role === 'admin' ? 'admin' : 'student'
+      full_name: authUser.name || authUser.full_name || null,
+      avatar_url: null,
+      role: authUser.role || 'student'
     };
     
     console.log('✅ User authenticated:', dashboardUser.email);
     setUser(dashboardUser);
     setError(null);
     setLoading(false);
+    setAuthChecked(true);
   }, [router]);
 
   useEffect(() => {
     let mounted = true;
 
-    // Initial auth check
+    // Initial auth check with simple-auth
     const checkAuth = async () => {
       try {
-        const { data: { user }, error } = await supabase.auth.getUser();
+        const user = getCurrentUser();
         
-        if (!mounted) return;
-
-        if (error) {
-          handleAuthError(error);
-          return;
+        if (mounted) {
+          if (user) {
+            handleAuthUser(user);
+          } else {
+            handleAuthUser(null);
+          }
+          setAuthChecked(true);
         }
-
-        handleAuthUser(user);
-        setAuthChecked(true);
       } catch (error) {
         if (mounted) {
-          handleAuthError(error);
+          console.warn('⚠️ Auth check failed, using demo user:', error);
+          handleAuthUser(null);
+          setAuthChecked(true);
         }
       }
     };
-
-    // Set up auth listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return;
-
-        console.log('🔍 Auth state change:', event, session?.user?.email);
-        
-        if (event === 'SIGNED_OUT' || !session?.user) {
-          console.log('🔍 Auth signed out, using demo user for development');
-          // For development, use demo user instead of redirecting
-          const demoUser: DashboardUser = {
-            id: 'demo-user-signout',
-            email: 'demo@7peducation.com',
-            full_name: 'Demo Kullanıcı (Signed Out)',
-            avatar_url: null,
-            role: 'student'
-          };
-          setUser(demoUser);
-          setLoading(false);
-          return;
-        }
-
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          handleAuthUser(session.user);
-        }
-      }
-    );
 
     checkAuth();
 
     // Cleanup
     return () => {
       mounted = false;
-      subscription.unsubscribe();
     };
-  }, [handleAuthError, handleAuthUser, router]);
+  }, [handleAuthUser, router]);
 
   // Loading timeout protection
   useEffect(() => {
     const timeout = setTimeout(() => {
-      if (loading && !authChecked) {
-        console.warn('⚠️ Loading timeout, creating demo user');
-        // Instead of showing error, create demo user for development
+      if (loading && !user) {
+        console.warn('⚠️ Loading timeout, forcing demo user after 2 seconds');
         const demoUser: DashboardUser = {
           id: 'demo-user-timeout',
           email: 'demo@7peducation.com',
-          full_name: 'Demo Kullanıcı',
+          full_name: 'Demo Kullanıcı (Timeout)',
           avatar_url: null,
           role: 'student'
         };
         setUser(demoUser);
         setError(null);
         setLoading(false);
+        setAuthChecked(true);
       }
-    }, 3000); // Reduced to 3 second timeout
+    }, 2000); // Reduced from 3000 to 2000ms
 
     return () => clearTimeout(timeout);
-  }, [loading, authChecked]);
+  }, [loading, user]);
 
   // Error state
   if (error && !loading) {
@@ -195,14 +154,21 @@ export default function DashboardLayout({
     );
   }
 
-  // Loading state
+  // Loading state with progress indicator
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-corporate-50 to-corporate-100 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 text-sm">Kontrol Paneli Yükleniyor</p>
-          <p className="text-gray-500 text-xs">Kimlik doğrulaması kontrol ediliyor...</p>
+          <div className="relative mb-6">
+            <div className="w-12 h-12 border-4 border-corporate-200 rounded-full animate-spin mx-auto"></div>
+            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-12 h-12 border-4 border-corporate-primary rounded-full animate-spin border-t-transparent"></div>
+          </div>
+          <h3 className="text-lg font-semibold text-corporate-deep mb-2">Kontrol Paneli Yükleniyor</h3>
+          <p className="text-corporate-600 text-sm">Kimlik doğrulaması kontrol ediliyor...</p>
+          <div className="mt-4 w-64 bg-gray-200 rounded-full h-2 mx-auto">
+            <div className="bg-corporate-primary h-2 rounded-full animate-pulse" style={{ width: authChecked ? '100%' : '60%' }}></div>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">En fazla 2 saniye sürer</p>
         </div>
       </div>
     );
@@ -211,8 +177,10 @@ export default function DashboardLayout({
   // Main layout ready
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <MobileOptimizations />
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <MobileOptimizations>
+        <div></div>
+      </MobileOptimizations>
       
       {/* Sidebar */}
       <DashboardSidebar
@@ -223,25 +191,26 @@ export default function DashboardLayout({
 
       {/* Global Header - Full Width */}
       <DashboardHeader
-        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-        sidebarOpen={sidebarOpen}
         user={user}
-        title={title}
-        subtitle={subtitle}
-        actions={actions}
-        breadcrumbs={breadcrumbs}
+        onSidebarToggle={() => setSidebarOpen(true)}
+        sidebarOpen={sidebarOpen}
       />
 
       {/* Main content */}
-      <div className={cn(
+      <main className={cn(
         "transition-all duration-300 ease-in-out min-h-screen",
         "lg:ml-64 pt-16" // pt-16 to account for fixed header
       )}>
-        {/* Page content */}
-        <main className={cn("px-3 py-6", className)}>
+        <DashboardContent
+          title={title}
+          subtitle={subtitle}
+          actions={actions}
+          sidebarOpen={sidebarOpen}
+          className={className}
+        >
           {children}
-        </main>
-      </div>
+        </DashboardContent>
+      </main>
     </div>
   );
 }

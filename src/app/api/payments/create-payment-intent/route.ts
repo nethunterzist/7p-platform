@@ -1,3 +1,4 @@
+import { mockApi } from '@/lib/mock-api';
 import { NextRequest, NextResponse } from 'next/server';
 import { createPaymentIntent, handleStripeError } from '@/lib/stripe';
 import { 
@@ -83,7 +84,7 @@ export async function POST(request: NextRequest) {
     const stripeCustomer = await getOrCreateStripeCustomer(
       user.id,
       user.email!,
-      user.user_metadata?.full_name
+      user.role?.full_name
     );
 
     // Create payment intent

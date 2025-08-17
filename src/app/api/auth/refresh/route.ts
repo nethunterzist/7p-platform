@@ -1,3 +1,4 @@
+import { mockApi } from '@/lib/mock-api';
 /**
  * JWT Token Refresh API Endpoint
  * Secure token rotation with device validation

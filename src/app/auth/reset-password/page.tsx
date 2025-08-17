@@ -26,10 +26,10 @@ import {
   RefreshCw,
   Building2
 } from 'lucide-react';
-import { Button } from '@/design-system/components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/design-system/components/ui/Card';
-import { Input } from '@/design-system/components/ui/Input';
-import { Progress } from '@/design-system/components/ui/Progress';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Progress } from '@/components/ui/progress';
 
 interface PasswordRequirement {
   label: string;

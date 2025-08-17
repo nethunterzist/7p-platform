@@ -1,345 +1,282 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-
-interface UserProgress {
-  id: string;
-  lesson_id: string;
-  progress_percentage: number;
-  time_spent: number;
-  started_at: string;
-  completed_at?: string;
-  last_accessed: string;
-  lessons: {
-    title: string;
-    type: string;
-    modules: {
-      title: string;
-      courses: {
-        name: string;
-      };
-    };
-  };
-}
+import React from 'react';
+import { 
+  TrendingUp, 
+  Clock, 
+  Target, 
+  Award,
+  BookOpen,
+  CheckCircle2,
+  Calendar,
+  Zap,
+  BarChart3
+} from 'lucide-react';
+import { Course, Module, Lesson } from '@/types/course';
 
 interface ProgressTrackerProps {
-  userId?: string;
-  lessonId?: string;
-  courseId?: string;
-  showDetailed?: boolean;
+  course: Course;
+  modules: Module[];
+  currentLesson?: Lesson;
+  className?: string;
 }
 
-export default function ProgressTracker({ 
-  userId, 
-  lessonId, 
-  courseId, 
-  showDetailed = true 
-}: ProgressTrackerProps) {
-  const [progress, setProgress] = useState<UserProgress[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [overallStats, setOverallStats] = useState({
-    totalLessons: 0,
-    completedLessons: 0,
-    totalTimeSpent: 0,
-    averageProgress: 0
-  });
+interface ProgressStats {
+  totalLessons: number;
+  completedLessons: number;
+  totalDuration: number;
+  watchedDuration: number;
+  averageScore?: number;
+  streak: number;
+  estimatedTimeLeft: number;
+}
 
-  useEffect(() => {
-    fetchProgress();
-  }, [userId, lessonId, courseId]);
-
-  const fetchProgress = async () => {
-    try {
-      setLoading(true);
-      setError('');
-
-      // Get current user if userId not provided
-      let targetUserId = userId;
-      if (!targetUserId) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          setError('User not authenticated');
-          return;
-        }
-        targetUserId = user.id;
-      }
-
-      console.log('🔍 Fetching progress for user:', targetUserId);
-
-      // Build query based on filters
-      let query = supabase
-        .from('user_progress')
-        .select(`
-          *,
-          lessons (
-            title,
-            type,
-            modules (
-              title,
-              courses (
-                name
-              )
-            )
-          )
-        `)
-        .eq('user_id', targetUserId)
-        .order('last_accessed', { ascending: false });
-
-      // Apply filters
-      if (lessonId) {
-        query = query.eq('lesson_id', lessonId);
-      }
-
-      if (courseId) {
-        // Filter by course through joins
-        query = query.eq('lessons.modules.course_id', courseId);
-      }
-
-      const { data: progressData, error: progressError } = await query;
-
-      if (progressError) {
-        console.error('❌ Progress fetch error:', progressError);
-        setError(`Failed to load progress: ${progressError.message}`);
-        return;
-      }
-
-      console.log('✅ Progress data fetched:', progressData?.length || 0, 'records');
-      setProgress(progressData || []);
-
-      // Calculate overall stats
-      if (progressData && progressData.length > 0) {
-        const totalLessons = progressData.length;
-        const completedLessons = progressData.filter(p => p.progress_percentage === 100).length;
-        const totalTimeSpent = progressData.reduce((sum, p) => sum + (p.time_spent || 0), 0);
-        const averageProgress = Math.round(
-          progressData.reduce((sum, p) => sum + p.progress_percentage, 0) / totalLessons
-        );
-
-        setOverallStats({
-          totalLessons,
-          completedLessons,
-          totalTimeSpent,
-          averageProgress
-        });
-      }
-
-    } catch (err: any) {
-      console.error('❌ Progress tracker error:', err);
-      setError(`Error loading progress: ${err.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const formatTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
+const ProgressTracker: React.FC<ProgressTrackerProps> = ({
+  course,
+  modules,
+  currentLesson,
+  className = ""
+}) => {
+  // Mock progress data - gerçek uygulamada API'den gelecek
+  const getProgressStats = (): ProgressStats => {
+    const totalLessons = modules.reduce((acc, module) => acc + (module.lessons?.length || 0), 0);
+    const completedLessons = Math.floor(totalLessons * 0.65); // 65% tamamlandı
+    const totalDuration = modules.reduce((acc, module) => acc + (module.duration_minutes || 0), 0);
+    const watchedDuration = Math.floor(totalDuration * 0.65);
     
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`;
+    return {
+      totalLessons,
+      completedLessons,
+      totalDuration,
+      watchedDuration,
+      averageScore: 87,
+      streak: 12,
+      estimatedTimeLeft: totalDuration - watchedDuration
+    };
+  };
+
+  const stats = getProgressStats();
+  const progressPercentage = Math.round((stats.completedLessons / stats.totalLessons) * 100);
+  const timeProgressPercentage = Math.round((stats.watchedDuration / stats.totalDuration) * 100);
+
+  const formatDuration = (minutes: number) => {
+    if (minutes < 60) {
+      return `${minutes}dk`;
     }
-    return `${minutes}m`;
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return remainingMinutes > 0 ? `${hours}sa ${remainingMinutes}dk` : `${hours}sa`;
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('tr-TR', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const getEstimatedCompletion = () => {
+    const avgLessonTime = stats.totalDuration / stats.totalLessons;
+    const remainingLessons = stats.totalLessons - stats.completedLessons;
+    const remainingMinutes = remainingLessons * avgLessonTime;
+    const daysLeft = Math.ceil(remainingMinutes / (30 * 7)); // Günde 30dk varsayımı
+    
+    return daysLeft;
   };
 
-  const getProgressColor = (percentage: number) => {
-    if (percentage === 100) return 'bg-green-500';
-    if (percentage >= 75) return 'bg-blue-500';
-    if (percentage >= 50) return 'bg-yellow-500';
-    if (percentage >= 25) return 'bg-orange-500';
-    return 'bg-red-500';
+  const getProgressLevel = () => {
+    if (progressPercentage >= 90) return { level: 'Uzman', color: 'text-purple-600', bg: 'bg-purple-100' };
+    if (progressPercentage >= 70) return { level: 'İleri', color: 'text-blue-600', bg: 'bg-blue-100' };
+    if (progressPercentage >= 40) return { level: 'Orta', color: 'text-green-600', bg: 'bg-green-100' };
+    return { level: 'Başlangıç', color: 'text-orange-600', bg: 'bg-orange-100' };
   };
 
-  const getProgressText = (percentage: number) => {
-    if (percentage === 100) return 'Tamamlandı';
-    if (percentage >= 75) return 'Neredeyse bitti';
-    if (percentage >= 50) return 'Yarı yolda';
-    if (percentage >= 25) return 'Başlangıç aşaması';
-    return 'Henüz başlanmadı';
-  };
-
-  if (loading) {
-    return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-          <span className="ml-2">İlerleme yükleniyor...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="text-center py-8">
-          <div className="text-red-500 text-4xl mb-4">⚠️</div>
-          <p className="text-red-600 font-medium mb-2">İlerleme Yüklenemedi</p>
-          <p className="text-gray-600 text-sm">{error}</p>
-          <button
-            onClick={fetchProgress}
-            className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-          >
-            Tekrar Dene
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const progressLevel = getProgressLevel();
+  const estimatedDays = getEstimatedCompletion();
 
   return (
-    <div className="space-y-6">
-      {/* Overall Stats */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                    📊 Genel İlerleme Özeti
+    <div className={`bg-white rounded-lg border border-gray-200 p-6 ${className}`}>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <BarChart3 className="h-5 w-5 text-blue-600" />
+          İlerleme Durumu
         </h3>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">
-              {overallStats.totalLessons}
-            </div>
-            <div className="text-sm text-gray-600">Toplam Ders</div>
-          </div>
+        <div className={`px-3 py-1 rounded-full text-sm font-medium ${progressLevel.bg} ${progressLevel.color}`}>
+          {progressLevel.level} Seviye
+        </div>
+      </div>
+
+      {/* Main Progress Ring */}
+      <div className="text-center mb-8">
+        <div className="relative inline-flex items-center justify-center">
+          {/* Progress Ring */}
+          <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
+            <circle
+              cx="60"
+              cy="60"
+              r="50"
+              stroke="currentColor"
+              strokeWidth="8"
+              fill="transparent"
+              className="text-gray-200"
+            />
+            <circle
+              cx="60"
+              cy="60"
+              r="50"
+              stroke="currentColor"
+              strokeWidth="8"
+              fill="transparent"
+              strokeDasharray={`${2 * Math.PI * 50}`}
+              strokeDashoffset={`${2 * Math.PI * 50 * (1 - progressPercentage / 100)}`}
+              className="text-blue-600 transition-all duration-1000 ease-out"
+              strokeLinecap="round"
+            />
+          </svg>
           
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
-              {overallStats.completedLessons}
-            </div>
-            <div className="text-sm text-gray-600">Tamamlanan</div>
+          {/* Progress Text */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className="text-2xl font-bold text-gray-900">{progressPercentage}%</div>
+            <div className="text-sm text-gray-500">Tamamlandı</div>
           </div>
-          
-          <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600">
-              {formatTime(overallStats.totalTimeSpent)}
-            </div>
-            <div className="text-sm text-gray-600">Toplam Süre</div>
+        </div>
+        
+        <div className="mt-4 text-sm text-gray-600">
+          {stats.completedLessons} / {stats.totalLessons} ders tamamlandı
+        </div>
+      </div>
+
+      {/* Progress Stats Grid */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        {/* Watched Time */}
+        <div className="bg-blue-50 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Clock className="h-4 w-4 text-blue-600" />
+            <span className="text-sm font-medium text-blue-900">İzlenen Süre</span>
           </div>
-          
-          <div className="text-center">
-            <div className="text-2xl font-bold text-indigo-600">
-              %{overallStats.averageProgress}
-            </div>
-            <div className="text-sm text-gray-600">Ortalama İlerleme</div>
+          <div className="text-xl font-bold text-blue-900">{formatDuration(stats.watchedDuration)}</div>
+          <div className="text-xs text-blue-600 mt-1">
+            {formatDuration(stats.totalDuration)} toplamdan
+          </div>
+          <div className="w-full bg-blue-200 rounded-full h-1.5 mt-2">
+            <div 
+              className="bg-blue-600 h-1.5 rounded-full transition-all duration-500"
+              style={{ width: `${timeProgressPercentage}%` }}
+            />
           </div>
         </div>
 
-        {/* Overall Progress Bar */}
-        <div className="mt-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700">
-              Genel Tamamlanma Oranı
-            </span>
-            <span className="text-sm text-gray-600">
-              %{overallStats.averageProgress}
-            </span>
+        {/* Average Score */}
+        <div className="bg-green-50 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Target className="h-4 w-4 text-green-600" />
+            <span className="text-sm font-medium text-green-900">Ortalama Puan</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-3">
-            <div
-              className={`h-3 rounded-full transition-all duration-300 ${getProgressColor(overallStats.averageProgress)}`}
-              style={{ width: `${overallStats.averageProgress}%` }}
-            ></div>
+          <div className="text-xl font-bold text-green-900">
+            {stats.averageScore || '--'}
+            {stats.averageScore && <span className="text-sm">/100</span>}
+          </div>
+          <div className="text-xs text-green-600 mt-1">
+            Quiz sonuçları
+          </div>
+        </div>
+
+        {/* Learning Streak */}
+        <div className="bg-orange-50 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Zap className="h-4 w-4 text-orange-600" />
+            <span className="text-sm font-medium text-orange-900">Öğrenme Serisi</span>
+          </div>
+          <div className="text-xl font-bold text-orange-900">{stats.streak} gün</div>
+          <div className="text-xs text-orange-600 mt-1">
+            Ardışık gün
+          </div>
+        </div>
+
+        {/* Estimated Time */}
+        <div className="bg-purple-50 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Calendar className="h-4 w-4 text-purple-600" />
+            <span className="text-sm font-medium text-purple-900">Tahmini Süre</span>
+          </div>
+          <div className="text-xl font-bold text-purple-900">{estimatedDays} gün</div>
+          <div className="text-xs text-purple-600 mt-1">
+            Tamamlamaya
           </div>
         </div>
       </div>
 
-      {/* Detailed Progress */}
-      {showDetailed && progress.length > 0 && (
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">
-              📚 Detaylı Ders İlerlemesi
-            </h3>
-          </div>
+      {/* Module Progress */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+          <BookOpen className="h-4 w-4" />
+          Modül İlerlemesi
+        </h4>
+        
+        {modules.slice(0, 4).map((module, index) => {
+          // Mock progress for each module
+          const moduleProgress = Math.floor(Math.random() * 100);
+          const isCompleted = moduleProgress === 100;
           
-          <div className="divide-y divide-gray-200">
-            {progress.map((item) => (
-              <div key={item.id} className="p-6">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-900 mb-1">
-                      {item.lessons.title}
-                    </h4>
-                    <p className="text-sm text-gray-600">
-                      📖 {item.lessons.modules.courses.name} → {item.lessons.modules.title}
-                    </p>
-                    {item.lessons.type && (
-                      <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium mt-1 ${
-                        item.lessons.type === 'quiz' 
-                          ? 'bg-purple-100 text-purple-800'
-                          : item.lessons.type === 'video'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {item.lessons.type === 'quiz' ? '🧩 Quiz' : 
-                         item.lessons.type === 'video' ? '🎥 Video' : '📄 Metin'}
-                      </span>
-                    )}
+          return (
+            <div key={module.id} className="flex items-center gap-3">
+              <div className="flex-shrink-0">
+                {isCompleted ? (
+                  <CheckCircle2 className="h-5 w-5 text-green-600" />
+                ) : (
+                  <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-gray-400"></div>
                   </div>
-                  
-                  <div className="text-right ml-4">
-                    <div className="text-sm font-medium text-gray-900">
-                      %{item.progress_percentage}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {getProgressText(item.progress_percentage)}
-                    </div>
-                  </div>
+                )}
+              </div>
+              
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-medium text-gray-900 truncate pr-2">
+                    {index + 1}. {module.title}
+                  </span>
+                  <span className="text-sm font-medium text-gray-600">
+                    {moduleProgress}%
+                  </span>
                 </div>
-
-                {/* Progress Bar */}
-                <div className="mb-3">
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full transition-all duration-300 ${getProgressColor(item.progress_percentage)}`}
-                      style={{ width: `${item.progress_percentage}%` }}
-                    ></div>
-                  </div>
-                </div>
-
-                {/* Stats */}
-                <div className="flex items-center justify-between text-sm text-gray-600">
-                  <div className="flex items-center space-x-4">
-                    <span>⏱️ {formatTime(item.time_spent)}</span>
-                    <span>🕒 {formatDate(item.last_accessed)}</span>
-                  </div>
-                  
-                  {item.completed_at && (
-                    <div className="flex items-center text-green-600">
-                      <span>✅ {formatDate(item.completed_at)}</span>
-                    </div>
-                  )}
+                
+                <div className="w-full bg-gray-200 rounded-full h-1.5">
+                  <div 
+                    className={`h-1.5 rounded-full transition-all duration-500 ${
+                      isCompleted ? 'bg-green-600' : 'bg-blue-600'
+                    }`}
+                    style={{ width: `${moduleProgress}%` }}
+                  />
                 </div>
               </div>
-            ))}
+            </div>
+          );
+        })}
+        
+        {modules.length > 4 && (
+          <div className="text-center pt-2">
+            <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+              +{modules.length - 4} modül daha
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Achievement */}
+      <div className="mt-6 pt-6 border-t border-gray-100">
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+              <Award className="h-5 w-5 text-yellow-600" />
+            </div>
+            <div className="flex-1">
+              <h5 className="font-semibold text-gray-900 text-sm">İyi gidiyorsun! 🎉</h5>
+              <p className="text-xs text-gray-600 mt-0.5">
+                {progressPercentage >= 50 
+                  ? `Kursun yarısını tamamladın! ${100 - progressPercentage}% kaldı.`
+                  : `Harika başlangıç! Devam et, hedefine yaklaşıyorsun.`}
+              </p>
+            </div>
           </div>
         </div>
-      )}
-
-      {/* No Progress Message */}
-      {progress.length === 0 && (
-        <div className="bg-white rounded-lg shadow p-6 text-center">
-          <div className="text-4xl mb-4">📚</div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            Henüz İlerleme Yok
-          </h3>
-          <p className="text-gray-600">
-            Öğrenmeye başladığınızda ilerlemeniz burada görünecek.
-          </p>
-        </div>
-      )}
+      </div>
     </div>
   );
-}
+};
+
+export default ProgressTracker;

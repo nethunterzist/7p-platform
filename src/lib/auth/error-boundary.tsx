@@ -101,7 +101,7 @@ export class AuthErrorBoundary extends Component<AuthErrorBoundaryProps, AuthErr
 
     return networkErrorPatterns.some(pattern => message.includes(pattern)) ||
            error.name === 'NetworkError' ||
-           (error instanceof AuthError && error.code.includes('NETWORK'));
+           (error instanceof AuthError && error.message.includes('NETWORK'));
   }
 
   /**

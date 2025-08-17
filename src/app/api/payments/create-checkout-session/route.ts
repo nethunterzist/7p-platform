@@ -1,3 +1,4 @@
+import { mockApi } from '@/lib/mock-api';
 import { NextRequest, NextResponse } from 'next/server';
 import { 
   createSubscriptionCheckout, 
@@ -45,7 +46,7 @@ export async function POST(request: NextRequest) {
     const stripeCustomer = await getOrCreateStripeCustomer(
       user.id,
       user.email!,
-      user.user_metadata?.full_name
+      user.role?.full_name
     );
 
     let session: Stripe.Checkout.Session;

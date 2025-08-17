@@ -160,7 +160,7 @@ export async function getStripeCustomerByUserId(userId: string): Promise<StripeC
     .eq('user_id', userId)
     .single();
 
-  if (error && error.code !== 'PGRST116') {
+  if (error && error.message !== 'PGRST116') {
     throw new Error(`Failed to get customer: ${error.message}`);
   }
 
@@ -199,7 +199,7 @@ export async function getSubscriptionPlan(planId: string): Promise<SubscriptionP
     .eq('is_active', true)
     .single();
 
-  if (error && error.code !== 'PGRST116') {
+  if (error && error.message !== 'PGRST116') {
     throw new Error(`Failed to get subscription plan: ${error.message}`);
   }
 
@@ -219,7 +219,7 @@ export async function getUserSubscription(userId: string): Promise<UserSubscript
     .limit(1)
     .single();
 
-  if (error && error.code !== 'PGRST116') {
+  if (error && error.message !== 'PGRST116') {
     throw new Error(`Failed to get user subscription: ${error.message}`);
   }
 
@@ -272,7 +272,7 @@ export async function getCoursePrice(courseId: string): Promise<CoursePrice | nu
     .eq('is_active', true)
     .single();
 
-  if (error && error.code !== 'PGRST116') {
+  if (error && error.message !== 'PGRST116') {
     throw new Error(`Failed to get course price: ${error.message}`);
   }
 
@@ -379,7 +379,7 @@ export async function getPaymentTransactionByStripeId(
     .eq('stripe_payment_intent_id', stripePaymentIntentId)
     .single();
 
-  if (error && error.code !== 'PGRST116') {
+  if (error && error.message !== 'PGRST116') {
     throw new Error(`Failed to get payment transaction: ${error.message}`);
   }
 

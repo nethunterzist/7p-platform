@@ -1,6 +1,4 @@
 /** @type {import('tailwindcss').Config} */
-const { tailwindExtension } = require('./src/design-system/colors/tailwind-colors.js')
-
 module.exports = {
   darkMode: ["class"],
   content: [
@@ -19,12 +17,8 @@ module.exports = {
       },
     },
     extend: {
-      // Corporate Design System Integration
-      ...tailwindExtension,
-      
-      // Existing Shadcn/ui colors (preserved for compatibility)
+      // Shadcn/ui colors
       colors: {
-        ...tailwindExtension.colors,
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -58,19 +52,41 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        
+        // Corporate/Brand colors
+        corporate: {
+          50: '#eff6ff',   // Very light blue
+          100: '#dbeafe',  // Light blue  
+          200: '#bfdbfe',  // Lighter blue
+          300: '#93c5fd',  // Light blue
+          400: '#60a5fa',  // Medium blue
+          500: '#3b82f6',  // Base blue
+          600: '#2563eb',  // Darker blue
+          700: '#1d4ed8',  // Dark blue
+          800: '#1e40af',  // Very dark blue
+          900: '#1e3a8a',  // Deepest blue
+          primary: '#3b82f6',    // Main brand blue
+          accent: '#2563eb',     // Accent blue
+          deep: '#1d4ed8',       // Deep blue
+        },
       },
       
-      // Enhanced border radius with corporate options
+      // Box shadows for corporate theme
+      boxShadow: {
+        'corporate-sm': '0 1px 2px 0 rgba(59, 130, 246, 0.05)',
+        'corporate-md': '0 4px 6px -1px rgba(59, 130, 246, 0.1), 0 2px 4px -1px rgba(59, 130, 246, 0.06)',
+        'corporate-lg': '0 10px 15px -3px rgba(59, 130, 246, 0.1), 0 4px 6px -2px rgba(59, 130, 246, 0.05)',
+      },
+      
+      // Border radius
       borderRadius: {
-        ...tailwindExtension.borderRadius,
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
       
-      // Enhanced keyframes with corporate animations
+      // Keyframes
       keyframes: {
-        ...tailwindExtension.keyframes,
         "accordion-down": {
           from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },
@@ -81,9 +97,8 @@ module.exports = {
         },
       },
       
-      // Enhanced animations
+      // Animations
       animation: {
-        ...tailwindExtension.animation,
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },

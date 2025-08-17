@@ -73,7 +73,7 @@ export const SECURITY_HEADERS = {
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: https:",
-    "connect-src 'self' https://accounts.google.com https://login.microsoftonline.com wss:",
+    "connect-src 'self' https://accounts.google.com https://login.microsoftonline.com https://riupkkggupogdgubnhmy.supabase.co wss:",
     "frame-src 'self' https://accounts.google.com https://login.microsoftonline.com"
   ].join('; '),
   'Referrer-Policy': 'strict-origin-when-cross-origin',
