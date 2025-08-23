@@ -78,6 +78,14 @@ class SupabaseAuth {
         };
       }
 
+      if (!data || !data.user) {
+        return {
+          user: null,
+          session: null,
+          error: 'Login failed: User not found or email not verified.'
+        };
+      }
+
       return {
         user: data.user,
         session: data.session,
