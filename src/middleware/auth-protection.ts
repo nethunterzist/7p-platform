@@ -1,11 +1,13 @@
 /**
  * AUTH PROTECTION MIDDLEWARE - 7P Education
  * Enterprise-grade authentication and session protection
+ * Refactored to use Vercel KV for stateless environments
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createClient as createSupabaseClient } from '@/utils/supabase/server';
 import { PRODUCTION_AUTH_CONFIG, AUTH_SECURITY_HEADERS } from '@/lib/auth/production-config';
+import { kv } from '@vercel/kv';
 
 // CSRF token management
 const CSRF_TOKEN_LENGTH = 32;
@@ -26,11 +28,6 @@ interface RateLimitData {
   firstAttempt: number;
   lockUntil?: number;
 }
-
-// In-memory stores (in production, use Redis or database)
-const sessionStore = new Map<string, SessionData>();
-const rateLimitStore = new Map<string, RateLimitData>();
-const csrfTokenStore = new Map<string, string>();
 
 export class AuthProtectionMiddleware {
   
@@ -66,6 +63,8 @@ export class AuthProtectionMiddleware {
     // Generate CSRF token for auth forms
     if (method === 'GET' && (pathname.includes('login') || pathname.includes('register'))) {
       const csrfToken = this.generateCSRFToken();
+      // Store CSRF token in KV with a short expiration
+      await kv.set(`csrf:${csrfToken}`, 'valid', { ex: 60 * 60 }); // 1 hour expiration
       response.cookies.set(CSRF_COOKIE_NAME, csrfToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -106,7 +105,7 @@ export class AuthProtectionMiddleware {
    */
   private static async handleProtectedPath(request: NextRequest, response: NextResponse): Promise<NextResponse> {
     try {
-      const supabase = createClient();
+      const supabase = createSupabaseClient();
       const { data: { session }, error } = await supabase.auth.getSession();
       
       if (error || !session) {
@@ -131,7 +130,7 @@ export class AuthProtectionMiddleware {
       }
       
       // Update session activity
-      await this.updateSessionActivity(session.user.id, request);
+      await this.updateSessionActivity(session, request);
       
       return response;
       
@@ -160,11 +159,18 @@ export class AuthProtectionMiddleware {
     const cookieToken = request.cookies.get(CSRF_COOKIE_NAME)?.value;
     const headerToken = request.headers.get('X-CSRF-Token');
     
-    if (!cookieToken || !headerToken) {
+    if (!cookieToken || !headerToken || cookieToken !== headerToken) {
       return false;
     }
     
-    return cookieToken === headerToken;
+    // Check if token exists in KV and delete it to prevent reuse
+    const tokenExists = await kv.get(`csrf:${cookieToken}`);
+    if (tokenExists) {
+      await kv.del(`csrf:${cookieToken}`);
+      return true;
+    }
+    
+    return false;
   }
   
   /**
@@ -174,15 +180,13 @@ export class AuthProtectionMiddleware {
     const clientIP = this.getClientIP(request);
     const now = Date.now();
     const key = `rate_limit:${clientIP}`;
+    const config = PRODUCTION_AUTH_CONFIG.rateLimit.loginAttempts;
     
-    let limitData = rateLimitStore.get(key);
+    let limitData: RateLimitData | null = await kv.get(key);
     
     if (!limitData) {
-      limitData = {
-        attempts: 1,
-        firstAttempt: now
-      };
-      rateLimitStore.set(key, limitData);
+      limitData = { attempts: 1, firstAttempt: now };
+      await kv.set(key, limitData, { ex: config.windowMs / 1000 }); // Use expiration
       return { blocked: false };
     }
     
@@ -192,26 +196,14 @@ export class AuthProtectionMiddleware {
       return { blocked: true, retryAfter };
     }
     
-    // Reset window if expired
-    const config = PRODUCTION_AUTH_CONFIG.rateLimit.loginAttempts;
-    if (now - limitData.firstAttempt > config.windowMs) {
-      limitData = {
-        attempts: 1,
-        firstAttempt: now
-      };
-      rateLimitStore.set(key, limitData);
-      return { blocked: false };
-    }
-    
     // Increment attempts
     limitData.attempts++;
     
     // Check if limit exceeded
     if (limitData.attempts > config.maxAttempts) {
       limitData.lockUntil = now + config.lockoutDuration;
-      rateLimitStore.set(key, limitData);
+      await kv.set(key, limitData, { ex: config.lockoutDuration / 1000 });
       
-      // Log security event
       await this.logSecurityEvent('rate_limit_exceeded', {
         ipAddress: clientIP,
         attempts: limitData.attempts,
@@ -222,7 +214,7 @@ export class AuthProtectionMiddleware {
       return { blocked: true, retryAfter };
     }
     
-    rateLimitStore.set(key, limitData);
+    await kv.set(key, limitData);
     return { blocked: false };
   }
   
@@ -233,10 +225,9 @@ export class AuthProtectionMiddleware {
     const now = Date.now();
     const sessionKey = `session:${session.user.id}:${session.access_token.slice(-8)}`;
     
-    let sessionData = sessionStore.get(sessionKey);
+    let sessionData: SessionData | null = await kv.get(sessionKey);
     
     if (!sessionData) {
-      // First time seeing this session
       sessionData = {
         userId: session.user.id,
         sessionId: session.access_token.slice(-8),
@@ -246,25 +237,26 @@ export class AuthProtectionMiddleware {
         userAgent: request.headers.get('user-agent') || '',
         isValid: true
       };
-      sessionStore.set(sessionKey, sessionData);
+      await kv.set(sessionKey, sessionData, { ex: PRODUCTION_AUTH_CONFIG.session.absoluteTimeout / 1000 });
     }
     
     // Check session age
     const sessionAge = now - sessionData.createdAt;
     if (sessionAge > PRODUCTION_AUTH_CONFIG.session.absoluteTimeout) {
+      await kv.del(sessionKey);
       return { isValid: false, reason: 'SESSION_EXPIRED' };
     }
     
     // Check inactivity
     const inactivityTime = now - sessionData.lastActivity;
     if (inactivityTime > PRODUCTION_AUTH_CONFIG.session.inactivityTimeout) {
+      await kv.del(sessionKey);
       return { isValid: false, reason: 'INACTIVE_SESSION' };
     }
     
-    // Check IP consistency (allow some flexibility for mobile networks)
+    // Check IP consistency
     const currentIP = this.getClientIP(request);
     if (sessionData.ipAddress !== currentIP) {
-      // Log suspicious activity but don't block (mobile IPs can change)
       await this.logSecurityEvent('ip_change', {
         userId: session.user.id,
         oldIP: sessionData.ipAddress,
@@ -280,21 +272,20 @@ export class AuthProtectionMiddleware {
    * Check concurrent sessions
    */
   private static async checkConcurrentSessions(userId: string, request: NextRequest): Promise<{ allowed: boolean }> {
-    const userSessions = Array.from(sessionStore.entries())
-      .filter(([key, data]) => data.userId === userId && data.isValid)
-      .length;
+    const userSessionKeys = [];
+    for await (const key of kv.scanIterator({ match: `session:${userId}:*` })) {
+      userSessionKeys.push(key);
+    }
     
     const maxSessions = PRODUCTION_AUTH_CONFIG.session.maxConcurrentSessions;
     
-    if (userSessions >= maxSessions) {
-      // Log security event
+    if (userSessionKeys.length >= maxSessions) {
       await this.logSecurityEvent('max_concurrent_sessions', {
         userId,
-        currentSessions: userSessions,
+        currentSessions: userSessionKeys.length,
         maxAllowed: maxSessions,
         timestamp: new Date().toISOString()
       });
-      
       return { allowed: false };
     }
     
@@ -304,14 +295,14 @@ export class AuthProtectionMiddleware {
   /**
    * Update session activity
    */
-  private static async updateSessionActivity(userId: string, request: NextRequest): Promise<void> {
-    const sessionEntries = Array.from(sessionStore.entries())
-      .filter(([key, data]) => data.userId === userId);
-    
-    sessionEntries.forEach(([key, data]) => {
-      data.lastActivity = Date.now();
-      sessionStore.set(key, data);
-    });
+  private static async updateSessionActivity(session: any, request: NextRequest): Promise<void> {
+    const sessionKey = `session:${session.user.id}:${session.access_token.slice(-8)}`;
+    const sessionData: SessionData | null = await kv.get(sessionKey);
+
+    if (sessionData) {
+      sessionData.lastActivity = Date.now();
+      await kv.set(sessionKey, sessionData, { ex: PRODUCTION_AUTH_CONFIG.session.absoluteTimeout / 1000 });
+    }
   }
   
   /**
@@ -325,7 +316,7 @@ export class AuthProtectionMiddleware {
       return forwarded.split(',')[0].trim();
     }
     
-    return realIP || 'unknown';
+    return realIP || request.ip || 'unknown';
   }
   
   private static isAuthPath(pathname: string): boolean {
@@ -335,20 +326,12 @@ export class AuthProtectionMiddleware {
   
   private static isProtectedPath(pathname: string): boolean {
     const protectedPaths = ['/dashboard', '/profile', '/courses', '/admin', '/settings'];
-    const publicPaths = ['/', '/about', '/contact', '/privacy', '/terms', '/_next', '/api/health'];
-    
-    // Check if explicitly public
-    if (publicPaths.some(path => pathname.startsWith(path))) {
-      return false;
-    }
-    
-    // Check if explicitly protected
     return protectedPaths.some(path => pathname.startsWith(path));
   }
   
   private static addSecurityHeaders(response: NextResponse): void {
     Object.entries(AUTH_SECURITY_HEADERS).forEach(([key, value]) => {
-      response.headers.set(key, value);
+      response.headers.set(key, value as string);
     });
   }
   
@@ -366,36 +349,13 @@ export class AuthProtectionMiddleware {
   
   private static async logSecurityEvent(eventType: string, data: any): Promise<void> {
     try {
-      // In production, send to security monitoring service
       console.log(`[Security Event] ${eventType}:`, data);
-      
-      // TODO: Send to audit logging service
-      // await auditLogger.log(eventType, data);
+      // In a real-world scenario, you would send this to a dedicated logging or security monitoring service.
+      // For example, using a Supabase table or a third-party service.
     } catch (error) {
       console.error('[Auth Protection] Failed to log security event:', error);
     }
   }
 }
-
-// Cleanup old entries periodically
-setInterval(() => {
-  const now = Date.now();
-  const maxAge = PRODUCTION_AUTH_CONFIG.session.absoluteTimeout;
-  
-  // Clean session store
-  for (const [key, data] of sessionStore.entries()) {
-    if (now - data.createdAt > maxAge) {
-      sessionStore.delete(key);
-    }
-  }
-  
-  // Clean rate limit store
-  for (const [key, data] of rateLimitStore.entries()) {
-    const windowMs = PRODUCTION_AUTH_CONFIG.rateLimit.loginAttempts.windowMs;
-    if (now - data.firstAttempt > windowMs && (!data.lockUntil || data.lockUntil < now)) {
-      rateLimitStore.delete(key);
-    }
-  }
-}, 5 * 60 * 1000); // Clean every 5 minutes
 
 export default AuthProtectionMiddleware;
