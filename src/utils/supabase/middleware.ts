@@ -38,6 +38,15 @@ export function createClient(request: NextRequest) {
 
 export function updateSession(request: NextRequest) {
   try {
+    // Check if environment variables are available
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.warn('Supabase environment variables not available in middleware, skipping session update');
+      return NextResponse.next();
+    }
+
     const response = NextResponse.next();
     const supabase = createClient(request);
 
