@@ -4,14 +4,14 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { XCircle, Mail, RefreshCw, Home } from 'lucide-react';
 
-export default function VerificationErrorPage() {
+function VerificationErrorContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const errorMessage = searchParams.get('message') || 'Doğrulama işlemi başarısız oldu.';
@@ -191,5 +191,22 @@ export default function VerificationErrorPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function VerificationErrorPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Yükleniyor...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <VerificationErrorContent />
+    </Suspense>
   );
 }
