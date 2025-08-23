@@ -13,6 +13,8 @@
     "db:reset:confirm": "node scripts/database-reset-and-deploy.js --confirm",
     "db:setup": "node scripts/supabase-correct-setup.js",
     "db:migrate": "npx @dotenvx/dotenvx run -f .env.local -- sh -c 'npx supabase db push --db-url \"$SUPABASE_DB_URL\"'",
+    "db:migrate:ci": "npx supabase db push --db-url \"$SUPABASE_DB_URL\"",
+    "db:setup:ci": "node scripts/ci-database-setup.js",
     "db:migrate:dry": "npx @dotenvx/dotenvx run -f .env.local -- sh -c 'npx supabase db push --db-url \"$SUPABASE_DB_URL\" --dry-run'",
     "db:diff": "npx @dotenvx/dotenvx run -f .env.local -- sh -c 'npx supabase db diff -f auto_diff --db-url \"$SUPABASE_DB_URL\"'",
     "db:verify": "node scripts/check-tables.js",
