@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci --no-audit
-          npm install -g @supabase/cli
+          npm install -g supabase
 
       - name: Setup environment
         run: |
