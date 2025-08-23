@@ -1,6 +1,10 @@
+import BetaBanner from '@/components/beta/BetaBanner';
+
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <BetaBanner />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center pt-12">
       <div className="max-w-2xl w-full bg-white rounded-lg shadow-lg p-8 text-center">
         <h1 className="text-4xl font-bold text-gray-900 mb-6">
           7p Platformuna Hoş Geldiniz!
@@ -33,6 +37,7 @@ export default function Home() {
             Platform Durumu: Geliştirme Aşamasında
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

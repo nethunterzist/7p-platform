@@ -1,25 +1,53 @@
 /**
- * MOCK MIDDLEWARE - 7P Education  
- * Placeholder for Supabase middleware functionality
+ * SUPABASE MIDDLEWARE - 7P Education  
+ * Middleware for handling Supabase auth sessions
  */
 
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
-// Mock implementation for middleware compatibility
-export function updateSession(request: NextRequest) {
-  // Mock session update - always passes through
-  return NextResponse.next({
-    request: {
-      headers: request.headers,
+export function createClient(request: NextRequest) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error(
+      'Missing Supabase environment variables. Please check your .env.local file.'
+    );
+  }
+
+  return createSupabaseClient(supabaseUrl, supabaseKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false
+    },
+    cookies: {
+      get(name: string) {
+        return request.cookies.get(name)?.value;
+      },
+      set(name: string, value: string, options: any) {
+        // Can't set cookies in middleware, will be handled by response
+      },
+      remove(name: string, options: any) {
+        // Can't remove cookies in middleware, will be handled by response
+      },
     },
   });
 }
 
+export function updateSession(request: NextRequest) {
+  try {
+    const response = NextResponse.next();
+    const supabase = createClient(request);
+
+    // Let Supabase handle session refresh
+    return response;
+  } catch (error) {
+    console.error('Middleware error:', error);
+    return NextResponse.next();
+  }
+}
+
 // Export compatibility function
-export const createServerClient = () => {
-  return {
-    auth: {
-      getUser: async () => ({ data: { user: null }, error: null })
-    }
-  };
-};
+export const createServerClient = createClient;

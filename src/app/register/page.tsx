@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { mockApi } from '@/lib/mock-api';
+import { supabaseAuth } from '@/lib/auth/supabase-auth';
 import Link from 'next/link';
 
 export default function RegisterPage() {
@@ -25,56 +25,55 @@ export default function RegisterPage() {
       if (password !== confirmPassword) {
         setMessage('Şifreler eşleşmiyor');
         setMessageType('error');
+        setLoading(false);
         return;
       }
 
       if (password.length < 6) {
         setMessage('Şifre en az 6 karakter olmalı');
         setMessageType('error');
+        setLoading(false);
         return;
       }
 
-      console.log('🚀 MOCK_AUTH: Attempting registration:', { email, fullName });
+      console.log('🚀 SUPABASE_AUTH: Attempting registration:', { email, fullName });
       
-      const { data, error } = await mockApi.auth.signUp({
+      const result = await supabaseAuth.signUp({
         email,
         password,
-        options: {
-          data: {
-            name: fullName,
-          },
+        userData: {
+          name: fullName,
         },
       });
 
-      if (error) {
-        console.error('❌ MOCK_AUTH: Registration error:', error);
+      if (result.error) {
+        console.error('❌ SUPABASE_AUTH: Registration error:', result.error);
         
-        if (error.message.includes('already exists')) {
-          setMessage('Bu e-posta adresi zaten kayıtlı');
+        if (result.error.includes('already registered')) {
+          setMessage('Bu e-posta adresi zaten kayıtlı. Giriş yapmayı deneyin.');
+        } else if (result.error.includes('email')) {
+          setMessage('E-posta adresini kontrol edin');
         } else {
-          setMessage(error.message);
+          setMessage(result.error);
         }
         setMessageType('error');
         return;
       }
 
-      if (data.user) {
-        console.log('✅ MOCK_AUTH: Registration successful:', data.user.email);
-        setMessage('Kayıt başarılı! Mock sistem kullanıyorsunuz - doğrulama gerekmez.');
+      if (result.user) {
+        console.log('✅ SUPABASE_AUTH: Registration successful:', result.user.email);
+        setMessage('Kayıt başarılı! E-posta doğrulaması gerekiyorsa kontrol edin.');
         setMessageType('success');
         
-        // Set auth token and redirect immediately
-        document.cookie = `auth_token=${data.session?.access_token}; path=/; max-age=86400`;
-        
-        // Redirect to dashboard after short delay
+        // Redirect to login page after short delay
         setTimeout(() => {
-          router.push('/dashboard');
-        }, 1500);
+          router.push('/login');
+        }, 2000);
       }
       
     } catch (error) {
-      console.error('❌ MOCK_AUTH: Unexpected registration error:', error);
-      setMessage('Mock sistem hatası');
+      console.error('❌ SUPABASE_AUTH: Unexpected registration error:', error);
+      setMessage('Beklenmeyen bir hata oluştu');
       setMessageType('error');
     } finally {
       setLoading(false);
@@ -86,24 +85,22 @@ export default function RegisterPage() {
     setMessage('');
 
     try {
-      console.log('🚀 MOCK_AUTH: Google registration not implemented in mock system');
+      console.log('🚀 SUPABASE_AUTH: Attempting Google registration');
       
-      // Mock Google registration - just show success message
-      setMessage('Google kayıt mock sistemde mevcut değil. Normal kayıt kullanın.');
-      setMessageType('error');
-      return;
+      const result = await supabaseAuth.signInWithOAuth('google');
 
-      if (error) {
-        console.error('❌ MOCK_AUTH: Google registration error:', error);
-        setMessage('Mock sistemde Google kayıt mevcut değil');
+      if (result.error) {
+        console.error('❌ SUPABASE_AUTH: Google registration error:', result.error);
+        setMessage('Google ile kayıt hatası: ' + result.error);
         setMessageType('error');
         return;
       }
 
-      console.log('🔄 MOCK_AUTH: Google registration initiated, redirecting...');
+      // OAuth will redirect user, no need to handle success here
+      console.log('🔄 SUPABASE_AUTH: Google registration initiated, redirecting...');
       
     } catch (error) {
-      console.error('❌ REAL_AUTH: Google registration unexpected error:', error);
+      console.error('❌ SUPABASE_AUTH: Google registration unexpected error:', error);
       setMessage('Beklenmeyen bir hata oluştu');
       setMessageType('error');
     } finally {

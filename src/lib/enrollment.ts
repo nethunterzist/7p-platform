@@ -1,4 +1,4 @@
-// Enrollment ve course access control utilities
+// PRODUCTION ENROLLMENT SYSTEM - Real Supabase Integration
 
 export interface UserEnrollment {
   userId: string;
@@ -7,63 +7,50 @@ export interface UserEnrollment {
   progress: number;
   completedLessons: string[];
   lastAccessedAt?: string;
+  status: 'active' | 'completed' | 'cancelled';
 }
 
-// Mock enrolled courses data - gerçek uygulamada backend'den gelecek
-const MOCK_ENROLLMENTS: UserEnrollment[] = [
-  // amazon-full-mentoring kursunu geçici olarak çıkardık - test için
-  // {
-  //   userId: 'user-1',
-  //   courseId: 'amazon-full-mentoring',
-  //   enrolledAt: '2024-01-10T10:00:00Z',
-  //   progress: 35,
-  //   completedLessons: ['1', '2', '3'],
-  //   lastAccessedAt: '2024-01-15T14:30:00Z'
-  // },
-  {
-    userId: 'user-1', 
-    courseId: 'amazon-ppc',
-    enrolledAt: '2024-01-12T15:00:00Z',
-    progress: 60,
-    completedLessons: ['ppc-1'],
-    lastAccessedAt: '2024-01-14T16:45:00Z'
-  }
-];
-
-// Mock user ID - gerçek uygulamada auth context'ten gelecek
-const getCurrentUserId = (): string | null => {
-  // Check if user is "logged in" (has auth token)
+// Real user authentication through Supabase
+const getCurrentUserId = async (): Promise<string | null> => {
   if (typeof window === 'undefined') return null;
   
-  let authToken = localStorage.getItem('auth-token');
-  
-  // Demo için otomatik login - gerçek uygulamada kaldırılacak
-  if (!authToken) {
-    localStorage.setItem('auth-token', 'mock-token-user-1');
-    authToken = 'mock-token-user-1';
+  try {
+    // Import Supabase client
+    const { createClient } = await import('@/utils/supabase/client');
+    const supabase = createClient();
+    
+    // Get current user from Supabase Auth
+    const { data: { user } } = await supabase.auth.getUser();
+    return user?.id || null;
+  } catch (error) {
+    console.error('Error getting current user:', error);
+    return null;
   }
-  
-  return authToken ? 'user-1' : null; // Mock user ID
 };
 
 /**
  * Kullanıcının bir kursa kayıtlı olup olmadığını kontrol eder
  */
-export const isUserEnrolledInCourse = (courseId: string): boolean => {
-  const userId = getCurrentUserId();
+export const isUserEnrolledInCourse = async (courseId: string): Promise<boolean> => {
+  const userId = await getCurrentUserId();
   if (!userId) return false;
 
-  return MOCK_ENROLLMENTS.some(
-    enrollment => enrollment.userId === userId && enrollment.courseId === courseId
-  );
+  try {
+    const { supabaseData } = await import('@/lib/supabase-data');
+    return await supabaseData.isUserEnrolledInCourse(userId, courseId);
+  } catch (error) {
+    console.error('Error checking enrollment:', error);
+    return false;
+  }
 };
 
 /**
  * Kullanıcının bir derse erişim yetkisi olup olmadığını kontrol eder
  */
-export const canUserAccessLesson = (courseId: string, lessonId: string): boolean => {
+export const canUserAccessLesson = async (courseId: string, lessonId: string): Promise<boolean> => {
   // Önce kursa kayıtlı mı kontrol et
-  if (!isUserEnrolledInCourse(courseId)) {
+  const isEnrolled = await isUserEnrolledInCourse(courseId);
+  if (!isEnrolled) {
     return false;
   }
 
@@ -75,32 +62,55 @@ export const canUserAccessLesson = (courseId: string, lessonId: string): boolean
 /**
  * Kullanıcının kayıtlı olduğu kursları getirir
  */
-export const getUserEnrolledCourses = (): string[] => {
-  const userId = getCurrentUserId();
+export const getUserEnrolledCourses = async (): Promise<string[]> => {
+  const userId = await getCurrentUserId();
   if (!userId) return [];
 
-  return MOCK_ENROLLMENTS
-    .filter(enrollment => enrollment.userId === userId)
-    .map(enrollment => enrollment.courseId);
+  try {
+    const { supabaseData } = await import('@/lib/supabase-data');
+    const enrollments = await supabaseData.getUserEnrollments(userId);
+    return enrollments.map(enrollment => enrollment.course_id);
+  } catch (error) {
+    console.error('Error getting enrolled courses:', error);
+    return [];
+  }
 };
 
 /**
  * Kullanıcının bir kurstaki ilerlemesini getirir
  */
-export const getUserCourseProgress = (courseId: string): UserEnrollment | null => {
-  const userId = getCurrentUserId();
+export const getUserCourseProgress = async (courseId: string): Promise<UserEnrollment | null> => {
+  const userId = await getCurrentUserId();
   if (!userId) return null;
 
-  return MOCK_ENROLLMENTS.find(
-    enrollment => enrollment.userId === userId && enrollment.courseId === courseId
-  ) || null;
+  try {
+    const { supabaseData } = await import('@/lib/supabase-data');
+    const enrollments = await supabaseData.getUserEnrollments(userId);
+    const enrollment = enrollments.find(e => e.course_id === courseId);
+    
+    if (!enrollment) return null;
+    
+    return {
+      userId: enrollment.user_id,
+      courseId: enrollment.course_id,
+      enrolledAt: enrollment.enrolled_at,
+      progress: enrollment.progress_percentage,
+      completedLessons: [], // TODO: Implement completed lessons tracking
+      lastAccessedAt: enrollment.last_accessed_at,
+      status: enrollment.status
+    };
+  } catch (error) {
+    console.error('Error getting course progress:', error);
+    return null;
+  }
 };
 
 /**
  * Kullanıcının oturum açıp açmadığını kontrol eder
  */
-export const isUserLoggedIn = (): boolean => {
-  return getCurrentUserId() !== null;
+export const isUserLoggedIn = async (): Promise<boolean> => {
+  const userId = await getCurrentUserId();
+  return userId !== null;
 };
 
 /**
@@ -132,28 +142,16 @@ export const redirectToCourseLearning = (courseId: string) => {
 };
 
 /**
- * Mock enrollment function - gerçek uygulamada API call olacak
+ * Real enrollment function using Supabase
  */
 export const enrollUserInCourse = async (courseId: string): Promise<boolean> => {
-  const userId = getCurrentUserId();
+  const userId = await getCurrentUserId();
   if (!userId) return false;
 
   try {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Add to mock enrollments
-    const newEnrollment: UserEnrollment = {
-      userId,
-      courseId,
-      enrolledAt: new Date().toISOString(),
-      progress: 0,
-      completedLessons: [],
-      lastAccessedAt: new Date().toISOString()
-    };
-    
-    MOCK_ENROLLMENTS.push(newEnrollment);
-    return true;
+    const { supabaseData } = await import('@/lib/supabase-data');
+    const enrollment = await supabaseData.enrollUserInCourse(userId, courseId);
+    return !!enrollment;
   } catch (error) {
     console.error('Enrollment failed:', error);
     return false;

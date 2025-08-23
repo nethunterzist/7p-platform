@@ -1,51 +1,63 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { login, getCurrentUser } from '@/lib/simple-auth';
+import { useRouter } from 'next/navigation';
+import { supabaseAuth } from '@/lib/auth/supabase-auth';
+import { useAuth } from '@/lib/auth/simple-context';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('test@test.com');
-  const [password, setPassword] = useState('123456');
+  const [email, setEmail] = useState('admin@7peducation.com');
+  const [password, setPassword] = useState('admin123456');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const router = useRouter();
+  const { state } = useAuth();
 
-  // Check if already logged in - sadece mount'ta bir kez kontrol et
+  // Check if already logged in
   useEffect(() => {
-    const currentUser = getCurrentUser();
-    if (currentUser && typeof window !== 'undefined') {
-      // Redirect'i 100ms sonra yap, infinite loop'u önle
-      setTimeout(() => {
-        window.location.href = '/dashboard';
-      }, 100);
+    if (state.user && typeof window !== 'undefined') {
+      router.push('/dashboard');
     }
-  }, []); // Dependency array boş - sadece mount'ta çalış
+  }, [state.user, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage('');
 
-    const { user, error } = await login(email, password);
+    try {
+      const result = await supabaseAuth.signIn({ email, password });
 
-    if (error) {
-      setMessage(`❌ ${error}`);
+      if (result.error) {
+        setMessage(`❌ ${result.error}`);
+        setLoading(false);
+        return;
+      }
+
+      if (result.user) {
+        setMessage('✅ Giriş başarılı! Yönlendiriliyorsunuz...');
+        // Auth context will handle the redirect automatically
+        setTimeout(() => {
+          router.push('/dashboard');
+        }, 1000);
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setMessage('❌ Beklenmeyen bir hata oluştu');
       setLoading(false);
-      return;
-    }
-
-    if (user) {
-      // Set cookie for middleware
-      document.cookie = `auth_token=mock_token_${Date.now()}; path=/; max-age=86400`;
-      
-      setMessage('✅ Giriş başarılı!');
-      window.location.href = '/dashboard';
     }
   };
 
-  const handleClearAuth = () => {
-    localStorage.clear();
-    document.cookie = 'auth_token=; path=/; max-age=0';
-    setMessage('✅ Auth temizlendi');
+  const handleClearAuth = async () => {
+    try {
+      await supabaseAuth.signOut();
+      localStorage.clear();
+      document.cookie = 'auth_token=; path=/; max-age=0';
+      setMessage('✅ Oturum kapatıldı');
+    } catch (error) {
+      console.error('Logout error:', error);
+      setMessage('⚠️ Logout hatası oluştu ama yerel veriler temizlendi');
+    }
   };
 
   return (
@@ -54,10 +66,11 @@ export default function LoginPage() {
         <h1 className="text-2xl font-bold text-center mb-8">7P Education Giriş</h1>
         
         <div className="mb-4 p-4 bg-blue-50 rounded-lg text-sm">
-          <p className="font-semibold mb-2">Test Hesapları:</p>
-          <p>• admin@7peducation.com : 123456</p>
-          <p>• test@test.com : 123456</p>
-          <p>• furkanyy@gmail.com : 123456</p>
+          <p className="font-semibold mb-2">Supabase Test Hesabı:</p>
+          <p>• admin@7peducation.com : admin123456</p>
+          <p className="text-xs text-gray-600 mt-2">
+            ℹ️ Gerçek Supabase backend kullanılıyor
+          </p>
         </div>
         
         {message && (
@@ -104,7 +117,7 @@ export default function LoginPage() {
           onClick={handleClearAuth}
           className="w-full bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 text-sm mb-4"
         >
-          🧹 Auth Temizle
+          🚪 Oturumu Kapat
         </button>
         
         <div className="text-center">

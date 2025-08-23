@@ -1,17 +1,22 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   Star,
   Clock,
   Users,
   BookOpen,
   PlayCircle,
-  ShoppingCart
+  ShoppingCart,
+  Sparkles,
+  Gift
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import MockPaymentModal from '@/components/beta/MockPaymentModal';
+import toast from 'react-hot-toast';
 
 interface CourseCardProps {
   course: {
@@ -50,6 +55,9 @@ const CourseCard: React.FC<CourseCardProps> = ({
   loading = false,
   className = ""
 }) => {
+  const [showMockPayment, setShowMockPayment] = useState(false);
+  const [enrolling, setEnrolling] = useState(false);
+  const router = useRouter();
   const formatPrice = (price: number, currency: string = 'TRY') => {
     const symbol = currency === 'TRY' ? '₺' : '$';
     return `${symbol}${price.toLocaleString()}`;
@@ -99,9 +107,10 @@ const CourseCard: React.FC<CourseCardProps> = ({
               ÜCRETSİZ
             </div>
           )}
-          {!isEnrolled && !course.is_free && discountPercentage > 0 && (
-            <div key="discount-badge" className="px-2 py-0.5 rounded-md text-xs bg-green-100 text-green-700 border-0 inline-flex items-center">
-              %{discountPercentage} İndirim
+          {!isEnrolled && !course.is_free && (
+            <div key="beta-badge" className="px-2 py-0.5 rounded-md text-xs bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 border-0 inline-flex items-center font-semibold animate-pulse">
+              <Sparkles className="w-3 h-3 mr-1" />
+              BETA ÜCRETSİZ
             </div>
           )}
         </div>
@@ -145,14 +154,15 @@ const CourseCard: React.FC<CourseCardProps> = ({
                     ÜCRETSİZ
                   </span>
                 ) : (
-                  <span className="text-xl font-bold text-slate-900 dark:text-gray-100">
-                    {formatPrice(course.price, course.currency)}
-                  </span>
-                )}
-                {course.original_price && course.original_price > course.price && !course.is_free && (
-                  <span className="text-sm text-slate-400 dark:text-gray-500 line-through">
-                    {formatPrice(course.original_price, course.currency)}
-                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-sm text-slate-400 dark:text-gray-500 line-through">
+                      {formatPrice(course.price, course.currency)}
+                    </span>
+                    <span className="text-xl font-bold text-green-600 dark:text-green-400 flex items-center gap-1">
+                      <Gift className="w-4 h-4" />
+                      BETA ÜCRETSİZ
+                    </span>
+                  </div>
                 )}
               </div>
               
@@ -209,22 +219,48 @@ const CourseCard: React.FC<CourseCardProps> = ({
             ) : (
               <Button
                 key="purchase-button"
-                onClick={() => onPurchase?.(course.id)}
-                disabled={loading}
+                onClick={() => {
+                  if (course.is_free) {
+                    onPurchase?.(course.id);
+                  } else {
+                    setShowMockPayment(true);
+                  }
+                }}
+                disabled={loading || enrolling}
                 size="sm"
-                className="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                className={course.is_free 
+                  ? "px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                  : "px-4 py-2 rounded-xl bg-gradient-to-r from-green-600 to-blue-600 text-white hover:from-green-700 hover:to-blue-700 disabled:opacity-50 shadow-lg"
+                }
               >
-                {loading ? (
+                {loading || enrolling ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></div>
-                ) : (
+                ) : course.is_free ? (
                   <ShoppingCart className="h-4 w-4 mr-1" />
+                ) : (
+                  <Sparkles className="h-4 w-4 mr-1" />
                 )}
-                {loading ? 'İşleniyor...' : (course.is_free ? 'Ücretsiz Al' : 'Satın Al')}
+                {loading || enrolling ? 'İşleniyor...' : (course.is_free ? 'Ücretsiz Al' : 'Beta\'da Ücretsiz Al!')}
               </Button>
             )}
           </div>
         </div>
       </div>
+
+      {/* Mock Payment Modal */}
+      <MockPaymentModal
+        course={course}
+        isOpen={showMockPayment}
+        onClose={() => setShowMockPayment(false)}
+        onSuccess={() => {
+          setShowMockPayment(false);
+          setEnrolling(false);
+          toast.success('🎉 Kursa başarıyla kaydoldunuz! Dashboard\'a yönlendiriliyor...');
+          setTimeout(() => {
+            router.push('/dashboard');
+          }, 2000);
+        }}
+      />
     </div>
   );
 };

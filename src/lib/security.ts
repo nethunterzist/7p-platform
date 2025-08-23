@@ -92,6 +92,9 @@ export function applyRateLimit(
   }
 }
 
+// Helper function for middleware compatibility
+export const rateLimit = applyRateLimit;
+
 // =====================================
 // INPUT VALIDATION & SANITIZATION
 // =====================================
@@ -248,8 +251,11 @@ export { verifyWebhookSignature } from './stripe';
 // LOGGING & MONITORING
 // =====================================
 
+// Import the new comprehensive security monitor
+import { SecurityMonitor } from '@/lib/api-security/security-monitor';
+
 /**
- * Log security event
+ * Log security event (Legacy wrapper - use SecurityMonitor directly for new code)
  * @param event Security event details
  */
 export async function logSecurityEvent(event: {
@@ -261,6 +267,33 @@ export async function logSecurityEvent(event: {
   metadata?: any;
 }): Promise<void> {
   try {
+    // Map legacy event types to new security monitor types
+    const eventTypeMap = {
+      'auth_failure': 'authentication_failed',
+      'rate_limit': 'rate_limit_exceeded',
+      'invalid_input': 'input_validation_failed',
+      'unauthorized_access': 'authorization_failed',
+      'admin_action': 'api_error'
+    };
+
+    // Use the new comprehensive security monitor
+    await SecurityMonitor.logSecurityEvent({
+      type: eventTypeMap[event.type] as any,
+      ip: event.ip || 'unknown',
+      userAgent: event.userAgent || 'unknown',
+      method: 'UNKNOWN',
+      pathname: '/legacy',
+      origin: null,
+      referer: null,
+      metadata: {
+        message: event.message,
+        ...event.metadata
+      },
+      userId: event.userId,
+      timestamp: new Date().toISOString()
+    });
+
+    // Also log to legacy table for backward compatibility
     const { error } = await supabase
       .from('security_logs')
       .insert({
@@ -274,7 +307,7 @@ export async function logSecurityEvent(event: {
       });
     
     if (error) {
-      console.error('Failed to log security event:', error);
+      console.error('Failed to log security event to legacy table:', error);
     }
   } catch (error) {
     console.error('Security logging error:', error);

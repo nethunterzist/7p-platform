@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { useAdmin } from '@/lib/useAdmin';
+import { useUnifiedAuth } from '@/lib/unified-auth';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { DashboardStats, DashboardSection, DashboardCard, DashboardGrid } from '@/components/layout/DashboardContent';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import RealtimeNotifications from '@/components/admin/RealtimeNotifications';
 import {
   Users,
   BookOpen,
@@ -47,7 +48,7 @@ interface RecentActivity {
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const { isAdmin, loading: adminLoading } = useAdmin();
+  const { isAdmin, loading: adminLoading, user, error } = useUnifiedAuth();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
@@ -76,92 +77,59 @@ export default function AdminDashboardPage() {
     try {
       setLoading(true);
 
-      // Mock data instead of Supabase queries
-      const mockUsers = [
-        { id: '1', created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() }, // 2 days ago
-        { id: '2', created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() }, // 5 days ago
-        { id: '3', created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString() }, // 10 days ago
-        { id: '4', created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString() }, // 15 days ago
-        { id: '5', created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString() }, // 30 days ago
-      ];
+      // Import the real Supabase data service
+      const { supabaseData } = await import('@/lib/supabase-data');
 
-      const mockCourses = [
-        { id: '1', name: 'React Temelleri', is_published: true },
-        { id: '2', name: 'JavaScript İleri Seviye', is_published: true },
-        { id: '3', name: 'Node.js Backend', is_published: true },
-        { id: '4', name: 'Database Design', is_published: false },
-        { id: '5', name: 'UI/UX Tasarım', is_published: true },
-      ];
+      // Fetch real data from Supabase
+      const [adminStats, recentActivities] = await Promise.all([
+        supabaseData.getAdminStats(),
+        supabaseData.getRecentActivity(10)
+      ]);
 
-      const mockEnrollments = [
-        { id: '1', status: 'completed', enrolled_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
-        { id: '2', status: 'in_progress', enrolled_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
-        { id: '3', status: 'completed', enrolled_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() },
-        { id: '4', status: 'in_progress', enrolled_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
-        { id: '5', status: 'completed', enrolled_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString() },
-        { id: '6', status: 'completed', enrolled_at: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString() },
-        { id: '7', status: 'in_progress', enrolled_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() },
-        { id: '8', status: 'completed', enrolled_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString() },
-      ];
-
-      // Calculate stats from mock data
-      const totalUsers = mockUsers.length;
-      const activeUsers = mockUsers.filter(u => {
-        const lastWeek = new Date();
-        lastWeek.setDate(lastWeek.getDate() - 7);
-        return new Date(u.created_at) > lastWeek;
-      }).length;
-
-      const totalCourses = mockCourses.length;
-      const activeCourses = mockCourses.filter(c => c.is_published).length;
-      const totalEnrollments = mockEnrollments.length;
-      const completedEnrollments = mockEnrollments.filter(e => e.status === 'completed').length;
-      const completionRate = totalEnrollments > 0 ? Math.round((completedEnrollments / totalEnrollments) * 100) : 0;
-
+      // Update stats with real data
       setStats({
-        totalUsers,
-        activeUsers,
-        totalCourses,
-        activeCourses,
-        totalEnrollments,
-        completionRate,
-        revenue: 12450, // Mock data
-        systemHealth: 'healthy'
+        totalUsers: adminStats.totalUsers,
+        activeUsers: adminStats.activeUsers,
+        totalCourses: adminStats.totalCourses,
+        activeCourses: adminStats.publishedCourses,
+        totalEnrollments: adminStats.totalEnrollments,
+        completionRate: adminStats.completionRate,
+        revenue: adminStats.totalRevenue,
+        systemHealth: adminStats.systemHealth
       });
 
-      // Generate mock recent activity
-      setRecentActivity([
-        {
-          id: '1',
-          type: 'user_registration',
-          message: 'Yeni kullanıcı kaydoldu',
-          timestamp: new Date().toISOString(),
-          user: 'john.doe@example.com'
-        },
-        {
-          id: '2',
-          type: 'course_completion',
-          message: '"React Temelleri" kursu tamamlandı',
-          timestamp: new Date(Date.now() - 3600000).toISOString(),
-          user: 'jane.smith@example.com'
-        },
-        {
-          id: '3',
-          type: 'enrollment',
-          message: '"İleri JavaScript" kursuna yeni kayıt',
-          timestamp: new Date(Date.now() - 7200000).toISOString(),
-          user: 'mike.wilson@example.com'
-        },
-        {
-          id: '4',
-          type: 'system_alert',
-          message: 'Sistem yedeklemesi başarıyla tamamlandı',
-          timestamp: new Date(Date.now() - 10800000).toISOString()
-        }
-      ]);
+      // Update recent activity with real data
+      const formattedActivity = recentActivities.map(activity => ({
+        id: activity.id,
+        type: activity.type,
+        message: activity.message,
+        timestamp: activity.timestamp,
+        user: activity.user_email || activity.metadata?.user || undefined
+      }));
+
+      setRecentActivity(formattedActivity);
 
     } catch (error) {
       console.error('Error loading admin data:', error);
+      
+      // Fallback to basic stats if database is not ready
+      setStats({
+        totalUsers: 0,
+        activeUsers: 0,
+        totalCourses: 0,
+        activeCourses: 0,
+        totalEnrollments: 0,
+        completionRate: 0,
+        revenue: 0,
+        systemHealth: 'warning'
+      });
+      
+      setRecentActivity([{
+        id: '1',
+        type: 'system_alert',
+        message: 'Database bağlantısı kurulamadı - Sistem kurulum aşamasında',
+        timestamp: new Date().toISOString()
+      }]);
     } finally {
       setLoading(false);
     }
@@ -220,7 +188,8 @@ export default function AdminDashboardPage() {
       title="Yönetici Paneli"
       subtitle="Sistem özeti ve yönetim araçları"
       actions={
-        <div className="flex space-x-3">
+        <div className="flex items-center space-x-3">
+          <RealtimeNotifications />
           <Button asChild>
             <a href="/admin/users">
               <Users className="h-4 w-4 mr-2" />

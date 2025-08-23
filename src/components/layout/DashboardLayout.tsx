@@ -8,6 +8,7 @@ import DashboardSidebar from './DashboardSidebar';
 import DashboardContent from './DashboardContent';
 import MobileOptimizations, { useIsMobile } from './MobileOptimizations';
 import { cn } from '@/lib/utils';
+import BetaBanner from '@/components/beta/BetaBanner';
 
 export type UserRole = 'student' | 'admin';
 
@@ -189,6 +190,9 @@ export default function DashboardLayout({
         user={user}
       />
 
+      {/* Beta Banner - Above Header */}
+      <BetaBanner />
+      
       {/* Global Header - Full Width */}
       <DashboardHeader
         user={user}
