@@ -28,7 +28,7 @@ async function setupDatabaseForCI() {
     // Test connection
     console.log('🔍 Testing database connection...');
     const { data, error } = await supabase
-      .from('users')
+      .from('user_profiles')
       .select('count(*)')
       .limit(1);
     
