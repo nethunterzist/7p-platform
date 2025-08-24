@@ -72,7 +72,7 @@ export default function DashboardLayout({
       email: authUser.email || '',
       full_name: authUser.name || authUser.full_name || null,
       avatar_url: null,
-      role: authUser.role || 'student'
+      role: authUser.email === 'admin@7peducation.com' ? 'admin' : 'student'
     };
     
     console.log('✅ User authenticated:', dashboardUser.email);

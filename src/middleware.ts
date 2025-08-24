@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { AuthProtectionMiddleware } from './middleware/auth-protection';
 
 export async function middleware(request: NextRequest) {
-  return NextResponse.next();
+  // 🔐 SECURITY: Enable comprehensive authentication and session protection
+  return await AuthProtectionMiddleware.protect(request);
 }
 
 export const config = {

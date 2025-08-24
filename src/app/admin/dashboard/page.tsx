@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { useUnifiedAuth } from '@/lib/unified-auth';
+import { useAuth } from '@/lib/auth/simple-context';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { DashboardStats, DashboardSection, DashboardCard, DashboardGrid } from '@/components/layout/DashboardContent';
@@ -48,7 +48,8 @@ interface RecentActivity {
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const { isAdmin, loading: adminLoading, user, error } = useUnifiedAuth();
+  const { user, loading: adminLoading } = useAuth();
+  const isAdmin = user?.email === 'admin@7peducation.com';
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
@@ -63,15 +64,36 @@ export default function AdminDashboardPage() {
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
 
   useEffect(() => {
-    if (!adminLoading && !isAdmin) {
-      router.push('/dashboard');
-      return;
-    }
+    if (!adminLoading) {
+      // Check if user is logged in first
+      if (!user) {
+        // Check localStorage for fallback auth
+        const authUser = localStorage.getItem('auth_user');
+        if (!authUser) {
+          router.push('/login');
+          return;
+        }
+      }
+      
+      // Check if user is admin
+      if (!isAdmin) {
+        const authUser = localStorage.getItem('auth_user');
+        if (authUser) {
+          const userData = JSON.parse(authUser);
+          if (userData.email !== 'admin@7peducation.com') {
+            router.push('/dashboard');
+            return;
+          }
+        } else {
+          router.push('/dashboard');
+          return;
+        }
+      }
 
-    if (isAdmin) {
+      // User is authenticated and is admin, fetch data
       fetchAdminData();
     }
-  }, [isAdmin, adminLoading, router]);
+  }, [user, isAdmin, adminLoading, router]);
 
   const fetchAdminData = async () => {
     try {

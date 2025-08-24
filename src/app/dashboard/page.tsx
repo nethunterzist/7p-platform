@@ -38,15 +38,26 @@ export default function DashboardPage() {
       try {
         // Check authentication using localStorage
         const currentUser = getCurrentUser();
-        if (!currentUser) {
+        const authUser = localStorage.getItem('auth_user');
+        
+        if (!currentUser && !authUser) {
           window.location.href = '/login';
           return;
         }
-
-        setUser(currentUser);
         
-        // Load dashboard data
-        const enrolledCourseIds = getUserEnrolledCourses();
+        // Use fallback auth data if getCurrentUser fails
+        const userData = currentUser || JSON.parse(authUser || '{}');
+
+        setUser(userData);
+        
+        // Load dashboard data - handle case where getUserEnrolledCourses returns undefined
+        let enrolledCourseIds: string[] = [];
+        try {
+          enrolledCourseIds = await getUserEnrolledCourses();
+        } catch (error) {
+          console.warn('Failed to load enrolled courses, using empty array:', error);
+          enrolledCourseIds = [];
+        }
         const userCourses = ALL_COURSES.filter(course => 
           enrolledCourseIds.includes(course.id) || course.is_free
         );

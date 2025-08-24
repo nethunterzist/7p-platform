@@ -11,7 +11,7 @@ import { createClient } from '@/utils/supabase/server';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
@@ -45,7 +45,7 @@ export async function GET(
       );
     }
 
-    const assessmentId = params.id;
+    const { id: assessmentId } = await params;
     const url = new URL(request.url);
     const queryParams = Object.fromEntries(url.searchParams.entries());
 

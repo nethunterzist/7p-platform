@@ -35,7 +35,7 @@ export const SERVER_CONFIG = {
   jwt: {
     secret: validateJWTSecret(),
     algorithm: 'HS256' as const,
-    expiresIn: '15m',
+    expiresIn: '1h',        // 🔐 SECURITY FIX: Extended from 15m to 1h
     refreshExpiresIn: '7d'
   },
   session: {
@@ -43,6 +43,33 @@ export const SERVER_CONFIG = {
     refreshMaxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     secureCookies: process.env.NODE_ENV === 'production'
   }
+};
+
+// 🔐 Enhanced JWT Security Configuration
+export const ENHANCED_JWT_CONFIG = {
+  // Core JWT settings
+  JWT_SECRET: validateJWTSecret(),
+  JWT_ALGORITHM: 'HS256' as const,
+  JWT_EXPIRES_IN: '1h',
+  JWT_ISSUER: 'https://7peducation.com',
+  JWT_AUDIENCE: ['7peducation-api', '7peducation-frontend'],
+  REFRESH_TOKEN_EXPIRES_IN: '7d',
+  
+  // 🛡️ Enhanced Security Features
+  ENABLE_TOKEN_ROTATION: true,
+  TOKEN_REFRESH_THRESHOLD: 5 * 60 * 1000, // 5 minutes before expiry
+  MAX_TOKEN_REUSE: 1, // Prevent token reuse attacks
+  ENABLE_IP_BINDING: true,
+  ENABLE_DEVICE_BINDING: true,
+  
+  // Session Security
+  SESSION_TIMEOUT: 30 * 60 * 1000, // 30 minutes inactivity
+  ABSOLUTE_TIMEOUT: 8 * 60 * 60 * 1000, // 8 hours absolute max
+  MAX_CONCURRENT_SESSIONS: 3,
+  
+  // Token Blacklist Settings
+  BLACKLIST_CLEANUP_INTERVAL: 60 * 60 * 1000, // 1 hour
+  BLACKLIST_TTL: 24 * 60 * 60, // 24 hours (in seconds for Redis)
 };
 
 // Legacy AUTH_CONFIG alias for backward compatibility

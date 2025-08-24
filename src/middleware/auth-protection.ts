@@ -7,6 +7,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient as createSupabaseClient } from '@/utils/supabase/server';
 import { PRODUCTION_AUTH_CONFIG, AUTH_SECURITY_HEADERS } from '@/lib/auth/production-config';
+import { EnhancedSessionSecurity } from '@/lib/auth/session-security-enhancements';
+import { auditLogger } from '@/lib/auth/audit';
+import { AUDIT_EVENTS } from '@/lib/auth/config';
 import { kv } from '@vercel/kv';
 
 // CSRF token management
@@ -112,10 +115,56 @@ export class AuthProtectionMiddleware {
         return this.redirectToLogin(request);
       }
       
-      // Validate session
+      // 🛡️ ENHANCED SESSION VALIDATION with Risk Assessment
+      const sessionId = session.access_token.slice(-8);
+      const requestMetadata = {
+        ipAddress: this.getClientIP(request),
+        userAgent: request.headers.get('user-agent') || '',
+        path: request.nextUrl.pathname,
+        method: request.method
+      };
+
+      const riskAssessment = await EnhancedSessionSecurity.validateSessionWithRiskAssessment(
+        sessionId,
+        session.user.id,
+        requestMetadata
+      );
+
+      if (!riskAssessment.isValid) {
+        // Log security event
+        await auditLogger.logSecurity(
+          AUDIT_EVENTS.SESSION_INVALIDATED,
+          session.user.id,
+          {
+            sessionId,
+            reason: riskAssessment.reason,
+            riskScore: riskAssessment.riskScore,
+            ipAddress: requestMetadata.ipAddress,
+            path: requestMetadata.path
+          },
+          'high'
+        );
+
+        // Clear invalid session
+        await supabase.auth.signOut();
+        return this.redirectToLogin(request, riskAssessment.reason);
+      }
+
+      // 🚨 Handle security actions based on risk score
+      if (riskAssessment.actionRequired !== 'NONE') {
+        return await this.handleSecurityAction(
+          riskAssessment.actionRequired,
+          riskAssessment.riskScore,
+          riskAssessment.threats,
+          session.user.id,
+          sessionId,
+          request
+        );
+      }
+
+      // ✅ Session is valid with acceptable risk - continue with legacy validation
       const sessionValid = await this.validateSession(session, request);
       if (!sessionValid.isValid) {
-        // Clear invalid session
         await supabase.auth.signOut();
         return this.redirectToLogin(request, sessionValid.reason);
       }
@@ -131,6 +180,12 @@ export class AuthProtectionMiddleware {
       
       // Update session activity
       await this.updateSessionActivity(session, request);
+
+      // Add security headers based on risk score
+      if (riskAssessment.riskScore > 50) {
+        response.headers.set('X-Security-Warning', 'elevated-risk');
+        response.headers.set('X-Risk-Score', riskAssessment.riskScore.toString());
+      }
       
       return response;
       
@@ -140,6 +195,83 @@ export class AuthProtectionMiddleware {
     }
   }
   
+  /**
+   * 🚨 Handle Security Actions based on Risk Assessment
+   */
+  private static async handleSecurityAction(
+    actionRequired: 'MFA_REQUIRED' | 'FORCE_LOGOUT' | 'SECURITY_REVIEW',
+    riskScore: number,
+    threats: any[],
+    userId: string,
+    sessionId: string,
+    request: NextRequest
+  ): Promise<NextResponse> {
+    
+    // Log high-risk security event
+    await auditLogger.logSecurity(
+      AUDIT_EVENTS.HIGH_RISK_ACTIVITY,
+      userId,
+      {
+        sessionId,
+        riskScore,
+        actionRequired,
+        threatCount: threats.length,
+        highestThreatSeverity: threats.reduce(
+          (max: string, t: any) => t.severity > max ? t.severity : max, 
+          'LOW'
+        ),
+        ipAddress: this.getClientIP(request),
+        userAgent: request.headers.get('user-agent') || '',
+        path: request.nextUrl.pathname
+      },
+      'critical'
+    );
+
+    switch (actionRequired) {
+      case 'FORCE_LOGOUT':
+        // Immediately terminate session
+        const supabase = createSupabaseClient();
+        await supabase.auth.signOut();
+        
+        return NextResponse.json(
+          { 
+            error: 'Security violation detected. Session terminated for your protection.',
+            action: 'FORCE_LOGOUT',
+            riskScore,
+            code: 'SECURITY_VIOLATION'
+          },
+          { status: 401 }
+        );
+
+      case 'MFA_REQUIRED':
+        return NextResponse.json(
+          { 
+            error: 'Additional verification required due to suspicious activity.',
+            action: 'MFA_REQUIRED',
+            riskScore,
+            code: 'MFA_CHALLENGE',
+            redirect: '/auth/mfa-challenge'
+          },
+          { status: 403 }
+        );
+
+      case 'SECURITY_REVIEW':
+        return NextResponse.json(
+          { 
+            error: 'Account flagged for security review. Please contact support.',
+            action: 'SECURITY_REVIEW',
+            riskScore,
+            code: 'SECURITY_REVIEW',
+            contact: 'security@7peducation.com'
+          },
+          { status: 423 } // Locked
+        );
+
+      default:
+        return this.redirectToLogin(request, 'SECURITY_ACTION_REQUIRED');
+    }
+  }
+
   /**
    * Generate CSRF token
    */
@@ -355,6 +487,62 @@ export class AuthProtectionMiddleware {
     } catch (error) {
       console.error('[Auth Protection] Failed to log security event:', error);
     }
+  }
+
+  /**
+   * 🧹 Cleanup expired sessions periodically
+   */
+  static async performSessionCleanup(): Promise<{ cleaned: number; errors: number }> {
+    try {
+      const cleanedCount = await EnhancedSessionSecurity.cleanupExpiredSessions();
+      
+      console.log(`[Session Cleanup] Cleaned up ${cleanedCount} expired sessions`);
+      
+      return { cleaned: cleanedCount, errors: 0 };
+    } catch (error) {
+      console.error('[Session Cleanup] Failed:', error);
+      return { cleaned: 0, errors: 1 };
+    }
+  }
+
+  /**
+   * 🎯 Create Enhanced Session (for use in login endpoints)
+   */
+  static async createEnhancedUserSession(
+    userId: string,
+    sessionId: string,
+    request: NextRequest,
+    options: {
+      mfaVerified?: boolean;
+      deviceTrusted?: boolean;
+      geolocation?: any;
+    } = {}
+  ): Promise<void> {
+    const metadata = {
+      ipAddress: this.getClientIP(request),
+      userAgent: request.headers.get('user-agent') || '',
+      deviceFingerprint: this.generateDeviceFingerprint(request),
+      ...options
+    };
+
+    await EnhancedSessionSecurity.createEnhancedSession(userId, sessionId, metadata);
+  }
+
+  /**
+   * 🔍 Generate Device Fingerprint
+   */
+  private static generateDeviceFingerprint(request: NextRequest): string {
+    const userAgent = request.headers.get('user-agent') || '';
+    const acceptLanguage = request.headers.get('accept-language') || '';
+    const acceptEncoding = request.headers.get('accept-encoding') || '';
+    const ipAddress = this.getClientIP(request);
+    
+    // Create a simple fingerprint from available headers
+    const fingerprint = Buffer.from(
+      `${userAgent}${acceptLanguage}${acceptEncoding}${ipAddress}`
+    ).toString('base64').slice(0, 32);
+    
+    return fingerprint;
   }
 }
 
