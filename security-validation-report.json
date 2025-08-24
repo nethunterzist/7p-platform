@@ -1,0 +1,241 @@
+{
+  "stats": {
+    "PASS": 13,
+    "FAIL": 4,
+    "WARN": 4,
+    "INFO": 0,
+    "TOTAL": 21
+  },
+  "securityScore": 71.42857142857143,
+  "results": [
+    {
+      "test": "AUTH-001",
+      "status": "PASS",
+      "message": "Dashboard redirects unauthenticated users to login",
+      "details": {
+        "statusCode": 307,
+        "location": "/login?redirect=%2Fdashboard"
+      },
+      "timestamp": "2025-08-24T13:12:32.343Z"
+    },
+    {
+      "test": "AUTH-002",
+      "status": "PASS",
+      "message": "Admin routes are protected",
+      "details": {
+        "statusCode": 307
+      },
+      "timestamp": "2025-08-24T13:12:32.348Z"
+    },
+    {
+      "test": "AUTH-003",
+      "status": "FAIL",
+      "message": "Login page not accessible",
+      "details": {
+        "statusCode": 500
+      },
+      "timestamp": "2025-08-24T13:12:34.311Z"
+    },
+    {
+      "test": "ENV-001",
+      "status": "PASS",
+      "message": "Environment files not accessible via HTTP",
+      "details": {
+        "statusCode": 404
+      },
+      "timestamp": "2025-08-24T13:12:39.976Z"
+    },
+    {
+      "test": "ENV-002",
+      "status": "PASS",
+      "message": "No environment variables exposed in HTML",
+      "details": {
+        "statusCode": 200
+      },
+      "timestamp": "2025-08-24T13:12:41.560Z"
+    },
+    {
+      "test": "RLS-001",
+      "status": "FAIL",
+      "message": "API endpoints may not be properly protected",
+      "details": {
+        "statusCode": 404,
+        "responseLength": 19145
+      },
+      "timestamp": "2025-08-24T13:12:41.702Z"
+    },
+    {
+      "test": "RLS-002",
+      "status": "PASS",
+      "message": "SQL injection attempts are blocked",
+      "details": {
+        "statusCode": 400
+      },
+      "timestamp": "2025-08-24T13:12:42.289Z"
+    },
+    {
+      "test": "PWD-001",
+      "status": "PASS",
+      "message": "Weak passwords are rejected",
+      "details": {
+        "statusCode": 400
+      },
+      "timestamp": "2025-08-24T13:12:42.669Z"
+    },
+    {
+      "test": "PWD-002",
+      "status": "PASS",
+      "message": "Common passwords are rejected",
+      "details": {
+        "statusCode": 400
+      },
+      "timestamp": "2025-08-24T13:12:42.678Z"
+    },
+    {
+      "test": "JWT-001",
+      "status": "FAIL",
+      "message": "Invalid JWT tokens may be accepted",
+      "details": {
+        "statusCode": 404
+      },
+      "timestamp": "2025-08-24T13:12:43.028Z"
+    },
+    {
+      "test": "JWT-002",
+      "status": "FAIL",
+      "message": "Missing JWT tokens may be accepted",
+      "details": {
+        "statusCode": 404
+      },
+      "timestamp": "2025-08-24T13:12:43.050Z"
+    },
+    {
+      "test": "VAL-001",
+      "status": "PASS",
+      "message": "XSS attempts in input are blocked",
+      "details": {
+        "statusCode": 400
+      },
+      "timestamp": "2025-08-24T13:12:43.166Z"
+    },
+    {
+      "test": "VAL-002",
+      "status": "PASS",
+      "message": "Invalid JSON is properly handled",
+      "details": {
+        "statusCode": 500
+      },
+      "timestamp": "2025-08-24T13:12:43.175Z"
+    },
+    {
+      "test": "SES-001",
+      "status": "WARN",
+      "message": "Session cookies may lack security attributes",
+      "details": {
+        "cookieCount": 0,
+        "hasSecurity": false
+      },
+      "timestamp": "2025-08-24T13:12:43.545Z"
+    },
+    {
+      "test": "SES-002",
+      "status": "WARN",
+      "message": "CSRF tokens may not be implemented",
+      "details": {
+        "hasCsrfToken": false
+      },
+      "timestamp": "2025-08-24T13:12:43.545Z"
+    },
+    {
+      "test": "PROD-001",
+      "status": "WARN",
+      "message": "Development mode detected",
+      "details": {
+        "statusCode": 200
+      },
+      "timestamp": "2025-08-24T13:12:44.027Z"
+    },
+    {
+      "test": "PROD-002",
+      "status": "PASS",
+      "message": "Proper error handling for 404",
+      "details": {
+        "statusCode": 404
+      },
+      "timestamp": "2025-08-24T13:12:44.066Z"
+    },
+    {
+      "test": "HDR-001",
+      "status": "PASS",
+      "message": "Security headers implemented (6/6)",
+      "details": {
+        "score": 6,
+        "total": 6,
+        "headers": {
+          "x-frame-options": {
+            "present": true,
+            "value": "DENY",
+            "correct": true
+          },
+          "x-content-type-options": {
+            "present": true,
+            "value": "nosniff",
+            "correct": true
+          },
+          "x-xss-protection": {
+            "present": true,
+            "value": "1; mode=block",
+            "correct": true
+          },
+          "strict-transport-security": {
+            "present": true,
+            "value": "max-age=31536000; includeSubDomains",
+            "correct": true
+          },
+          "content-security-policy": {
+            "present": true,
+            "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'unsafe-inline' https://js.sentry-cdn.com https://vercel.live; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://riupkkggupogdgubnhmy.supabase.co https://*.vercel.app; connect-src 'self' https://riupkkggupogdgubnhmy.supabase.co https://api.stripe.com https://vitals.vercel-analytics.com https://js.sentry-cdn.com wss://riupkkggupogdgubnhmy.supabase.co; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests",
+            "correct": true
+          },
+          "referrer-policy": {
+            "present": true,
+            "value": "strict-origin-when-cross-origin",
+            "correct": true
+          }
+        }
+      },
+      "timestamp": "2025-08-24T13:12:44.195Z"
+    },
+    {
+      "test": "RATE-001",
+      "status": "PASS",
+      "message": "Rate limiting is active",
+      "details": {
+        "totalRequests": 10,
+        "rateLimited": 5,
+        "percentage": 50
+      },
+      "timestamp": "2025-08-24T13:12:44.965Z"
+    },
+    {
+      "test": "CSRF-001",
+      "status": "WARN",
+      "message": "CSRF protection may not be active",
+      "details": {
+        "statusCode": 429
+      },
+      "timestamp": "2025-08-24T13:12:45.318Z"
+    },
+    {
+      "test": "CSRF-002",
+      "status": "PASS",
+      "message": "Cross-origin requests are blocked",
+      "details": {
+        "statusCode": 429
+      },
+      "timestamp": "2025-08-24T13:12:45.588Z"
+    }
+  ],
+  "passed": false,
+  "timestamp": "2025-08-24T13:12:45.690Z"
+}

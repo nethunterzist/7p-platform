@@ -1,0 +1,53 @@
+{
+  "timestamp": "2025-08-24T13:12:10.684Z",
+  "summary": {
+    "totalTests": 0,
+    "totalFailures": 3,
+    "totalPassed": -3,
+    "successRate": 0,
+    "status": "FAIL"
+  },
+  "testResults": [
+    {
+      "type": "unit",
+      "description": "Unit security tests",
+      "tests": 0,
+      "failures": 1,
+      "passed": 0,
+      "duration": 0,
+      "error": "testPathPattern:\n\n  Option \"testPathPattern\" was replaced by \"--testPathPatterns\". \"--testPathPatterns\" is only available as a command-line option.\n  \n  Please update your configuration.\n\n  CLI Options Documentation:\n  https://jestjs.io/docs/cli\n\n"
+    },
+    {
+      "type": "penetration",
+      "description": "Penetration testing scenarios",
+      "tests": 0,
+      "failures": 1,
+      "passed": 0,
+      "duration": 0,
+      "error": "testPathPattern:\n\n  Option \"testPathPattern\" was replaced by \"--testPathPatterns\". \"--testPathPatterns\" is only available as a command-line option.\n  \n  Please update your configuration.\n\n  CLI Options Documentation:\n  https://jestjs.io/docs/cli\n\n"
+    },
+    {
+      "type": "integration",
+      "description": "Integration security tests",
+      "tests": 0,
+      "failures": 1,
+      "passed": 0,
+      "duration": 0,
+      "error": "testPathPattern:\n\n  Option \"testPathPattern\" was replaced by \"--testPathPatterns\". \"--testPathPatterns\" is only available as a command-line option.\n  \n  Please update your configuration.\n\n  CLI Options Documentation:\n  https://jestjs.io/docs/cli\n\n"
+    }
+  ],
+  "environment": {
+    "nodeVersion": "v24.3.0",
+    "platform": "darwin",
+    "testEnv": "test"
+  },
+  "securityMetrics": {
+    "authenticationTests": 0,
+    "authorizationTests": 0,
+    "inputValidationTests": 0,
+    "cryptographyTests": 0,
+    "sessionManagementTests": 0,
+    "errorHandlingTests": 0,
+    "auditingTests": 0
+  }
+}

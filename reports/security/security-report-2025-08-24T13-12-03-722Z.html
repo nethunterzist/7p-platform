@@ -1,0 +1,292 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7P Education - Security Test Report</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .metric {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        .metric-label {
+            color: #6b7280;
+            font-size: 0.9em;
+        }
+        .status-pass { color: #10b981; }
+        .status-fail { color: #ef4444; }
+        .test-results {
+            padding: 20px;
+        }
+        .test-category {
+            margin-bottom: 30px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .test-category-header {
+            background: #f9fafb;
+            padding: 15px;
+            font-weight: bold;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .test-category-content {
+            padding: 15px;
+        }
+        .test-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .test-item:last-child {
+            border-bottom: none;
+        }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        .badge-pass {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .badge-fail {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .recommendations {
+            background: #fffbeb;
+            border: 1px solid #fbbf24;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px;
+        }
+        .timestamp {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.9em;
+            padding: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Security Test Report</h1>
+            <p>7P Education Platform</p>
+        </div>
+
+        <div class="summary">
+            <div class="metric">
+                <div class="metric-value status-fail">
+                    FAIL
+                </div>
+                <div class="metric-label">Overall Status</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">0</div>
+                <div class="metric-label">Total Tests</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value status-pass">-3</div>
+                <div class="metric-label">Passed</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value status-fail">3</div>
+                <div class="metric-label">Failed</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">0%</div>
+                <div class="metric-label">Success Rate</div>
+            </div>
+        </div>
+
+        <div class="test-results">
+            <h2>Test Categories</h2>
+            
+                <div class="test-category">
+                    <div class="test-category-header">
+                        Unit security tests
+                        <span class="badge badge-fail">
+                            FAIL
+                        </span>
+                    </div>
+                    <div class="test-category-content">
+                        <div class="test-item">
+                            <span>Tests Run</span>
+                            <span>0</span>
+                        </div>
+                        <div class="test-item">
+                            <span>Passed</span>
+                            <span class="status-pass">-1</span>
+                        </div>
+                        <div class="test-item">
+                            <span>Failed</span>
+                            <span class="status-fail">1</span>
+                        </div>
+                        <div class="test-item">
+                            <span>Duration</span>
+                            <span>0ms</span>
+                        </div>
+                        
+                        <div class="test-item">
+                            <span>Error</span>
+                            <span class="status-fail">testPathPattern:
+
+  Option "testPathPattern" was replaced by "--testPathPatterns". "--testPathPatterns" is only available as a command-line option.
+  
+  Please update your configuration.
+
+  CLI Options Documentation:
+  https://jestjs.io/docs/cli
+
+</span>
+                        </div>
+                        
+                    </div>
+                </div>
+            
+                <div class="test-category">
+                    <div class="test-category-header">
+                        Penetration testing scenarios
+                        <span class="badge badge-fail">
+                            FAIL
+                        </span>
+                    </div>
+                    <div class="test-category-content">
+                        <div class="test-item">
+                            <span>Tests Run</span>
+                            <span>0</span>
+                        </div>
+                        <div class="test-item">
+                            <span>Passed</span>
+                            <span class="status-pass">-1</span>
+                        </div>
+                        <div class="test-item">
+                            <span>Failed</span>
+                            <span class="status-fail">1</span>
+                        </div>
+                        <div class="test-item">
+                            <span>Duration</span>
+                            <span>0ms</span>
+                        </div>
+                        
+                        <div class="test-item">
+                            <span>Error</span>
+                            <span class="status-fail">testPathPattern:
+
+  Option "testPathPattern" was replaced by "--testPathPatterns". "--testPathPatterns" is only available as a command-line option.
+  
+  Please update your configuration.
+
+  CLI Options Documentation:
+  https://jestjs.io/docs/cli
+
+</span>
+                        </div>
+                        
+                    </div>
+                </div>
+            
+                <div class="test-category">
+                    <div class="test-category-header">
+                        Integration security tests
+                        <span class="badge badge-fail">
+                            FAIL
+                        </span>
+                    </div>
+                    <div class="test-category-content">
+                        <div class="test-item">
+                            <span>Tests Run</span>
+                            <span>0</span>
+                        </div>
+                        <div class="test-item">
+                            <span>Passed</span>
+                            <span class="status-pass">-1</span>
+                        </div>
+                        <div class="test-item">
+                            <span>Failed</span>
+                            <span class="status-fail">1</span>
+                        </div>
+                        <div class="test-item">
+                            <span>Duration</span>
+                            <span>0ms</span>
+                        </div>
+                        
+                        <div class="test-item">
+                            <span>Error</span>
+                            <span class="status-fail">testPathPattern:
+
+  Option "testPathPattern" was replaced by "--testPathPatterns". "--testPathPatterns" is only available as a command-line option.
+  
+  Please update your configuration.
+
+  CLI Options Documentation:
+  https://jestjs.io/docs/cli
+
+</span>
+                        </div>
+                        
+                    </div>
+                </div>
+            
+        </div>
+
+        <div class="recommendations">
+            <h3>🔍 Security Recommendations</h3>
+            <ul>
+                <li><strong>Password Security</strong>: All password validation tests should pass</li>
+                <li><strong>Session Management</strong>: Verify timeout and concurrent session limits</li>
+                <li><strong>Rate Limiting</strong>: Ensure brute force protection is working</li>
+                <li><strong>Input Validation</strong>: Check SQL injection and XSS protection</li>
+                <li><strong>Audit Logging</strong>: Verify all security events are logged</li>
+                <li><strong>Email Verification</strong>: Test mandatory verification flow</li>
+            </ul>
+        </div>
+
+        <div class="timestamp">
+            Generated: 24.08.2025 16:12:10
+        </div>
+    </div>
+</body>
+</html>

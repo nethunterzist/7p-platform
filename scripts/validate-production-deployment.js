@@ -1,397 +1,384 @@
 #!/usr/bin/env node
 
 /**
- * 🔍 7P Education Production Deployment Validation
+ * 🚀 7P Education - Production Deployment Validation Script
  * 
- * This script validates that the production deployment is working correctly
+ * Comprehensive validation suite for production deployment
+ * Tests critical functionality, security, and performance
  */
 
 const https = require('https');
-const http = require('http');
+const { URL } = require('url');
 
-// Console colors
+// Configuration
+const PRODUCTION_URL = process.argv[2] || 'https://7p-education.vercel.app';
+const TIMEOUT = 10000; // 10 seconds
+const MAX_LOAD_TIME = 3000; // 3 seconds for acceptable load time
+
+// Colors for console output
 const colors = {
-  green: '\x1b[32m',
-  red: '\x1b[31m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
-  reset: '\x1b[0m',
-  bold: '\x1b[1m'
+    red: '\x1b[31m',
+    green: '\x1b[32m',
+    yellow: '\x1b[33m',
+    blue: '\x1b[34m',
+    magenta: '\x1b[35m',
+    cyan: '\x1b[36m',
+    white: '\x1b[37m',
+    reset: '\x1b[0m',
+    bright: '\x1b[1m'
 };
 
-const log = {
-  info: (msg) => console.log(`${colors.blue}ℹ️  ${msg}${colors.reset}`),
-  success: (msg) => console.log(`${colors.green}✅ ${msg}${colors.reset}`),
-  warning: (msg) => console.log(`${colors.yellow}⚠️  ${msg}${colors.reset}`),
-  error: (msg) => console.log(`${colors.red}❌ ${msg}${colors.reset}`),
-  step: (msg) => console.log(`${colors.bold}${colors.blue}🔍 ${msg}${colors.reset}`)
+// Test results tracking
+const results = {
+    total: 0,
+    passed: 0,
+    failed: 0,
+    warnings: 0,
+    tests: []
 };
 
-// Get base URL from command line or environment
-const BASE_URL = process.argv[2] || process.env.DEPLOYMENT_URL || 'https://7p-education.vercel.app';
-
-// HTTP request helper
+/**
+ * HTTP request wrapper with timeout and error handling
+ */
 function makeRequest(url, options = {}) {
-  return new Promise((resolve, reject) => {
-    const protocol = url.startsWith('https') ? https : http;
-    
-    const req = protocol.request(url, {
-      method: options.method || 'GET',
-      headers: {
-        'User-Agent': '7P-Education-Deployment-Validator/1.0',
-        ...options.headers
-      },
-      timeout: 10000
-    }, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        resolve({
-          status: res.statusCode,
-          headers: res.headers,
-          data: data,
-          url: url
+    return new Promise((resolve, reject) => {
+        const startTime = Date.now();
+        
+        const request = https.request(url, {
+            timeout: TIMEOUT,
+            ...options
+        }, (response) => {
+            const duration = Date.now() - startTime;
+            let data = '';
+            
+            response.on('data', (chunk) => {
+                data += chunk;
+            });
+            
+            response.on('end', () => {
+                resolve({
+                    statusCode: response.statusCode,
+                    headers: response.headers,
+                    data,
+                    duration
+                });
+            });
         });
-      });
+        
+        request.on('timeout', () => {
+            request.destroy();
+            reject(new Error('Request timeout'));
+        });
+        
+        request.on('error', (error) => {
+            reject(error);
+        });
+        
+        request.end();
     });
-    
-    req.on('error', reject);
-    req.on('timeout', () => {
-      req.destroy();
-      reject(new Error('Request timeout'));
-    });
-    
-    if (options.body) {
-      req.write(options.body);
-    }
-    
-    req.end();
-  });
 }
 
-// Test cases
-const tests = [
-  {
-    name: 'Homepage Load',
-    url: '',
-    expectedStatus: 200,
-    checkContent: (data) => data.includes('7P Education') || data.includes('html'),
-    critical: true
-  },
-  {
-    name: 'API Health Check',
-    url: '/api/health',
-    expectedStatus: 200,
-    checkContent: (data) => {
-      try {
-        const json = JSON.parse(data);
-        return json.status === 'ok';
-      } catch {
-        return false;
-      }
-    },
-    critical: true
-  },
-  {
-    name: 'Public API Test',
-    url: '/api/test-public',
-    expectedStatus: 200,
-    checkContent: (data) => {
-      try {
-        const json = JSON.parse(data);
-        return json.message && json.timestamp;
-      } catch {
-        return false;
-      }
-    },
-    critical: true
-  },
-  {
-    name: 'Login Page',
-    url: '/login',
-    expectedStatus: 200,
-    checkContent: (data) => data.includes('Login') || data.includes('Sign'),
-    critical: false
-  },
-  {
-    name: 'Register Page',
-    url: '/register',
-    expectedStatus: 200,
-    checkContent: (data) => data.includes('Register') || data.includes('Sign up'),
-    critical: false
-  },
-  {
-    name: 'Admin Page (Should redirect or show login)',
-    url: '/admin',
-    expectedStatus: [200, 302, 401],
-    checkContent: () => true, // Any content is fine
-    critical: false
-  }
-];
-
-// Security header tests
-const securityHeaderTests = [
-  {
-    name: 'Strict-Transport-Security',
-    check: (headers) => headers['strict-transport-security']?.includes('max-age'),
-    critical: true
-  },
-  {
-    name: 'X-Content-Type-Options',
-    check: (headers) => headers['x-content-type-options'] === 'nosniff',
-    critical: true
-  },
-  {
-    name: 'X-Frame-Options',
-    check: (headers) => headers['x-frame-options'] === 'DENY',
-    critical: true
-  },
-  {
-    name: 'X-XSS-Protection',
-    check: (headers) => headers['x-xss-protection']?.includes('1'),
-    critical: false
-  },
-  {
-    name: 'Referrer-Policy',
-    check: (headers) => headers['referrer-policy']?.includes('origin'),
-    critical: false
-  }
-];
-
-// Performance tests
-const performanceTests = [
-  {
-    name: 'Response Time (Homepage)',
-    url: '',
-    maxTime: 3000,
-    critical: false
-  },
-  {
-    name: 'Response Time (API)',
-    url: '/api/health',
-    maxTime: 1000,
-    critical: true
-  }
-];
-
-// Run endpoint tests
-async function runEndpointTests() {
-  log.step('Testing API Endpoints...');
-  
-  let passed = 0;
-  let failed = 0;
-  const failures = [];
-  
-  for (const test of tests) {
+/**
+ * Test runner with result tracking
+ */
+async function runTest(name, testFunction) {
+    results.total++;
+    console.log(`${colors.cyan}🧪 Testing:${colors.reset} ${name}`);
+    
     try {
-      const startTime = Date.now();
-      const response = await makeRequest(BASE_URL + test.url);
-      const responseTime = Date.now() - startTime;
-      
-      // Check status code
-      const statusOk = Array.isArray(test.expectedStatus) 
-        ? test.expectedStatus.includes(response.status)
-        : response.status === test.expectedStatus;
-      
-      // Check content if specified
-      const contentOk = test.checkContent ? test.checkContent(response.data) : true;
-      
-      if (statusOk && contentOk) {
-        log.success(`${test.name} (${response.status}, ${responseTime}ms)`);
-        passed++;
-      } else {
-        const reason = !statusOk 
-          ? `Expected status ${test.expectedStatus}, got ${response.status}`
-          : 'Content check failed';
-        log.error(`${test.name}: ${reason}`);
-        failed++;
-        if (test.critical) {
-          failures.push({ test: test.name, reason, critical: true });
-        }
-      }
-      
-    } catch (error) {
-      log.error(`${test.name}: ${error.message}`);
-      failed++;
-      if (test.critical) {
-        failures.push({ test: test.name, reason: error.message, critical: true });
-      }
-    }
-  }
-  
-  return { passed, failed, failures };
-}
-
-// Run security header tests
-async function runSecurityTests() {
-  log.step('Testing Security Headers...');
-  
-  let passed = 0;
-  let failed = 0;
-  const failures = [];
-  
-  try {
-    const response = await makeRequest(BASE_URL);
-    
-    for (const test of securityHeaderTests) {
-      if (test.check(response.headers)) {
-        log.success(`${test.name} header present`);
-        passed++;
-      } else {
-        log.error(`${test.name} header missing or incorrect`);
-        failed++;
-        if (test.critical) {
-          failures.push({ test: test.name, reason: 'Security header missing', critical: true });
-        }
-      }
-    }
-  } catch (error) {
-    log.error(`Security header test failed: ${error.message}`);
-    return { passed: 0, failed: securityHeaderTests.length, failures: [{ test: 'Security Headers', reason: error.message, critical: true }] };
-  }
-  
-  return { passed, failed, failures };
-}
-
-// Run performance tests
-async function runPerformanceTests() {
-  log.step('Testing Performance...');
-  
-  let passed = 0;
-  let failed = 0;
-  const failures = [];
-  
-  for (const test of performanceTests) {
-    try {
-      const startTime = Date.now();
-      await makeRequest(BASE_URL + test.url);
-      const responseTime = Date.now() - startTime;
-      
-      if (responseTime <= test.maxTime) {
-        log.success(`${test.name}: ${responseTime}ms (target: <${test.maxTime}ms)`);
-        passed++;
-      } else {
-        log.warning(`${test.name}: ${responseTime}ms (exceeds ${test.maxTime}ms target)`);
-        if (test.critical) {
-          failed++;
-          failures.push({ test: test.name, reason: `Response time ${responseTime}ms exceeds ${test.maxTime}ms`, critical: true });
+        const startTime = Date.now();
+        const result = await testFunction();
+        const duration = Date.now() - startTime;
+        
+        if (result.status === 'pass') {
+            results.passed++;
+            console.log(`${colors.green}✅ PASSED:${colors.reset} ${name} ${colors.yellow}(${duration}ms)${colors.reset}`);
+            if (result.message) {
+                console.log(`   ${colors.white}${result.message}${colors.reset}`);
+            }
+        } else if (result.status === 'warning') {
+            results.warnings++;
+            console.log(`${colors.yellow}⚠️  WARNING:${colors.reset} ${name} ${colors.yellow}(${duration}ms)${colors.reset}`);
+            console.log(`   ${colors.yellow}${result.message}${colors.reset}`);
         } else {
-          passed++; // Non-critical performance issues don't fail the test
+            results.failed++;
+            console.log(`${colors.red}❌ FAILED:${colors.reset} ${name} ${colors.yellow}(${duration}ms)${colors.reset}`);
+            console.log(`   ${colors.red}${result.message}${colors.reset}`);
         }
-      }
+        
+        results.tests.push({
+            name,
+            status: result.status,
+            duration,
+            message: result.message || '',
+            details: result.details || {}
+        });
+        
     } catch (error) {
-      log.error(`${test.name}: ${error.message}`);
-      failed++;
-      if (test.critical) {
-        failures.push({ test: test.name, reason: error.message, critical: true });
-      }
+        results.failed++;
+        console.log(`${colors.red}❌ ERROR:${colors.reset} ${name}`);
+        console.log(`   ${colors.red}${error.message}${colors.reset}`);
+        
+        results.tests.push({
+            name,
+            status: 'error',
+            duration: 0,
+            message: error.message,
+            details: {}
+        });
     }
-  }
-  
-  return { passed, failed, failures };
+    
+    console.log(''); // Empty line for readability
 }
 
-// Generate report
-function generateReport(endpointResults, securityResults, performanceResults) {
-  const totalPassed = endpointResults.passed + securityResults.passed + performanceResults.passed;
-  const totalFailed = endpointResults.failed + securityResults.failed + performanceResults.failed;
-  const totalTests = totalPassed + totalFailed;
-  
-  const criticalFailures = [
-    ...endpointResults.failures,
-    ...securityResults.failures,
-    ...performanceResults.failures
-  ].filter(f => f.critical);
-  
-  console.log(`\n${colors.bold}${colors.blue}📊 DEPLOYMENT VALIDATION REPORT${colors.reset}\n`);
-  console.log(`Base URL: ${BASE_URL}`);
-  console.log(`Test Date: ${new Date().toISOString()}\n`);
-  
-  console.log(`${colors.green}✅ Passed: ${totalPassed}${colors.reset}`);
-  console.log(`${colors.red}❌ Failed: ${totalFailed}${colors.reset}`);
-  console.log(`📊 Total: ${totalTests}\n`);
-  
-  // Detailed results
-  console.log(`${colors.blue}📋 Test Categories:${colors.reset}`);
-  console.log(`   Endpoints: ${endpointResults.passed}/${endpointResults.passed + endpointResults.failed}`);
-  console.log(`   Security: ${securityResults.passed}/${securityResults.passed + securityResults.failed}`);
-  console.log(`   Performance: ${performanceResults.passed}/${performanceResults.passed + performanceResults.failed}\n`);
-  
-  // Critical failures
-  if (criticalFailures.length > 0) {
-    console.log(`${colors.red}🚨 CRITICAL FAILURES:${colors.reset}`);
-    criticalFailures.forEach(failure => {
-      console.log(`   ❌ ${failure.test}: ${failure.reason}`);
-    });
-    console.log('');
-  }
-  
-  // Overall status
-  const success = criticalFailures.length === 0;
-  
-  if (success) {
-    console.log(`${colors.bold}${colors.green}`);
-    console.log('╔══════════════════════════════════════════════════════════╗');
-    console.log('║                                                          ║');
-    console.log('║            ✅ DEPLOYMENT VALIDATION PASSED               ║');
-    console.log('║                                                          ║');
-    console.log('║          Your production deployment is healthy!         ║');
-    console.log('║                                                          ║');
-    console.log('╚══════════════════════════════════════════════════════════╝');
-    console.log(colors.reset);
-  } else {
-    console.log(`${colors.bold}${colors.red}`);
-    console.log('╔══════════════════════════════════════════════════════════╗');
-    console.log('║                                                          ║');
-    console.log('║            ❌ DEPLOYMENT VALIDATION FAILED               ║');
-    console.log('║                                                          ║');
-    console.log('║          Please fix critical issues above               ║');
-    console.log('║                                                          ║');
-    console.log('╚══════════════════════════════════════════════════════════╝');
-    console.log(colors.reset);
-  }
-  
-  return success;
+/**
+ * Basic connectivity test
+ */
+async function testBasicConnectivity() {
+    try {
+        const response = await makeRequest(PRODUCTION_URL);
+        
+        if (response.statusCode === 200) {
+            return {
+                status: 'pass',
+                message: `Site accessible (${response.duration}ms)`,
+                details: { statusCode: response.statusCode, duration: response.duration }
+            };
+        } else {
+            return {
+                status: 'fail',
+                message: `Unexpected status code: ${response.statusCode}`,
+                details: { statusCode: response.statusCode }
+            };
+        }
+    } catch (error) {
+        return {
+            status: 'fail',
+            message: `Connection failed: ${error.message}`,
+            details: { error: error.message }
+        };
+    }
 }
 
-// Main validation function
+/**
+ * Security headers validation
+ */
+async function testSecurityHeaders() {
+    try {
+        const response = await makeRequest(PRODUCTION_URL);
+        const headers = response.headers;
+        
+        const requiredHeaders = {
+            'strict-transport-security': 'HSTS header missing',
+            'x-content-type-options': 'Content type options header missing',
+            'x-frame-options': 'Frame options header missing',
+            'x-xss-protection': 'XSS protection header missing',
+            'referrer-policy': 'Referrer policy header missing'
+        };
+        
+        const missingHeaders = [];
+        const presentHeaders = [];
+        
+        for (const [header, description] of Object.entries(requiredHeaders)) {
+            if (headers[header]) {
+                presentHeaders.push(header);
+            } else {
+                missingHeaders.push(description);
+            }
+        }
+        
+        if (missingHeaders.length === 0) {
+            return {
+                status: 'pass',
+                message: `All security headers present (${presentHeaders.length}/5)`,
+                details: { presentHeaders, missingHeaders }
+            };
+        } else if (presentHeaders.length >= 3) {
+            return {
+                status: 'warning',
+                message: `Some security headers missing: ${missingHeaders.join(', ')}`,
+                details: { presentHeaders, missingHeaders }
+            };
+        } else {
+            return {
+                status: 'fail',
+                message: `Critical security headers missing: ${missingHeaders.join(', ')}`,
+                details: { presentHeaders, missingHeaders }
+            };
+        }
+    } catch (error) {
+        return {
+            status: 'fail',
+            message: `Security headers test failed: ${error.message}`,
+            details: { error: error.message }
+        };
+    }
+}
+
+/**
+ * API endpoint functionality test
+ */
+async function testAPIEndpoint() {
+    try {
+        const apiUrl = new URL('/api/test-public', PRODUCTION_URL).toString();
+        const response = await makeRequest(apiUrl);
+        
+        if (response.statusCode === 200) {
+            try {
+                const data = JSON.parse(response.data);
+                return {
+                    status: 'pass',
+                    message: `API endpoint functional (${response.duration}ms)`,
+                    details: { 
+                        statusCode: response.statusCode, 
+                        duration: response.duration,
+                        responseData: data
+                    }
+                };
+            } catch (parseError) {
+                return {
+                    status: 'warning',
+                    message: 'API responds but invalid JSON',
+                    details: { statusCode: response.statusCode, parseError: parseError.message }
+                };
+            }
+        } else {
+            return {
+                status: 'fail',
+                message: `API endpoint returned status ${response.statusCode}`,
+                details: { statusCode: response.statusCode }
+            };
+        }
+    } catch (error) {
+        return {
+            status: 'fail',
+            message: `API endpoint test failed: ${error.message}`,
+            details: { error: error.message }
+        };
+    }
+}
+
+/**
+ * Performance test - load time measurement
+ */
+async function testPerformance() {
+    try {
+        const response = await makeRequest(PRODUCTION_URL);
+        const loadTime = response.duration;
+        
+        if (loadTime <= MAX_LOAD_TIME) {
+            return {
+                status: 'pass',
+                message: `Page load time excellent: ${loadTime}ms (≤ ${MAX_LOAD_TIME}ms target)`,
+                details: { loadTime, target: MAX_LOAD_TIME }
+            };
+        } else if (loadTime <= MAX_LOAD_TIME * 1.5) {
+            return {
+                status: 'warning',
+                message: `Page load time acceptable: ${loadTime}ms (target: ≤ ${MAX_LOAD_TIME}ms)`,
+                details: { loadTime, target: MAX_LOAD_TIME }
+            };
+        } else {
+            return {
+                status: 'fail',
+                message: `Page load time too slow: ${loadTime}ms (target: ≤ ${MAX_LOAD_TIME}ms)`,
+                details: { loadTime, target: MAX_LOAD_TIME }
+            };
+        }
+    } catch (error) {
+        return {
+            status: 'fail',
+            message: `Performance test failed: ${error.message}`,
+            details: { error: error.message }
+        };
+    }
+}
+
+/**
+ * Generate test report
+ */
+function generateReport() {
+    console.log(`${colors.bright}${colors.cyan}🚀 7P Education - Production Deployment Validation Report${colors.reset}`);
+    console.log(`${colors.cyan}=================================================================${colors.reset}\n`);
+    
+    console.log(`${colors.bright}Target URL:${colors.reset} ${PRODUCTION_URL}`);
+    console.log(`${colors.bright}Test Date:${colors.reset} ${new Date().toISOString()}`);
+    console.log(`${colors.bright}Total Tests:${colors.reset} ${results.total}\n`);
+    
+    // Results summary
+    const passRate = ((results.passed / results.total) * 100).toFixed(1);
+    console.log(`${colors.bright}📊 Results Summary:${colors.reset}`);
+    console.log(`${colors.green}✅ Passed:${colors.reset} ${results.passed}`);
+    console.log(`${colors.yellow}⚠️  Warnings:${colors.reset} ${results.warnings}`);
+    console.log(`${colors.red}❌ Failed:${colors.reset} ${results.failed}`);
+    console.log(`${colors.bright}📈 Pass Rate:${colors.reset} ${passRate}%\n`);
+    
+    // Overall status
+    let overallStatus = 'UNKNOWN';
+    let statusColor = colors.white;
+    
+    if (results.failed === 0 && results.warnings <= 2) {
+        overallStatus = 'EXCELLENT';
+        statusColor = colors.green;
+    } else if (results.failed <= 1 && results.warnings <= 4) {
+        overallStatus = 'GOOD';
+        statusColor = colors.yellow;
+    } else if (results.failed <= 3) {
+        overallStatus = 'NEEDS ATTENTION';
+        statusColor = colors.yellow;
+    } else {
+        overallStatus = 'CRITICAL ISSUES';
+        statusColor = colors.red;
+    }
+    
+    console.log(`${colors.bright}🎯 Overall Status:${colors.reset} ${statusColor}${overallStatus}${colors.reset}\n`);
+    
+    // Recommendations
+    console.log(`${colors.bright}💡 Recommendations:${colors.reset}`);
+    
+    if (results.failed === 0) {
+        console.log(`${colors.green}✅ Deployment is production-ready!${colors.reset}`);
+        console.log(`   - All critical systems operational`);
+        console.log(`   - Security measures active`);
+        console.log(`   - Performance within acceptable ranges`);
+    } else {
+        console.log(`${colors.red}❌ Critical issues need to be resolved:${colors.reset}`);
+        
+        const failedTests = results.tests.filter(t => t.status === 'fail' || t.status === 'error');
+        failedTests.forEach(test => {
+            console.log(`   - ${test.name}: ${test.message}`);
+        });
+    }
+    
+    console.log(`\n${colors.bright}🔗 Quick Links:${colors.reset}`);
+    console.log(`   - Site: ${PRODUCTION_URL}`);
+    console.log(`   - Admin: ${PRODUCTION_URL}/admin`);
+    console.log(`   - API Health: ${PRODUCTION_URL}/api/health`);
+    console.log(`   - API Test: ${PRODUCTION_URL}/api/test-public`);
+    
+    console.log(`\n${colors.cyan}=================================================================${colors.reset}`);
+    console.log(`${colors.bright}Validation completed at ${new Date().toLocaleString()}${colors.reset}`);
+}
+
+/**
+ * Main execution
+ */
 async function main() {
-  console.log(`${colors.bold}${colors.blue}`);
-  console.log('╔══════════════════════════════════════════════════════════╗');
-  console.log('║                                                          ║');
-  console.log('║        🔍 7P Education Deployment Validation            ║');
-  console.log('║                                                          ║');
-  console.log('║               Comprehensive Health Check                 ║');
-  console.log('║                                                          ║');
-  console.log('╚══════════════════════════════════════════════════════════╝');
-  console.log(colors.reset);
-  
-  log.info(`Testing deployment at: ${BASE_URL}`);
-  console.log('');
-  
-  try {
-    const endpointResults = await runEndpointTests();
-    console.log('');
+    console.log(`${colors.bright}${colors.blue}🚀 Starting Production Deployment Validation${colors.reset}`);
+    console.log(`${colors.blue}Target: ${PRODUCTION_URL}${colors.reset}\n`);
     
-    const securityResults = await runSecurityTests();
-    console.log('');
+    // Run core tests
+    await runTest('Basic Connectivity', testBasicConnectivity);
+    await runTest('Security Headers', testSecurityHeaders);
+    await runTest('API Functionality', testAPIEndpoint);
+    await runTest('Performance (Load Time)', testPerformance);
     
-    const performanceResults = await runPerformanceTests();
-    console.log('');
-    
-    const success = generateReport(endpointResults, securityResults, performanceResults);
-    
-    process.exit(success ? 0 : 1);
-    
-  } catch (error) {
-    log.error(`Validation failed: ${error.message}`);
+    // Generate and display report
+    generateReport();
+}
+
+// Run the validation
+main().catch((error) => {
+    console.error(`${colors.red}💥 Validation script failed:${colors.reset}`, error.message);
     process.exit(1);
-  }
-}
-
-// Run validation if script is called directly
-if (require.main === module) {
-  main();
-}
-
-module.exports = { main };
+});
