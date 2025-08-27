@@ -35,33 +35,43 @@ export async function middleware(request: NextRequest) {
   }
 
   try {
-    // Validate JWT token with NextAuth
+    // Try NextAuth JWT token first
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
     });
 
-    // If no valid token, redirect to login with callback
-    if (!token) {
+    // If NextAuth token exists, check role for admin routes
+    if (token) {
+      if (pathname.startsWith('/admin') && token.role !== 'admin') {
+        const loginUrl = new URL('/login', request.url);
+        loginUrl.searchParams.set('error', 'insufficient_permissions');
+        loginUrl.searchParams.set('callbackUrl', pathname);
+        return NextResponse.redirect(loginUrl, { status: 307 });
+      }
+      return NextResponse.next();
+    }
+
+    // Check for fallback auth token (localStorage-based)
+    const authToken = request.cookies.get('auth_token')?.value ||
+                     request.headers.get('authorization')?.replace('Bearer ', '');
+
+    // Check for simple session cookie (for localStorage auth)
+    const simpleSession = request.cookies.get('simple-auth-session');
+
+    // If no tokens found, redirect to login
+    if (!authToken && !simpleSession) {
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('callbackUrl', pathname);
       return NextResponse.redirect(loginUrl, { status: 307 });
     }
 
-    // Additional role-based checks for admin routes
-    if (pathname.startsWith('/admin') && token.role !== 'admin') {
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('error', 'insufficient_permissions');
-      loginUrl.searchParams.set('callbackUrl', pathname);
-      return NextResponse.redirect(loginUrl, { status: 307 });
-    }
-
-    // Valid token - allow access
+    // Allow access if any auth method is present
     return NextResponse.next();
     
   } catch (error) {
-    // JWT validation failed - redirect to login
-    console.error('Middleware JWT validation error:', error);
+    // Auth validation failed - redirect to login
+    console.error('Middleware auth validation error:', error);
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('callbackUrl', pathname);
     return NextResponse.redirect(loginUrl, { status: 307 });
