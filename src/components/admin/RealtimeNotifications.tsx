@@ -25,83 +25,119 @@ export default function RealtimeNotifications() {
   const supabase = createSafeClient();
 
   useEffect(() => {
-    if (!isAdmin || !user || !supabase) return;
-
-    // Subscribe to admin notifications channel
-    const channel = supabase
-      .channel('admin-notifications')
-      .on('broadcast', { event: 'enrollment' }, (payload) => {
-        const newNotification: Notification = {
-          id: `enrollment-${payload.payload.enrollment_id}-${Date.now()}`,
+    if (!isAdmin || !user) return;
+    
+    // If Supabase is not available, add mock notifications for demo purposes
+    if (!supabase) {
+      console.warn('Supabase not available, using mock notifications');
+      
+      // Add some demo notifications
+      const mockNotifications: Notification[] = [
+        {
+          id: 'mock-1',
           type: 'enrollment',
-          message: payload.payload.message,
-          timestamp: payload.payload.timestamp,
-          user_name: payload.payload.user_name,
-          user_email: payload.payload.user_email,
-          course_title: payload.payload.course_title,
+          message: '✅ Sistem çalışıyor - Mock bildirimler aktif',
+          timestamp: new Date().toISOString(),
+          user_name: 'Demo User',
+          user_email: 'demo@7peducation.com',
+          course_title: 'Demo Kurs',
           read: false
-        };
-        
-        setNotifications(prev => [newNotification, ...prev.slice(0, 49)]); // Keep last 50
-        setUnreadCount(prev => prev + 1);
-      })
-      .on('broadcast', { event: 'unenrollment' }, (payload) => {
-        const newNotification: Notification = {
-          id: `unenrollment-${payload.payload.enrollment_id}-${Date.now()}`,
-          type: 'unenrollment',
-          message: payload.payload.message,
-          timestamp: payload.payload.timestamp,
-          user_name: payload.payload.user_name,
-          user_email: payload.payload.user_email,
-          course_title: payload.payload.course_title,
-          read: false
-        };
-        
-        setNotifications(prev => [newNotification, ...prev.slice(0, 49)]);
-        setUnreadCount(prev => prev + 1);
-      })
-      .subscribe();
-
-    // Listen for database changes on enrollments table
-    const enrollmentsChannel = supabase
-      .channel('enrollments-changes')
-      .on('postgres_changes', 
-        { event: 'INSERT', schema: 'public', table: 'enrollments' }, 
-        async (payload) => {
-          // Fetch user and course details
-          const { data: enrollment } = await supabase
-            .from('enrollments')
-            .select(`
-              *,
-              profiles!user_id(name, email),
-              courses!course_id(title)
-            `)
-            .eq('id', payload.new.id)
-            .single();
-
-          if (enrollment) {
-            const newNotification: Notification = {
-              id: `db-enrollment-${enrollment.id}-${Date.now()}`,
-              type: 'enrollment',
-              message: `${enrollment.profiles?.name || 'Yeni kullanıcı'} "${enrollment.courses?.title}" kursuna kaydoldu`,
-              timestamp: enrollment.enrolled_at,
-              user_name: enrollment.profiles?.name,
-              user_email: enrollment.profiles?.email,
-              course_title: enrollment.courses?.title,
-              read: false
-            };
-            
-            setNotifications(prev => [newNotification, ...prev.slice(0, 49)]);
-            setUnreadCount(prev => prev + 1);
-          }
         }
-      )
-      .subscribe();
+      ];
+      
+      setNotifications(mockNotifications);
+      setUnreadCount(mockNotifications.length);
+      return;
+    }
 
-    return () => {
-      supabase.removeChannel(channel);
-      supabase.removeChannel(enrollmentsChannel);
-    };
+    try {
+      // Subscribe to admin notifications channel
+      const channel = supabase
+        .channel('admin-notifications')
+        .on('broadcast', { event: 'enrollment' }, (payload) => {
+          const newNotification: Notification = {
+            id: `enrollment-${payload.payload.enrollment_id}-${Date.now()}`,
+            type: 'enrollment',
+            message: payload.payload.message,
+            timestamp: payload.payload.timestamp,
+            user_name: payload.payload.user_name,
+            user_email: payload.payload.user_email,
+            course_title: payload.payload.course_title,
+            read: false
+          };
+          
+          setNotifications(prev => [newNotification, ...prev.slice(0, 49)]); // Keep last 50
+          setUnreadCount(prev => prev + 1);
+        })
+        .on('broadcast', { event: 'unenrollment' }, (payload) => {
+          const newNotification: Notification = {
+            id: `unenrollment-${payload.payload.enrollment_id}-${Date.now()}`,
+            type: 'unenrollment',
+            message: payload.payload.message,
+            timestamp: payload.payload.timestamp,
+            user_name: payload.payload.user_name,
+            user_email: payload.payload.user_email,
+            course_title: payload.payload.course_title,
+            read: false
+          };
+          
+          setNotifications(prev => [newNotification, ...prev.slice(0, 49)]);
+          setUnreadCount(prev => prev + 1);
+        })
+        .subscribe();
+
+      // Listen for database changes on enrollments table
+      const enrollmentsChannel = supabase
+        .channel('enrollments-changes')
+        .on('postgres_changes', 
+          { event: 'INSERT', schema: 'public', table: 'enrollments' }, 
+          async (payload) => {
+            // Fetch user and course details
+            const { data: enrollment } = await supabase
+              .from('enrollments')
+              .select(`
+                *,
+                profiles!user_id(name, email),
+                courses!course_id(title)
+              `)
+              .eq('id', payload.new.id)
+              .single();
+
+            if (enrollment) {
+              const newNotification: Notification = {
+                id: `db-enrollment-${enrollment.id}-${Date.now()}`,
+                type: 'enrollment',
+                message: `${enrollment.profiles?.name || 'Yeni kullanıcı'} "${enrollment.courses?.title}" kursuna kaydoldu`,
+                timestamp: enrollment.enrolled_at,
+                user_name: enrollment.profiles?.name,
+                user_email: enrollment.profiles?.email,
+                course_title: enrollment.courses?.title,
+                read: false
+              };
+              
+              setNotifications(prev => [newNotification, ...prev.slice(0, 49)]);
+              setUnreadCount(prev => prev + 1);
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+        supabase.removeChannel(enrollmentsChannel);
+      };
+    } catch (error) {
+      console.warn('Realtime notifications failed to initialize:', error);
+      // Set fallback notification
+      setNotifications([{
+        id: 'fallback-1',
+        type: 'enrollment',
+        message: '⚠️ Bildirimler devre dışı - Sistem fallback modda',
+        timestamp: new Date().toISOString(),
+        read: false
+      }]);
+      setUnreadCount(1);
+    }
   }, [isAdmin, user, supabase]);
 
   const markAsRead = (notificationId: string) => {
