@@ -145,5 +145,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 **Repository**: [7peducation](https://github.com/furkanyigit/7peducation)  
-**Documentation**: [docs/DOC_INDEX.md](./docs/DOC_INDEX.md)  
+**Documentation**: [docs/DOC_INDEX.md](./DOC_INDEX.md)  
 **Support**: Create GitHub issues for bugs and feature requests

@@ -87,7 +87,7 @@ vercel --prod
 
 ### Reference
 - [API-REFERENCE.md](./API-REFERENCE.md) - Complete API documentation
-- [CHANGELOG.md](../CHANGELOG.md) - Version history & changes
+- [CHANGELOG.md](./CHANGELOG.md) - Version history & changes
 
 ## 🔗 Quick Links
 

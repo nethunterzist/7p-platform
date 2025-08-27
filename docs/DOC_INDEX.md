@@ -47,7 +47,7 @@
 ### 📚 Reference Materials
 1. [API-REFERENCE.md](./API-REFERENCE.md) - Complete API documentation
 2. [ENROLLMENT.md](./ENROLLMENT.md) - Course enrollment system
-3. [CHANGELOG.md](../CHANGELOG.md) - Version history
+3. [CHANGELOG.md](./CHANGELOG.md) - Version history
 
 ## 📊 Documentation Statistics
 
