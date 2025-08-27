@@ -3,7 +3,7 @@
  * Simple helpers for Supabase authentication operations
  */
 
-import { createClient } from '@/utils/supabase/client';
+import { createSafeClient } from '@/utils/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
 
 export interface AuthResult {
@@ -27,11 +27,19 @@ export interface SignInData {
 }
 
 class SupabaseAuth {
-  private supabase = createClient();
+  private supabase = createSafeClient();
 
   // Sign up with email and password
   async signUp({ email, password, userData }: SignUpData): Promise<AuthResult> {
     try {
+      if (!this.supabase) {
+        return {
+          user: null,
+          session: null,
+          error: 'Supabase client not available'
+        };
+      }
+
       const { data, error } = await this.supabase.auth.signUp({
         email,
         password,
@@ -65,6 +73,14 @@ class SupabaseAuth {
   // Sign in with email and password
   async signIn({ email, password }: SignInData): Promise<AuthResult> {
     try {
+      if (!this.supabase) {
+        return {
+          user: null,
+          session: null,
+          error: 'Supabase client not available'
+        };
+      }
+
       const { data, error } = await this.supabase.auth.signInWithPassword({
         email,
         password
@@ -103,6 +119,10 @@ class SupabaseAuth {
   // Sign out
   async signOut(): Promise<{ error: string | null }> {
     try {
+      if (!this.supabase) {
+        return { error: 'Supabase client not available' };
+      }
+      
       const { error } = await this.supabase.auth.signOut();
       return { error: error?.message || null };
     } catch (error) {
@@ -115,6 +135,14 @@ class SupabaseAuth {
   // Get current session
   async getSession(): Promise<AuthResult> {
     try {
+      if (!this.supabase) {
+        return {
+          user: null,
+          session: null,
+          error: 'Supabase client not available'
+        };
+      }
+      
       const { data, error } = await this.supabase.auth.getSession();
 
       if (error) {
@@ -142,6 +170,13 @@ class SupabaseAuth {
   // Get current user
   async getUser(): Promise<{ user: User | null; error: string | null }> {
     try {
+      if (!this.supabase) {
+        return {
+          user: null,
+          error: 'Supabase client not available'
+        };
+      }
+      
       const { data, error } = await this.supabase.auth.getUser();
 
       if (error) {
@@ -166,6 +201,10 @@ class SupabaseAuth {
   // Password reset
   async resetPassword(email: string): Promise<{ error: string | null }> {
     try {
+      if (!this.supabase) {
+        return { error: 'Supabase client not available' };
+      }
+      
       const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/reset-password`
       });
