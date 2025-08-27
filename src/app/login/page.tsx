@@ -40,8 +40,9 @@ export default function LoginPage() {
         return;
       }
     } catch (error) {
+      // Don't show Supabase API errors to users
       console.error('Login error:', error);
-      setMessage(`❌ ${error instanceof Error ? error.message : 'Geçersiz email veya şifre'}`);
+      setMessage(`❌ Geçersiz email veya şifre`);
     } finally {
       setLoading(false);
     }

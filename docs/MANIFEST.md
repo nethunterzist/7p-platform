@@ -1,7 +1,7 @@
 # 📚 Documentation Manifest - Complete Catalog
 
 **Last Updated**: 2025-08-27 15:05:00 UTC  
-**Total Files**: 76 markdown files  
+**Total Files**: 77 markdown files  
 **Organization**: Consolidated structure with canonical sources  
 
 ---
@@ -12,8 +12,9 @@
 |------|----------|---------|---------|------|-------------|--------|---------------|
 | **ROOT DIRECTORY** |
 | `README.md` | root | Ana proje tanımı ve quick start | Active | 8.2KB | 2025-08-27 | nethunterzist | - |
-| **REPORTS (14 files)** |
+| **REPORTS (8 files)** |
 | `reports/CURRENT_HEALTH_SNAPSHOT.md` | reports | Canlı sistem sağlık durumu raporu | Active | 3.5KB | - | - | `./CURRENT_HEALTH_SNAPSHOT.md` |
+| `reports/REPO_DOCS_CONSOLIDATION_REPORT.md` | reports | Dokümantasyon konsolidasyon süreci raporu | Active | 12.5KB | - | - | `./REPO_DOCS_CONSOLIDATION_REPORT.md` |
 | `reports/GO_LIVE_HARDENING_REPORT.md` | reports | Go-live güvenlik sıkılaştırma raporu | Active | 18.8KB | - | - | `./GO_LIVE_HARDENING_REPORT.md` |
 | `reports/LAUNCH_MONITORING_REPORT.md` | reports | Production launch monitoring raporu | Active | 6.7KB | - | - | `./LAUNCH_MONITORING_REPORT.md` |
 | `reports/PRODUCTION_READINESS_REPORT.md` | reports | İlk production hazırlık raporu | Active | 10.1KB | - | - | `./PRODUCTION_READINESS_REPORT.md` |

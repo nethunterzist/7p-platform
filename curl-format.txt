@@ -1,1 +1,0 @@
-time_total: %{time_total}\ntime_connect: %{time_connect}\ntime_namelookup: %{time_namelookup}\nhttp_code: %{http_code}\nsize_download: %{size_download}
