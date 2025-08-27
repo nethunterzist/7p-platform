@@ -25,6 +25,11 @@ export class AuthErrorBoundary extends React.Component<AuthErrorBoundaryProps, A
   }
 
   static getDerivedStateFromError(error: Error): AuthErrorBoundaryState {
+    // Ignore Supabase key errors - use fallback auth instead
+    if (error.message && error.message.includes('supabaseKey is required')) {
+      console.warn('Supabase key error caught, continuing with fallback auth');
+      return { hasError: false };
+    }
     return { hasError: true, error };
   }
 

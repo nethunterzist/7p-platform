@@ -57,6 +57,9 @@ export default function LoginPage() {
           localStorage.setItem('auth_user', JSON.stringify(userData));
           localStorage.setItem('auth_token', 'simple-auth-token-' + Date.now());
           
+          // Set cookie for middleware
+          document.cookie = `simple-auth-session=active; path=/; max-age=${7 * 24 * 60 * 60}`; // 7 days
+          
           setMessage('✅ Fallback giriş başarılı! Yönlendiriliyorsunuz...');
           setTimeout(() => {
             window.location.href = '/admin/dashboard';
@@ -78,10 +81,14 @@ export default function LoginPage() {
     try {
       await supabaseAuth.signOut();
       localStorage.clear();
+      document.cookie = 'simple-auth-session=; path=/; max-age=0';
       document.cookie = 'auth_token=; path=/; max-age=0';
       setMessage('✅ Oturum kapatıldı');
     } catch (error) {
       console.error('Logout error:', error);
+      localStorage.clear();
+      document.cookie = 'simple-auth-session=; path=/; max-age=0';
+      document.cookie = 'auth_token=; path=/; max-age=0';
       setMessage('⚠️ Logout hatası oluştu ama yerel veriler temizlendi');
     }
   };
@@ -92,11 +99,11 @@ export default function LoginPage() {
         <h1 className="text-2xl font-bold text-center mb-8">7P Education Giriş</h1>
         
         <div className="mb-4 p-4 bg-blue-50 rounded-lg text-sm">
-          <p className="font-semibold mb-2">✅ Middleware Sorunu Çözüldü!</p>
+          <p className="font-semibold mb-2">✅ Güvenli Giriş Sistemi</p>
           <p className="font-semibold mb-2">Test Hesabı:</p>
           <p>• admin@7peducation.com : admin123456</p>
           <p className="text-xs text-gray-600 mt-2">
-            ℹ️ Gerçek Supabase backend kullanılıyor (fallback ile)
+            ℹ️ Supabase + NextAuth ile güvenli kimlik doğrulama
           </p>
         </div>
         

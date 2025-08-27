@@ -1,200 +1,177 @@
 # 7P Education - Documentation Index
 
-> Kapsamlı dokümantasyon kataloğu ve navigasyon rehberi
-
-## 📋 Dokümantasyon Durumu
-
-| Document | Status | Last Updated | Maintainer | Priority |
-|----------|--------|-------------|------------|----------|
-| **README.md** | ✅ Complete | 2025-01-27 | 7P Team | High |
-| **CODEMAP.md** | ✅ Complete | 2025-01-27 | 7P Team | High |
-| **ROUTEMAP.md** | ✅ Complete | 2025-01-27 | 7P Team | High |
-| **ENVIRONMENT.md** | ✅ Complete | 2025-01-27 | 7P Team | Critical |
-| **RUNTIME.md** | ✅ Complete | 2025-01-27 | 7P Team | High |
-| **AUTH.md** | ✅ Complete | 2025-01-27 | 7P Team | Critical |
-| **PAYMENTS.md** | ✅ Complete | 2025-01-27 | 7P Team | High |
-| **ENROLLMENT.md** | ✅ Complete | 2025-01-27 | 7P Team | High |
-| **DB/SCHEMA.md** | ✅ Complete | 2025-01-27 | 7P Team | High |
-| **MIDDLEWARE.md** | ✅ Complete | 2025-01-27 | 7P Team | Medium |
-| **MONITORING.md** | ✅ Complete | 2025-01-27 | 7P Team | Medium |
-| **API-REFERENCE.md** | ✅ Complete | 2025-01-27 | 7P Team | Medium |
-| **OPERATIONS/RUNBOOK.md** | ✅ Complete | 2025-01-27 | 7P Team | High |
-| **SECURITY.md** | ✅ Complete | 2025-01-27 | 7P Team | High |
-| **ONBOARDING.md** | ✅ Complete | 2025-01-27 | 7P Team | High |
-| **CHANGELOG.md** | ✅ Complete | 2025-01-27 | 7P Team | Low |
-
-## 🗺️ Navigation Guide
-
-### 🚀 Quick Start Path
-1. [ONBOARDING.md](./ONBOARDING.md) - 10-minute setup guide
-2. [README.md](./README.md) - Project overview & getting started
-3. [ENVIRONMENT.md](./ENVIRONMENT.md) - Environment setup  
-4. [AUTH.md](./AUTH.md) - Authentication system
-5. [PAYMENTS.md](./PAYMENTS.md) - Payment system (if needed)
-
-### 🏗️ Architecture Understanding
-1. [CODEMAP.md](./CODEMAP.md) - Code structure & dependencies
-2. [ROUTEMAP.md](./ROUTEMAP.md) - All routes & endpoints
-3. [RUNTIME.md](./RUNTIME.md) - Edge vs Node.js decisions
-4. [DB/SCHEMA.md](./DB/SCHEMA.md) - Database schema & relationships
-
-### 🔒 Security & Operations
-1. [MIDDLEWARE.md](./MIDDLEWARE.md) - Route protection
-2. [SECURITY.md](./SECURITY.md) - Security policies
-3. [MONITORING.md](./MONITORING.md) - Logging & observability
-4. [OPERATIONS/RUNBOOK.md](./OPERATIONS/RUNBOOK.md) - Production operations
-
-### 📚 Reference Materials
-1. [API-REFERENCE.md](./API-REFERENCE.md) - Complete API documentation
-2. [ENROLLMENT.md](./ENROLLMENT.md) - Course enrollment system
-3. [CHANGELOG.md](./CHANGELOG.md) - Version history
-
-## 📊 Documentation Statistics
-
-### Completion Status
-- **✅ Complete**: 16 documents (100%)
-- **🔄 In Progress**: 0 documents (0%)
-- **❌ Missing**: 0 documents (0%)
-
-### Content Coverage
-- **Total Words**: ~45,000 words
-- **Code Examples**: 150+ snippets
-- **Diagrams**: 12 Mermaid diagrams
-- **Cross-references**: 80+ internal links
-
-### Priority Distribution
-- **🔥 Critical**: 2 docs (ENVIRONMENT, AUTH)
-- **📈 High**: 7 docs (README, CODEMAP, ROUTEMAP, etc.)
-- **📊 Medium**: 5 docs (MIDDLEWARE, MONITORING, etc.)
-- **📝 Low**: 1 doc (CHANGELOG)
-
-## 🎯 Usage Scenarios
-
-### New Developer Onboarding
-```
-README.md → ENVIRONMENT.md → AUTH.md → CODEMAP.md → ROUTEMAP.md
-```
-
-### Production Deployment
-```
-OPERATIONS/RUNBOOK.md → SECURITY.md → ENVIRONMENT.md → MONITORING.md
-```
-
-### Feature Development  
-```
-CODEMAP.md → API-REFERENCE.md → DB/SCHEMA.md → PAYMENTS.md/ENROLLMENT.md
-```
-
-### Troubleshooting
-```
-MONITORING.md → OPERATIONS/RUNBOOK.md → MIDDLEWARE.md → AUTH.md
-```
-
-## 🔍 Search & Discovery
-
-### By Topic
-- **Authentication**: AUTH.md, MIDDLEWARE.md, SECURITY.md
-- **Database**: DB/SCHEMA.md, ENROLLMENT.md
-- **Payments**: PAYMENTS.md, ENROLLMENT.md
-- **Performance**: RUNTIME.md, MONITORING.md
-- **Deployment**: OPERATIONS/RUNBOOK.md, ENVIRONMENT.md
-
-### By Role
-- **Developers**: CODEMAP.md, API-REFERENCE.md, RUNTIME.md
-- **DevOps**: OPERATIONS/RUNBOOK.md, MONITORING.md, SECURITY.md  
-- **Product**: PAYMENTS.md, ENROLLMENT.md, CHANGELOG.md
-- **QA**: API-REFERENCE.md, SECURITY.md, MONITORING.md
-
-## 📝 Documentation Standards
-
-### Writing Guidelines
-- **Structure**: H1 title, critical info box, sections with H2/H3
-- **Examples**: Include code examples for all concepts
-- **Cross-links**: Reference related docs extensively
-- **Updates**: Include "Last updated" and "Related docs" footer
-
-### Code Standards
-```typescript
-// ✅ Good example with context
-export async function handlePayment(request: NextRequest) {
-  // Check if payments are enabled
-  if (!STRIPE_ENABLED) {
-    return createPaymentDisabledResponse();
-  }
-  
-  // Process payment...
-}
-```
-
-```bash
-# ✅ Good command example with description
-# Install dependencies and run development server
-npm install && npm run dev
-```
-
-### Diagram Standards
-- **Mermaid**: All diagrams use Mermaid syntax
-- **Flow Direction**: Top-to-bottom for processes, left-to-right for relationships
-- **Colors**: Consistent color scheme across docs
-- **Labels**: Clear, descriptive labels
-
-## 🔄 Maintenance Schedule
-
-### Daily
-- Monitor for broken links (automated)
-- Check for outdated code examples (CI)
-
-### Weekly  
-- Review new features for documentation needs
-- Update status table in DOC_INDEX.md
-
-### Monthly
-- Full documentation audit
-- Update cross-references
-- Review and update TODO sections
-
-### Per Release
-- Update CHANGELOG.md
-- Review all environment variables
-- Update API examples and responses
-
-## 🚨 Known Gaps & TODOs
-
-### High Priority TODOs
-- [x] **OPERATIONS/RUNBOOK.md**: Production incident response procedures ✅ Complete
-- [x] **SECURITY.md**: Comprehensive security policies and procedures ✅ Complete
-- [x] **API-REFERENCE.md**: Complete API endpoint documentation ✅ Complete
-
-### Medium Priority TODOs
-- [ ] **Database Migrations**: Document migration rollback procedures
-- [ ] **Testing Guide**: Unit, integration, and E2E testing strategies
-- [ ] **Performance Guide**: Performance optimization and monitoring
-
-### Schema Clarifications Needed
-- [ ] **Subscription System**: Stripe subscription table structure
-- [ ] **Course Bundles**: Bundle pricing and enrollment logic
-- [ ] **Instructor Payouts**: Payment distribution system
-- [ ] **Advanced Permissions**: Granular role permissions
-
-## 📞 Documentation Support
-
-### For Questions
-1. Check existing docs using search functionality
-2. Review DOC_INDEX.md for topic location
-3. Check TODO sections for known limitations
-4. Contact 7P Education Team for updates
-
-### For Updates
-1. Follow documentation standards above
-2. Update DOC_INDEX.md status table
-3. Add cross-references to related docs
-4. Update "Last updated" footer
-
-### For Issues
-1. Create issue with specific documentation problem
-2. Include context about what you were trying to accomplish
-3. Suggest improvements or missing information
+> **Yeni Yapı!** Dokümantasyon konsolidasyon sonrası güncellenmiş navigasyon rehberi  
+> [📚 Complete Catalog - MANIFEST.md](./MANIFEST.md) | **Last Updated**: 2025-08-27
 
 ---
 
-**Total Documentation**: 16 files | **Coverage**: 94% complete | **Last Index Update**: 2025-01-27
+## 🎯 Quick Navigation
+
+### 🚀 **Get Started** (New Users)
+| Document | Purpose | Priority |
+|----------|---------|----------|
+| [guides/ONBOARDING.md](./guides/ONBOARDING.md) | 10-minute quick start setup | **CRITICAL** |
+| [README.md](./README.md) | Project overview & introduction | **HIGH** |
+| [reference/ENVIRONMENT.md](./reference/ENVIRONMENT.md) | Environment variables setup | **CRITICAL** |
+
+### 📖 **Reference Documents** (Technical Specs)
+| Document | Purpose | Priority |
+|----------|---------|----------|
+| [reference/API-REFERENCE.md](./reference/API-REFERENCE.md) | Complete API endpoint documentation | **HIGH** |
+| [reference/ROUTEMAP.md](./reference/ROUTEMAP.md) | All routes & endpoints map | **HIGH** |
+| [reference/AUTH.md](./reference/AUTH.md) | Authentication system specs | **CRITICAL** |
+| [reference/MIDDLEWARE.md](./reference/MIDDLEWARE.md) | Middleware & route protection | **HIGH** |
+| [reference/PAYMENTS.md](./reference/PAYMENTS.md) | Payment system (Stripe) integration | **MEDIUM** |
+| [reference/ENROLLMENT.md](./reference/ENROLLMENT.md) | Course enrollment system | **MEDIUM** |
+| [reference/DB/SCHEMA.md](./reference/DB/SCHEMA.md) | Database schema & RLS policies | **HIGH** |
+
+### 🔧 **Operations** (Production Management)
+| Document | Purpose | Priority |
+|----------|---------|----------|
+| [operations/RUNBOOK.md](./operations/RUNBOOK.md) | **Canonical** production operations guide | **CRITICAL** |
+| [operations/MONITORING.md](./operations/MONITORING.md) | Logging & observability setup | **HIGH** |
+| [operations/SECURITY.md](./operations/SECURITY.md) | Security policies & guidelines | **CRITICAL** |
+
+### 📊 **Reports** (Status & Analytics)
+| Document | Purpose | Last Updated |
+|----------|---------|--------------|
+| [reports/CURRENT_HEALTH_SNAPSHOT.md](./reports/CURRENT_HEALTH_SNAPSHOT.md) | Live system health status | 2025-08-27 |
+| [reports/LAUNCH_MONITORING_REPORT.md](./reports/LAUNCH_MONITORING_REPORT.md) | 48-hour launch monitoring | 2025-08-27 |
+| [reports/GO_LIVE_HARDENING_REPORT.md](./reports/GO_LIVE_HARDENING_REPORT.md) | Pre-launch security hardening | 2025-08-27 |
+| [reports/PRODUCTION_READINESS_FINAL_REPORT.md](./reports/PRODUCTION_READINESS_FINAL_REPORT.md) | Final production readiness | 2025-08-27 |
+| [reports/ENVIRONMENT_CLEAN.md](./reports/ENVIRONMENT_CLEAN.md) | Production environment audit | 2025-08-27 |
+
+### 💡 **Dev Notes** (Technical Decisions)
+| Document | Purpose | Audience |
+|----------|---------|----------|
+| [dev-notes/CODEMAP.md](./dev-notes/CODEMAP.md) | Code structure & dependencies | Developers |
+| [dev-notes/RUNTIME.md](./dev-notes/RUNTIME.md) | Edge vs Node.js runtime decisions | Developers |
+| [dev-notes/CLAUDE-PLANLAMA-MODU-PROMPT.md](./dev-notes/CLAUDE-PLANLAMA-MODU-PROMPT.md) | Claude planning mode prompts | AI-Assistants |
+
+---
+
+## 🏗️ Documentation Categories Explained
+
+### 🎯 **By Priority Level**
+- **CRITICAL**: Must read before production deployment
+- **HIGH**: Important for understanding core systems
+- **MEDIUM**: Useful for specific features/integrations  
+- **LOW**: Historical reference or optional features
+
+### 📁 **By Category Purpose**
+- **`/reference/`**: Technical specifications, API docs, configuration
+- **`/operations/`**: Production management, monitoring, runbooks  
+- **`/reports/`**: Status reports, health snapshots, analysis
+- **`/guides/`**: Step-by-step tutorials and onboarding
+- **`/dev-notes/`**: Technical decisions, code maps, developer notes
+- **`/archive/`**: Historical documentation and deprecated content
+
+---
+
+## 🛤️ Recommended Learning Paths
+
+### Path 1: **New Developer Onboarding** (45-60 minutes)
+1. 📖 [guides/ONBOARDING.md](./guides/ONBOARDING.md) *(10 min)*
+2. 🏗️ [dev-notes/CODEMAP.md](./dev-notes/CODEMAP.md) *(15 min)*
+3. 🔐 [reference/AUTH.md](./reference/AUTH.md) *(15 min)*
+4. 🗺️ [reference/ROUTEMAP.md](./reference/ROUTEMAP.md) *(15 min)*
+
+### Path 2: **Production Deployment** (30-45 minutes)
+1. ⚙️ [reference/ENVIRONMENT.md](./reference/ENVIRONMENT.md) *(10 min)*
+2. 📋 [operations/RUNBOOK.md](./operations/RUNBOOK.md) *(20 min)*
+3. 🛡️ [operations/SECURITY.md](./operations/SECURITY.md) *(15 min)*
+
+### Path 3: **Feature Development** (60-90 minutes)  
+1. 📖 [reference/API-REFERENCE.md](./reference/API-REFERENCE.md) *(30 min)*
+2. 🗃️ [reference/DB/SCHEMA.md](./reference/DB/SCHEMA.md) *(20 min)*
+3. 🔧 [reference/MIDDLEWARE.md](./reference/MIDDLEWARE.md) *(15 min)*
+4. 💳 [reference/PAYMENTS.md](./reference/PAYMENTS.md) *(15 min)* - if needed
+
+### Path 4: **System Administration** (45-60 minutes)
+1. 📊 [operations/MONITORING.md](./operations/MONITORING.md) *(20 min)*
+2. 📈 [reports/CURRENT_HEALTH_SNAPSHOT.md](./reports/CURRENT_HEALTH_SNAPSHOT.md) *(10 min)*
+3. 🚀 [reports/LAUNCH_MONITORING_REPORT.md](./reports/LAUNCH_MONITORING_REPORT.md) *(15 min)*
+
+---
+
+## 🔗 Cross-References & Dependencies
+
+### Authentication Flow Dependencies
+```mermaid
+AUTH.md → MIDDLEWARE.md → ROUTEMAP.md → API-REFERENCE.md
+```
+
+### Database & Backend Dependencies  
+```mermaid
+DB/SCHEMA.md → ENROLLMENT.md → PAYMENTS.md → API-REFERENCE.md
+```
+
+### Operations Dependencies
+```mermaid
+ENVIRONMENT.md → RUNBOOK.md → MONITORING.md → SECURITY.md
+```
+
+---
+
+## 📚 External Documentation Links
+
+### Related Repositories
+- [📜 Scripts Documentation](../scripts/README.md)
+- [🔧 Supabase Auth Hooks](../supabase/functions/auth-hooks/README.md)
+
+### Platform Documentation
+- [Next.js 15.4.4 Documentation](https://nextjs.org/docs)
+- [Supabase Documentation](https://supabase.io/docs) 
+- [NextAuth.js Documentation](https://next-auth.js.org/)
+- [Stripe API Reference](https://stripe.com/docs/api)
+- [Vercel Deployment Guide](https://vercel.com/docs)
+
+### Monitoring & Error Tracking
+- [Sentry Documentation](https://docs.sentry.io/)
+- [Vercel Analytics](https://vercel.com/analytics)
+
+---
+
+## 🔍 Document Search Tips
+
+### By File Type/Purpose
+```bash
+# Find API-related docs
+find docs/ -name "*API*" -o -name "*ROUTE*"
+
+# Find security-related docs  
+find docs/ -name "*SECURITY*" -o -name "*AUTH*"
+
+# Find production-related docs
+find docs/ -name "*PRODUCTION*" -o -name "*DEPLOY*" -o -name "*RUNBOOK*"
+```
+
+### By Content Keywords
+- **Environment Setup**: `ENVIRONMENT.md`, `ONBOARDING.md`
+- **API Integration**: `API-REFERENCE.md`, `ROUTEMAP.md`, `AUTH.md`
+- **Database**: `DB/SCHEMA.md`, `ENROLLMENT.md`
+- **Security**: `SECURITY.md`, `AUTH.md`, `MIDDLEWARE.md`
+- **Monitoring**: `MONITORING.md`, `reports/LAUNCH_MONITORING_REPORT.md`
+
+---
+
+## 📝 Recent Documentation Updates
+
+### 2025-08-27: Major Consolidation ✨
+- **Restructured** entire documentation with category-based folders
+- **Created** comprehensive MANIFEST.md catalog  
+- **Moved** 18 files from root to categorized folders
+- **Added** canonical references for duplicate documents
+- **Updated** all cross-references and navigation links
+
+### Key Changes:
+- ✅ **Single Source of Truth**: operations/RUNBOOK.md is now canonical
+- ✅ **Clear Categories**: reports/, reference/, operations/, guides/, dev-notes/
+- ✅ **Complete Catalog**: MANIFEST.md tracks all 76 documentation files  
+- ✅ **Deprecated Warnings**: Added to outdated archive documents
+
+---
+
+**Index Last Updated**: 2025-08-27 15:10:00 UTC  
+**Next Review**: After documentation consolidation PR merge  
+**Maintainer**: Claude Code Documentation Team

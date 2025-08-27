@@ -14,19 +14,19 @@
 
 ### Yeni Geliştirici (İlk Kez)
 1. 📋 [DOC_INDEX.md](./DOC_INDEX.md) - Tüm dokümanları görüntüle
-2. 🗺️ [CODEMAP.md](./CODEMAP.md) - Kod yapısını anla
-3. ⚙️ [ENVIRONMENT.md](./ENVIRONMENT.md) - ENV setup yap
-4. 🔐 [AUTH.md](./AUTH.md) - Auth sistemi öğren
+2. 🗺️ [dev-notes/CODEMAP.md](./dev-notes/CODEMAP.md) - Kod yapısını anla
+3. ⚙️ [reference/ENVIRONMENT.md](./reference/ENVIRONMENT.md) - ENV setup yap
+4. 🔐 [reference/AUTH.md](./reference/AUTH.md) - Auth sistemi öğren
 
 ### Production Deployment
-1. 🚀 [OPERATIONS/RUNBOOK.md](./OPERATIONS/RUNBOOK.md) - Prod hazırlık
-2. 💳 [PAYMENTS.md](./PAYMENTS.md) - Payment sistem setup
-3. 🛡️ [SECURITY.md](./SECURITY.md) - Güvenlik checklist
+1. 🚀 [operations/RUNBOOK.md](./operations/RUNBOOK.md) - Prod hazırlık
+2. 💳 [reference/PAYMENTS.md](./reference/PAYMENTS.md) - Payment sistem setup
+3. 🛡️ [operations/SECURITY.md](./operations/SECURITY.md) - Güvenlik checklist
 
 ### Problem Çözme
-1. 🔍 [API-REFERENCE.md](./API-REFERENCE.md) - API endpoint'ler
-2. 🛠️ [MIDDLEWARE.md](./MIDDLEWARE.md) - Auth/routing sorunları
-3. 📊 [MONITORING.md](./MONITORING.md) - Log/monitoring
+1. 🔍 [reference/API-REFERENCE.md](./reference/API-REFERENCE.md) - API endpoint'ler
+2. 🛠️ [reference/MIDDLEWARE.md](./reference/MIDDLEWARE.md) - Auth/routing sorunları
+3. 📊 [operations/MONITORING.md](./operations/MONITORING.md) - Log/monitoring
 
 ## ⚡ Hızlı Başlama
 
@@ -100,30 +100,9 @@ vercel --prod
 | API Endpoints | [API-REFERENCE.md](./API-REFERENCE.md) | Request/response specs |
 | Deployment Issues | [OPERATIONS/RUNBOOK.md](./OPERATIONS/RUNBOOK.md) | Troubleshooting |
 
-## 🧭 Legacy Documentation Structure
-
-### 🚀 01-setup/ - Project Setup & Deployment
-- **[supabase-config.md](./01-setup/supabase-config.md)** - Supabase database configuration
-- **[vercel-deployment.md](./01-setup/vercel-deployment.md)** - Production deployment guide
-- **[production-checklist.md](./01-setup/production-checklist.md)** - 30-minute production checklist
-
-### 🔧 02-development/ - Active Development
-- **[database-schema.md](./02-development/database-schema.md)** - Current database structure
-- **API Endpoints** - RESTful API documentation (see codebase)
-- **Testing Guide** - Test implementation strategies
-
-### ✅ 03-completed/ - Completed Milestones
-- **[deployment-checklist.md](./03-completed/deployment-checklist.md)** - Vercel deployment completed
-- **[monitoring-setup.md](./03-completed/monitoring-setup.md)** - Monitoring system implemented
-- **[database-setup.md](./03-completed/database-setup.md)** - Production database configured
-- **[performance-optimization.md](./03-completed/performance-optimization.md)** - Speed optimization completed
-
-### 📖 04-reference/ - Reference Materials
-- **[security-guidelines.md](./04-reference/security-guidelines.md)** - Security best practices
-
-### 📋 05-logs/ - Session Logs (NEW!)
-- **[README.md](./05-logs/README.md)** - Automatic logging system guide
-- **Topic-based folders**: authentication, database, ui-components, api-development, deployment, performance, security, testing, bug-fixes, general
+## 📚 Archived Documentation
+> Eski numaralı klasörler (01-05) **docs/archive/** altına taşınmıştır.  
+> Güncel dokümantasyon için yukarıdaki ana linkleri kullanın.
 
 ## ❓ Sorun mu Var?
 

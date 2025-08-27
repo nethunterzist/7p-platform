@@ -1,5 +1,8 @@
 # 7P Education - Production Runbook
 
+> **⚠️ DEPRECATED**: Bu dokümantasyon arşivlenmiştir. 
+> Güncel bilgi için: [docs/operations/RUNBOOK.md](../../../operations/RUNBOOK.md) sayfasına bakın.
+
 ## 🚀 Quick Start Guide
 
 This runbook provides step-by-step instructions for setting up, deploying, and maintaining the 7P Education platform in production.

@@ -1,5 +1,8 @@
 # 7P Education - Production Operations Runbook
 
+> **⚠️ DEPRECATED**: Bu dokümantasyon arşivlenmiştir. 
+> Güncel bilgi için: [docs/operations/RUNBOOK.md](../../../operations/RUNBOOK.md) sayfasına bakın.
+
 **Date**: 2025-08-26  
 **Purpose**: Complete production deployment and operations guide  
 **Target**: DevOps team, project owner  

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { mockApi } from '@/lib/mock-api';
 import { Button } from '@/components/ui/button';
-import { getCurrentUser } from '@/lib/simple-auth';
+// Authentication is now handled by middleware and NextAuth
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,27 +46,17 @@ export default function DashboardHeader({
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   const switchToRole = (newRole: 'student' | 'admin') => {
-    const currentUser = getCurrentUser();
-    if (currentUser) {
-      // Update user role in localStorage
-      const updatedUser = { ...currentUser, role: newRole };
-      localStorage.setItem('auth_user', JSON.stringify(updatedUser));
-      
-      // Navigate to appropriate dashboard with forced navigation
-      if (newRole === 'admin') {
-        window.location.href = '/admin/dashboard';
-      } else {
-        window.location.href = '/dashboard';
-      }
+    // Navigate to appropriate dashboard - role-based routing handled by middleware
+    if (newRole === 'admin') {
+      router.push('/admin/dashboard');
+    } else {
+      router.push('/dashboard');
     }
   };
 
   const handleSignOut = async () => {
     try {
       await mockApi.auth.signOut();
-      // Also clear legacy tokens
-      document.cookie = 'auth_token=; path=/; max-age=0';
-      localStorage.removeItem('auth_user');
       router.push('/login');
     } catch (error) {
       console.error('Error signing out:', error);
