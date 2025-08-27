@@ -30,7 +30,7 @@ export interface AuthState {
 }
 
 class UnifiedAuthService {
-  private supabase = createSafeClient();
+  private supabase: any = null;
   private listeners: Array<(state: AuthState) => void> = [];
   private currentState: AuthState = {
     user: null,
@@ -43,6 +43,13 @@ class UnifiedAuthService {
   };
 
   constructor() {
+    // Initialize supabase client safely
+    try {
+      this.supabase = createSafeClient();
+    } catch (error) {
+      console.warn('Failed to create Supabase client:', error);
+      this.supabase = null;
+    }
     this.initialize();
   }
 
