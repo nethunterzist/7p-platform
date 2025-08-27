@@ -69,6 +69,7 @@ export default function LoginPage() {
     } catch (error) {
       console.error('Login error:', error);
       setMessage(`❌ ${error instanceof Error ? error.message : 'Beklenmeyen bir hata oluştu'}`);
+    } finally {
       setLoading(false);
     }
   };
@@ -91,10 +92,11 @@ export default function LoginPage() {
         <h1 className="text-2xl font-bold text-center mb-8">7P Education Giriş</h1>
         
         <div className="mb-4 p-4 bg-blue-50 rounded-lg text-sm">
-          <p className="font-semibold mb-2">Supabase Test Hesabı:</p>
+          <p className="font-semibold mb-2">✅ Middleware Sorunu Çözüldü!</p>
+          <p className="font-semibold mb-2">Test Hesabı:</p>
           <p>• admin@7peducation.com : admin123456</p>
           <p className="text-xs text-gray-600 mt-2">
-            ℹ️ Gerçek Supabase backend kullanılıyor
+            ℹ️ Gerçek Supabase backend kullanılıyor (fallback ile)
           </p>
         </div>
         

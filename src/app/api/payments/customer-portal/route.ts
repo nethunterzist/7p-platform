@@ -1,3 +1,5 @@
+export const runtime = 'nodejs'; // Force Node.js runtime for Stripe
+
 import { mockApi } from '@/lib/mock-api';
 import { NextRequest, NextResponse } from 'next/server';
 import { createPortalSession, handleStripeError } from '@/lib/stripe';

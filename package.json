@@ -61,7 +61,13 @@
     "ping-health:prod": "tsx scripts/ping-health.ts $NEXTAUTH_URL",
     "prod-smoke": "tsx scripts/prod-smoke.ts",
     "prod-smoke:prod": "tsx scripts/prod-smoke.ts $NEXTAUTH_URL",
-    "prod-smoke:verbose": "tsx scripts/prod-smoke.ts --verbose"
+    "prod-smoke:verbose": "tsx scripts/prod-smoke.ts --verbose",
+    "docs:check": "node scripts/docs-check.mjs",
+    "docs:migrate": "DRY_RUN=true node scripts/docs-migrate.mjs",
+    "docs:migrate:apply": "DRY_RUN=false node scripts/docs-migrate.mjs",
+    "tests:orphan-scan": "node scripts/tests-orphan-scan.mjs",
+    "routemap:gen": "node scripts/generate-routemap.mjs",
+    "env:report": "node scripts/env-report.mjs"
   },
   "dependencies": {
     "@azure/msal-browser": "^4.18.0",

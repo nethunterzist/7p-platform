@@ -1,3 +1,5 @@
+export const runtime = 'nodejs'; // Force Node.js runtime for Supabase
+
 /**
  * Send Email Verification API Route
  * Handles verification email sending for authenticated users

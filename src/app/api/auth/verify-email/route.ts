@@ -1,3 +1,5 @@
+export const runtime = 'nodejs'; // Force Node.js runtime for Supabase
+
 /**
  * EMAIL VERIFICATION API ROUTE - 7P Education
  * Handle email verification and resend requests

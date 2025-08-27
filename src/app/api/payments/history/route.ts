@@ -1,3 +1,5 @@
+export const runtime = 'nodejs'; // Force Node.js runtime for payments
+
 import { mockApi } from '@/lib/mock-api';
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserPaymentHistory } from '@/lib/payments';

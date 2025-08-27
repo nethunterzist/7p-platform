@@ -105,9 +105,9 @@ export function createClient(): SupabaseClient {
   }
 }
 
-// Session monitoring functions
-let sessionTimeout: NodeJS.Timeout | null = null;
-let activityTimeout: NodeJS.Timeout | null = null;
+// Session monitoring functions (Edge-safe)
+let sessionTimeout: number | null = null;
+let activityTimeout: number | null = null;
 
 function startSessionMonitoring(session: Session) {
   if (typeof window === 'undefined') return;
@@ -121,13 +121,13 @@ function startSessionMonitoring(session: Session) {
   // Activity timeout (30 minutes of inactivity)
   const resetActivityTimer = () => {
     if (activityTimeout) clearTimeout(activityTimeout);
-    activityTimeout = setTimeout(() => {
+    activityTimeout = window.setTimeout(() => {
       createClient().auth.signOut();
     }, PRODUCTION_AUTH_CONFIG.session.inactivityTimeout);
   };
   
   // Absolute session timeout (8 hours max)
-  sessionTimeout = setTimeout(() => {
+  sessionTimeout = window.setTimeout(() => {
     createClient().auth.signOut();
   }, PRODUCTION_AUTH_CONFIG.session.absoluteTimeout);
   
@@ -143,11 +143,11 @@ function startSessionMonitoring(session: Session) {
 
 function clearSessionMonitoring() {
   if (sessionTimeout) {
-    clearTimeout(sessionTimeout);
+    window.clearTimeout(sessionTimeout);
     sessionTimeout = null;
   }
   if (activityTimeout) {
-    clearTimeout(activityTimeout);
+    window.clearTimeout(activityTimeout);
     activityTimeout = null;
   }
 }

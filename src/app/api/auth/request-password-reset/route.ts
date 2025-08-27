@@ -1,3 +1,5 @@
+export const runtime = 'nodejs'; // Force Node.js runtime for Supabase
+
 /**
  * Password Reset Request API
  * Integrated with NextAuth.js authentication system
