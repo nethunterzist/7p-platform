@@ -1,0 +1,838 @@
+next.config.ts:282 - default
+scripts/check-env.ts:412 - validateEnvironmentVariables (used in module)
+scripts/check-env.ts:412 - checkEnvironmentConsistency (used in module)
+scripts/ping-health.ts:460 - HealthReport (used in module)
+scripts/ping-health.ts:460 - CheckResult (used in module)
+scripts/prod-smoke.ts:749 - SmokeTestRunner (used in module)
+scripts/prod-smoke.ts:749 - SmokeTestReport (used in module)
+src/instrumentation.ts:3 - register
+src/middleware.ts:8 - middleware
+src/middleware.ts:47 - config
+src/app/layout.tsx:43 - default
+src/app/layout.tsx:21 - metadata
+src/components/CourseModules.tsx:275 - default
+src/components/FileUpload.tsx:23 - default
+src/components/LessonMaterials.tsx:208 - default
+src/components/ProgressTracker.tsx:282 - default
+src/data/admin-settings.ts:2 - DatabaseTable (used in module)
+src/data/admin-settings.ts:10 - DatabaseStats (used in module)
+src/data/admin-settings.ts:19 - databaseTables
+src/data/admin-settings.ts:78 - databaseStats
+src/data/admin-settings.ts:88 - SecurityLog (used in module)
+src/data/admin-settings.ts:98 - LoginAttempt (used in module)
+src/data/admin-settings.ts:106 - SecurityStats (used in module)
+src/data/admin-settings.ts:114 - securityLogs
+src/data/admin-settings.ts:162 - loginAttempts
+src/data/admin-settings.ts:200 - securityStats
+src/data/admin-users.ts:405 - exportToCSV (used in module)
+src/data/index.ts:12 - ALL_DISCUSSIONS
+src/data/index.ts:13 - ALL_LIBRARY_RESOURCES
+src/data/index.ts:17 - Course
+src/data/index.ts:18 - CourseDetail
+src/data/index.ts:19 - Lesson
+src/data/index.ts:23 - UserProfile
+src/data/index.ts:24 - PlatformPreferences
+src/data/index.ts:25 - NotificationSettings
+src/data/index.ts:26 - ActiveDevice
+src/data/index.ts:27 - PaymentMethod
+src/data/index.ts:28 - Subscription
+src/data/index.ts:29 - Invoice
+src/data/index.ts:30 - SecuritySettings
+src/data/index.ts:34 - DashboardStats
+src/data/index.ts:35 - RecentActivity
+src/data/index.ts:36 - UpcomingDeadline
+src/data/index.ts:37 - LearningStreak
+src/data/index.ts:38 - CourseProgress
+src/data/index.ts:39 - WeeklyProgress
+src/data/index.ts:40 - Notification
+src/data/index.ts:41 - Announcement
+src/data/index.ts:45 - DATA_SUMMARY
+src/data/index.ts:15 - Module
+src/data/index.ts:55 - MAIN_COURSES
+src/data/index.ts:135 - COURSE_CATEGORIES
+src/data/index.ts:143 - COURSE_DETAILS
+src/data/index.ts:1433 - ALL_COURSES
+src/data/index.ts:1436 - getCourseById
+src/data/index.ts:1440 - getCourseBySlug
+src/data/index.ts:1444 - getCourseDetailById
+src/data/index.ts:1448 - getCourseDetailBySlug
+src/data/index.ts:1457 - getFeaturedCourses
+src/data/index.ts:1461 - getFreeCourses
+src/data/index.ts:1465 - getCoursesByCategory
+src/data/index.ts:307 - getUserProfile
+src/data/index.ts:311 - getPlatformPreferences
+src/data/index.ts:315 - getNotificationSettings
+src/data/index.ts:319 - getActiveDevices
+src/data/index.ts:323 - getPaymentMethods
+src/data/index.ts:327 - getSubscription
+src/data/index.ts:331 - getInvoices
+src/data/index.ts:335 - getSecuritySettings
+src/data/index.ts:339 - getDeviceById
+src/data/index.ts:343 - getPaymentMethodById
+src/data/index.ts:347 - getInvoiceById
+src/data/index.ts:97 - DEFAULT_USER_PROFILE
+src/data/index.ts:110 - DEFAULT_PLATFORM_PREFERENCES
+src/data/index.ts:121 - DEFAULT_NOTIFICATION_SETTINGS
+src/data/index.ts:133 - MOCK_ACTIVE_DEVICES
+src/data/index.ts:181 - MOCK_PAYMENT_METHODS
+src/data/index.ts:205 - MOCK_SUBSCRIPTION
+src/data/index.ts:219 - MOCK_INVOICES
+src/data/index.ts:256 - MOCK_SECURITY_SETTINGS
+src/data/index.ts:266 - AVAILABLE_LANGUAGES
+src/data/index.ts:272 - AVAILABLE_TIMEZONES
+src/data/index.ts:280 - LANDING_PAGE_OPTIONS
+src/data/index.ts:288 - THEME_OPTIONS
+src/data/index.ts:295 - USER_ACTIVITY_STATS
+src/data/index.ts:98 - DASHBOARD_STATS
+src/data/index.ts:108 - RECENT_ACTIVITIES
+src/data/index.ts:172 - UPCOMING_DEADLINES
+src/data/index.ts:212 - LEARNING_STREAK
+src/data/index.ts:221 - COURSE_PROGRESS
+src/data/index.ts:285 - WEEKLY_PROGRESS
+src/data/index.ts:296 - DASHBOARD_NOTIFICATIONS
+src/data/index.ts:338 - DASHBOARD_ANNOUNCEMENTS
+src/data/index.ts:382 - getDashboardStats
+src/data/index.ts:384 - getRecentActivities
+src/data/index.ts:387 - getUpcomingDeadlines
+src/data/index.ts:390 - getLearningStreak
+src/data/index.ts:392 - getCourseProgress
+src/data/index.ts:395 - getWeeklyProgress
+src/data/index.ts:397 - getDashboardNotifications
+src/data/index.ts:400 - getDashboardAnnouncements
+src/data/index.ts:404 - markNotificationAsRead
+src/data/index.ts:412 - getUnreadNotificationsCount
+src/data/mockCourses.ts:656 - mockMaterials
+src/hooks/useAuth.ts:11 - useAuth (used in module)
+src/hooks/useAuth.ts:81 - useRequireAuth
+src/hooks/useAuth.ts:88 - useOptionalAuth
+src/hooks/usePaymentMode.ts:67 - default
+src/hooks/useStripeAnalytics.ts:55 - useStripeAnalytics
+src/hooks/useStripeAnalytics.ts:31 - StripeAnalyticsProps (used in module)
+src/hooks/useStripeAnalytics.ts:37 - CourseData (used in module)
+src/hooks/useStripeAnalytics.ts:47 - SubscriptionPlan (used in module)
+src/lib/auth-fallback.ts:6 - FallbackUser (used in module)
+src/lib/auth-fallback.ts:15 - FallbackSession (used in module)
+src/lib/auth-fallback.ts:170 - fallbackAuth
+src/lib/enrollment.ts:3 - UserEnrollment (used in module)
+src/lib/enrollment.ts:50 - canUserAccessLesson
+src/lib/enrollment.ts:138 - redirectToCourseLearning
+src/lib/env.ts:9 - PAYMENTS_MODE (used in module)
+src/lib/env.ts:17 - NODE_ENV (used in module)
+src/lib/env.ts:18 - IS_PRODUCTION (used in module)
+src/lib/env.ts:21 - NEXTAUTH_SECRET (used in module)
+src/lib/env.ts:22 - NEXTAUTH_URL (used in module)
+src/lib/env.ts:26 - NEXT_PUBLIC_SUPABASE_ANON_KEY (used in module)
+src/lib/env.ts:30 - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY (used in module)
+src/lib/env.ts:31 - STRIPE_SECRET_KEY (used in module)
+src/lib/env.ts:32 - STRIPE_WEBHOOK_SECRET (used in module)
+src/lib/env.ts:35 - NEXT_PUBLIC_SENTRY_DSN (used in module)
+src/lib/env.ts:36 - SENTRY_ORG (used in module)
+src/lib/env.ts:37 - SENTRY_PROJECT (used in module)
+src/lib/env.ts:40 - validateEnvironment
+src/lib/env.ts:92 - getEnvironmentInfo
+src/lib/env.ts:102 - getPublicEnvironmentInfo
+src/lib/ga4-ecommerce.ts:181 - trackSubscriptionPlanView
+src/lib/ga4-ecommerce.ts:234 - trackSubscriptionRenewal
+src/lib/ga4-ecommerce.ts:254 - trackSubscriptionCancellation
+src/lib/ga4-ecommerce.ts:386 - trackPromotionView
+src/lib/ga4-ecommerce.ts:451 - trackRevenueAttribution
+src/lib/ga4-ecommerce.ts:478 - trackCustomerLTVMilestone
+src/lib/ga4-ecommerce.ts:550 - calculateTransactionValue
+src/lib/ga4-ecommerce.ts:16 - EcommerceItem (used in module)
+src/lib/ga4-ecommerce.ts:51 - RefundData (used in module)
+src/lib/ga4.ts:70 - initializeGA4
+src/lib/ga4.ts:146 - setCookieConsent
+src/lib/ga4.ts:165 - trackPageView
+src/lib/ga4.ts:245 - trackCourseView
+src/lib/ga4.ts:260 - trackCourseEnrollment
+src/lib/ga4.ts:275 - trackLessonStart
+src/lib/ga4.ts:291 - trackLessonComplete
+src/lib/ga4.ts:307 - trackQuizStart
+src/lib/ga4.ts:323 - trackQuizComplete
+src/lib/ga4.ts:349 - trackCourseComplete
+src/lib/ga4.ts:435 - trackUserRegistration
+src/lib/ga4.ts:450 - trackUserLogin
+src/lib/ga4.ts:465 - trackSearch
+src/lib/ga4.ts:480 - trackMessage
+src/lib/ga4.ts:499 - trackPerformanceMetrics
+src/lib/ga4.ts:561 - getGA4Config
+src/lib/ga4.ts:568 - isGA4Initialized
+src/lib/ga4.ts:575 - getCookieConsent
+src/lib/ga4.ts:582 - enableDebugMode
+src/lib/ga4.ts:9 - GA4Event (used in module)
+src/lib/ga4.ts:14 - GA4Config (used in module)
+src/lib/ga4.ts:22 - CourseEvent (used in module)
+src/lib/ga4.ts:32 - LessonEvent (used in module)
+src/lib/ga4.ts:39 - QuizEvent (used in module)
+src/lib/ga4.ts:53 - PerformanceMetrics (used in module)
+src/lib/mock-api.ts:596 - default
+src/lib/mock-api.ts:599 - isAuthenticated
+src/lib/mock-api.ts:614 - getCurrentUser
+src/lib/payments.ts:285 - getCourseBundles
+src/lib/payments.ts:302 - getBundleCourses
+src/lib/payments.ts:442 - userHasCourseAccess
+src/lib/payments.ts:460 - getUserPurchasedCourses
+src/lib/payments.ts:71 - UserSubscription (used in module)
+src/lib/payments.ts:88 - StripeCustomer (used in module)
+src/lib/payments.ts:97 - CoursePurchase (used in module)
+src/lib/security.ts:37 - isRateLimited (used in module)
+src/lib/security.ts:67 - getClientIdentifier (used in module)
+src/lib/security.ts:83 - applyRateLimit
+src/lib/security.ts:144 - isValidEmail
+src/lib/security.ts:154 - isValidCurrency
+src/lib/security.ts:164 - isValidAmount
+src/lib/security.ts:174 - sanitizeString
+src/lib/security.ts:206 - requireAuth
+src/lib/security.ts:222 - requireAdmin
+src/lib/security.ts:242 - requireOwnership
+src/lib/security.ts:288 - logSecurityEvent (used in module)
+src/lib/security.ts:352 - validateEnvironment (used in module)
+src/lib/security.ts:415 - maskSensitiveData
+src/lib/security.ts:450 - isAllowedOrigin
+src/lib/security.ts:14 - RATE_LIMITS
+src/lib/security.ts:275 - verifyWebhookSignature
+src/lib/simple-auth.ts:2 - User (used in module)
+src/lib/simple-auth.ts:16 - login
+src/lib/simple-auth.ts:40 - logout
+src/lib/simple-auth.ts:60 - isAuthenticated
+src/lib/simple-supabase-mock.ts:15 - MockUser (used in module)
+src/lib/simple-supabase-mock.ts:24 - MockSession (used in module)
+src/lib/simple-supabase-mock.ts:446 - simpleMockClient (used in module)
+src/lib/simple-supabase-mock.ts:449 - MockResponse (used in module)
+src/lib/simple-supabase-mock.ts:451 - default
+src/lib/supabase-replacement.ts:10 - User
+src/lib/supabase-replacement.ts:10 - Session
+src/lib/supabase-replacement.ts:11 - MockUser (used in module)
+src/lib/supabase-replacement.ts:11 - MockSession (used in module)
+src/lib/supabase-replacement.ts:288 - default
+src/lib/supabase-replacement.ts:291 - supabase
+src/lib/supabase-replacement.ts:294 - SupabaseReplacement (used in module)
+src/lib/supabase-replacement.ts:297 - createClient
+src/lib/supabase-replacement.ts:298 - createBrowserClient
+src/lib/supabase-replacement.ts:299 - createServerClient
+src/lib/supabase.ts:14 - User (used in module)
+src/lib/supabase.ts:14 - Session (used in module)
+src/lib/supabase.ts:14 - SupabaseClient (used in module)
+src/lib/unified-auth.ts:9 - UnifiedUser (used in module)
+src/lib/unified-auth.ts:22 - AuthState (used in module)
+src/lib/unified-auth.ts:360 - unifiedAuth (used in module)
+src/lib/unified-auth.ts:384 - default
+src/lib/utils.ts:15 - formatCurrency
+src/lib/utils.ts:25 - formatNumber
+src/lib/utils.ts:32 - calculateReadingTime
+src/lib/utils.ts:40 - truncateText
+src/lib/utils.ts:59 - formatDuration
+src/lib/utils.ts:76 - generateId
+src/lib/utils.ts:88 - debounce
+src/lib/utils.ts:102 - deepClone (used in module)
+src/lib/utils.ts:119 - isEmpty
+src/lib/utils.ts:130 - clamp
+src/lib/utils.ts:137 - prefersReducedMotion
+src/lib/utils.ts:145 - formatFileSize
+src/lib/utils.ts:161 - isValidEmail
+src/lib/utils.ts:169 - isValidUrl
+src/lib/utils.ts:181 - getRandomItem
+src/lib/utils.ts:189 - groupBy
+src/lib/utils.ts:201 - unique
+src/services/enrollment-service.ts:4 - EnrollmentRequest
+src/services/enrollment-service.ts:12 - EnrollmentResult (used in module)
+src/services/enrollment-service.ts:21 - EnrollmentEligibility (used in module)
+src/tests/auth-integration.test.ts:209 - default
+src/types/admin-quiz.ts:4 - AdminQuiz (used in module)
+src/types/admin-quiz.ts:16 - AdminQuizStats
+src/types/admin-quiz.ts:25 - QuizUsage
+src/types/admin-quiz.ts:36 - QuizFormData
+src/types/admin-quiz.ts:49 - QuestionFormData
+src/types/admin-quiz.ts:56 - OptionFormData (used in module)
+src/types/admin-quiz.ts:62 - QUIZ_CATEGORIES (used in module)
+src/types/admin-quiz.ts:72 - QuizCategory
+src/types/admin-quiz.ts:75 - DIFFICULTY_LEVELS
+src/types/admin-quiz.ts:82 - QUIZ_STATUSES
+src/types/assessment.ts:3 - QuestionType (used in module)
+src/types/assessment.ts:4 - DifficultyLevel (used in module)
+src/types/assessment.ts:5 - AssessmentStatus (used in module)
+src/types/assessment.ts:6 - SubmissionStatus (used in module)
+src/types/assessment.ts:7 - GradingMethod (used in module)
+src/types/assessment.ts:55 - QuestionOption (used in module)
+src/types/assessment.ts:87 - QuestionResponse (used in module)
+src/types/assessment.ts:130 - GradingRubric
+src/types/assessment.ts:139 - RubricCriterion (used in module)
+src/types/assessment.ts:184 - DifficultyAnalysis (used in module)
+src/types/assessment.ts:198 - TimeDistribution (used in module)
+src/types/assessment.ts:214 - PerformanceTrend (used in module)
+src/types/assessment.ts:240 - QuestionBank
+src/types/assessment.ts:257 - QuestionCategory (used in module)
+src/types/assessment.ts:298 - CheatingFlag (used in module)
+src/types/assessment.ts:305 - BrowserSecurity (used in module)
+src/types/assessment.ts:315 - BehavioralAnalysis (used in module)
+src/types/assessment.ts:339 - AdaptiveAssessment
+src/types/assessment.ts:382 - ImprovementSuggestion (used in module)
+src/types/assessment.ts:390 - LearningResource (used in module)
+src/types/assessment.ts:400 - ActionPlan (used in module)
+src/types/assessment.ts:409 - GradeComponent
+src/types/assessment.ts:416 - FinalGrade
+src/types/assessment.ts:425 - ComponentGrade (used in module)
+src/types/course.ts:92 - LessonNote (used in module)
+src/types/course.ts:102 - LessonProgress
+src/types/course.ts:113 - LessonCompletion
+src/types/course.ts:130 - CourseListResponse
+src/types/course.ts:145 - RecentEnrollment (used in module)
+src/types/next-auth.d.ts:50 - UserRole (used in module)
+src/types/next-auth.d.ts:53 - UserPreferences (used in module)
+src/types/next-auth.d.ts:61 - UserStats (used in module)
+src/types/next-auth.d.ts:69 - ActivityItem (used in module)
+src/types/progress.ts:41 - Achievement (used in module)
+src/types/progress.ts:53 - BadgeCriteria (used in module)
+src/types/progress.ts:118 - QuestionResult (used in module)
+src/types/progress.ts:146 - ProgressUpdateRequest
+src/types/quiz.ts:2 - QuizOption (used in module)
+src/types/quiz.ts:29 - UserQuizAttempt (used in module)
+src/types/quiz.ts:40 - UserAnswer (used in module)
+src/types/quiz.ts:46 - QuizResult
+.next/types/app/page.ts:54 - PageProps (used in module)
+.next/types/app/page.ts:58 - LayoutProps
+src/components/admin/CourseCreationForm.tsx:19 - default
+src/components/admin/CourseProgressDashboard.tsx:115 - default
+src/components/admin/SessionSecurityDashboard.tsx:60 - default
+src/components/auth/AuthLoadingScreen.tsx:12 - default
+src/components/auth/EmailVerificationBanner.tsx:38 - default
+src/components/auth/NetworkStatusIndicator.tsx:205 - withNetworkStatus
+src/components/auth/NetworkStatusIndicator.tsx:16 - NetworkStatusIndicator (used in module)
+src/components/auth/NetworkStatusIndicator.tsx:138 - AuthErrorToast
+src/components/courses/MarketplaceCourseCard.tsx:376 - default
+src/components/courses/MyCourseCard.tsx:245 - default
+src/components/dashboard/CourseRecommendations.tsx:183 - default
+src/components/layout/index.ts:4 - DashboardLayout
+src/components/layout/index.ts:5 - DashboardHeader
+src/components/layout/index.ts:6 - DashboardSidebar
+src/components/layout/index.ts:8 - DashboardContent
+src/components/layout/index.ts:9 - DashboardGrid
+src/components/layout/index.ts:10 - DashboardCard
+src/components/layout/index.ts:11 - DashboardStats
+src/components/layout/index.ts:12 - DashboardSection
+src/components/layout/index.ts:13 - DashboardEmptyState
+src/components/layout/index.ts:17 - DashboardUser
+src/components/layout/index.ts:17 - UserRole
+src/components/layout/MobileOptimizations.tsx:295 - useTouchOptimization (used in module)
+src/components/layout/MobileOptimizations.tsx:296 - usePerformanceMonitoring (used in module)
+src/components/layout/MobileOptimizations.tsx:297 - useLazyLoading (used in module)
+src/components/layout/MobileOptimizations.tsx:298 - MobileOptimizedImage (used in module)
+src/components/monitoring/ErrorBoundary.tsx:191 - withErrorBoundary
+src/components/monitoring/PerformanceDashboard.tsx:48 - PerformanceDashboard
+src/components/monitoring/WebVitals.tsx:8 - WebVitals
+src/components/monitoring/WebVitals.tsx:66 - useUserInteractionTracking
+src/components/monitoring/WebVitals.tsx:103 - usePageViewTracking
+src/components/monitoring/WebVitals.tsx:119 - ErrorTracking
+src/components/payments/PaymentHistory.tsx:11 - default
+src/components/payments/PricingCard.tsx:19 - default
+src/components/performance/ImageOptimizer.tsx:21 - OptimizedImage (used in module)
+src/components/performance/ImageOptimizer.tsx:86 - LazyImage (used in module)
+src/components/performance/ImageOptimizer.tsx:150 - ProgressiveImage
+src/components/performance/ImageOptimizer.tsx:191 - OptimizedImageGallery
+src/components/performance/LazyLoader.tsx:16 - LazyLoader (used in module)
+src/components/performance/LazyLoader.tsx:75 - DynamicLoader (used in module)
+src/components/performance/LazyLoader.tsx:97 - ProgressiveList
+src/components/performance/LazyLoader.tsx:187 - LazyTabs
+src/components/seo/SEOOptimizedContent.tsx:22 - SEOOptimizedContent
+src/components/seo/SEOOptimizedContent.tsx:90 - SEOHeading (used in module)
+src/components/seo/SEOOptimizedContent.tsx:127 - SEOImage
+src/components/seo/SEOOptimizedContent.tsx:175 - SEOBreadcrumbs (used in module)
+src/components/seo/SEOOptimizedContent.tsx:251 - SEOArticle
+src/components/seo/SEOOptimizedContent.tsx:380 - SEOList
+src/components/seo/SEOOptimizedContent.tsx:454 - SEOFAQ
+src/components/student/MaterialsList.tsx:49 - default
+src/components/student/ProgressTracker.tsx:71 - default
+src/components/student/RealtimeCourseUpdates.tsx:32 - default
+src/components/ui/alert-dialog.tsx:131 - AlertDialogPortal (used in module)
+src/components/ui/alert-dialog.tsx:132 - AlertDialogOverlay (used in module)
+src/components/ui/badge.tsx:26 - BadgeProps (used in module)
+src/components/ui/badge.tsx:36 - badgeVariants (used in module)
+src/components/ui/calendar.tsx:10 - CalendarProps (used in module)
+src/components/ui/card.tsx:87 - CardFooter (used in module)
+src/components/ui/card.tsx:89 - CardAction (used in module)
+src/components/ui/dialog.tsx:111 - DialogPortal (used in module)
+src/components/ui/dialog.tsx:112 - DialogOverlay (used in module)
+src/components/ui/dialog.tsx:113 - DialogTrigger (used in module)
+src/components/ui/dialog.tsx:114 - DialogClose (used in module)
+src/components/ui/dropdown-menu.tsx:184 - DropdownMenuCheckboxItem (used in module)
+src/components/ui/dropdown-menu.tsx:185 - DropdownMenuRadioItem (used in module)
+src/components/ui/dropdown-menu.tsx:188 - DropdownMenuShortcut (used in module)
+src/components/ui/dropdown-menu.tsx:189 - DropdownMenuGroup (used in module)
+src/components/ui/dropdown-menu.tsx:190 - DropdownMenuPortal (used in module)
+src/components/ui/dropdown-menu.tsx:191 - DropdownMenuSub (used in module)
+src/components/ui/dropdown-menu.tsx:192 - DropdownMenuSubContent (used in module)
+src/components/ui/dropdown-menu.tsx:193 - DropdownMenuSubTrigger (used in module)
+src/components/ui/dropdown-menu.tsx:194 - DropdownMenuRadioGroup (used in module)
+src/components/ui/input.tsx:5 - InputProps (used in module)
+src/components/ui/notification-detail-modal.tsx:254 - default
+src/components/ui/pagination.tsx:110 - Pagination (used in module)
+src/components/ui/pagination.tsx:111 - PaginationContent (used in module)
+src/components/ui/pagination.tsx:112 - PaginationEllipsis (used in module)
+src/components/ui/pagination.tsx:113 - PaginationItem (used in module)
+src/components/ui/pagination.tsx:114 - PaginationLink (used in module)
+src/components/ui/pagination.tsx:115 - PaginationNext (used in module)
+src/components/ui/pagination.tsx:116 - PaginationPrevious (used in module)
+src/components/ui/scroll-area.tsx:46 - ScrollBar (used in module)
+src/components/ui/select.tsx:9 - SimpleSelectProps (used in module)
+src/components/ui/select.tsx:181 - SelectGroup (used in module)
+src/components/ui/select.tsx:185 - SelectLabel (used in module)
+src/components/ui/select.tsx:187 - SelectSeparator (used in module)
+src/components/ui/select.tsx:188 - SelectScrollUpButton (used in module)
+src/components/ui/select.tsx:189 - SelectScrollDownButton (used in module)
+src/components/ui/select.tsx:190 - SimpleSelect (used in module)
+src/components/ui/simple-sidebar.tsx:72 - default
+src/components/ui/slider.tsx:28 - Slider (used in module)
+src/components/ui/table.tsx:112 - TableFooter (used in module)
+src/components/ui/table.tsx:116 - TableCaption (used in module)
+src/components/ui/textarea.tsx:5 - TextareaProps (used in module)
+src/lib/api-security/middleware.ts:3 - APISecurityMiddleware
+src/lib/api-security/rate-limit.ts:6 - RateLimitMiddleware
+src/lib/api-security/security-monitor.ts:36 - default
+src/lib/auth/audit-logger.ts:9 - AuditEvent (used in module)
+src/lib/auth/audit-logger.ts:23 - SecurityMetrics (used in module)
+src/lib/auth/audit-logger.ts:569 - AUDIT_LOGS_TABLE_SQL
+src/lib/auth/audit-logger.ts:648 - default
+src/lib/auth/audit.ts:9 - AuditLogEntry (used in module)
+src/lib/auth/audit.ts:21 - AuditLogger (used in module)
+src/lib/auth/auth-context.tsx:111 - AuthProvider
+src/lib/auth/auth-context.tsx:494 - useAuth (used in module)
+src/lib/auth/auth-context.tsx:503 - useRoleGuard
+src/lib/auth/auth-context.tsx:517 - usePermissionGuard
+src/lib/auth/auth-context.tsx:14 - UserRole (used in module)
+src/lib/auth/auth-context.tsx:16 - User (used in module)
+src/lib/auth/auth-context.tsx:42 - AuthState (used in module)
+src/lib/auth/auth-context.tsx:49 - AuthContextType (used in module)
+src/lib/auth/auth-context.tsx:82 - RegisterData (used in module)
+src/lib/auth/client-auth.ts:102 - signOut (used in module)
+src/lib/auth/client-auth.ts:120 - isAuthenticated
+src/lib/auth/config.ts:11 - DEFAULT_MFA_CONFIG
+src/lib/auth/config.ts:15 - DEFAULT_ORGANIZATION_CONFIG
+src/lib/auth/config.ts:16 - CLIENT_FEATURE_FLAGS
+src/lib/auth/config.ts:17 - SSO_PROVIDERS
+src/lib/auth/config.ts:18 - SSO_CLIENT_CONFIG
+src/lib/auth/config.ts:31 - SERVER_CONFIG (used in module)
+src/lib/auth/config.ts:98 - getSSO_PROVIDER_STATUS
+src/lib/auth/config.ts:118 - FEATURE_FLAGS (used in module)
+src/lib/auth/context-simple.tsx:29 - useAuth
+src/lib/auth/context-simple.tsx:37 - AuthProvider
+src/lib/auth/context.tsx:50 - AuthProvider
+src/lib/auth/email-verification.ts:10 - EmailVerificationRequest (used in module)
+src/lib/auth/email-verification.ts:17 - EmailVerificationResult (used in module)
+src/lib/auth/email-verification.ts:25 - VerificationLinkData (used in module)
+src/lib/auth/email-verification.ts:560 - EMAIL_VERIFICATIONS_TABLE_SQL
+src/lib/auth/email-verification.ts:616 - EMAIL_VERIFICATION_TEMPLATE_TR
+src/lib/auth/email-verification.ts:677 - default
+src/lib/auth/error-boundary.tsx:335 - withAuthErrorBoundary
+src/lib/auth/error-boundary.tsx:29 - AuthErrorFallbackProps (used in module)
+src/lib/auth/error-boundary.tsx:39 - AuthErrorBoundary (used in module)
+src/lib/auth/network-utils.ts:122 - retryOperation (used in module)
+src/lib/auth/network-utils.ts:6 - RetryConfig (used in module)
+src/lib/auth/network-utils.ts:22 - RETRY_CONFIGS (used in module)
+src/lib/auth/network-utils.ts:207 - NetworkError
+src/lib/auth/password-security.ts:10 - PasswordValidationResult (used in module)
+src/lib/auth/password-security.ts:19 - PasswordHistoryEntry
+src/lib/auth/password-security.ts:27 - PasswordPolicy
+src/lib/auth/password-security.ts:396 - PASSWORD_HISTORY_TABLE_SQL
+src/lib/auth/password-security.ts:431 - default
+src/lib/auth/production-config.ts:6 - ProductionAuthConfig (used in module)
+src/lib/auth/production-config.ts:107 - AUTH_SECURITY_HEADERS
+src/lib/auth/production-config.ts:170 - default
+src/lib/auth/secure-cookies.ts:102 - setCSRFCookie
+src/lib/auth/secure-cookies.ts:118 - clearAuthCookies (used in module)
+src/lib/auth/secure-cookies.ts:136 - getTokenFromCookies (used in module)
+src/lib/auth/secure-cookies.ts:147 - getRefreshTokenFromCookies
+src/lib/auth/secure-cookies.ts:158 - getSessionIdFromCookies
+src/lib/auth/secure-cookies.ts:169 - getDeviceIdFromCookies
+src/lib/auth/secure-cookies.ts:195 - validateCookieConfig (used in module)
+src/lib/auth/secure-cookies.ts:11 - SecureCookieOptions (used in module)
+src/lib/auth/secure-cookies.ts:23 - SECURE_COOKIE_CONFIG (used in module)
+src/lib/auth/secure-cookies.ts:38 - REFRESH_COOKIE_CONFIG (used in module)
+src/lib/auth/secure-cookies.ts:48 - COOKIE_NAMES (used in module)
+src/lib/auth/secure-cookies.ts:233 - COOKIE_SECURITY_HEADERS
+src/lib/auth/secure-cookies.ts:248 - default
+src/lib/auth/security.ts:27 - PasswordStrength (used in module)
+src/lib/auth/security.ts:34 - RateLimitStatus (used in module)
+src/lib/auth/security.ts:41 - SessionInfo (used in module)
+src/lib/auth/session-security-enhancements.ts:50 - EnhancedSessionSecurity (used in module)
+src/lib/auth/session-security-enhancements.ts:563 - default
+src/lib/auth/simple-context.tsx:32 - SimpleAuthProvider (used in module)
+src/lib/auth/supabase-auth.ts:9 - AuthResult (used in module)
+src/lib/auth/supabase-auth.ts:15 - SignUpData (used in module)
+src/lib/auth/supabase-auth.ts:24 - SignInData (used in module)
+src/lib/auth/supabase-auth.ts:226 - auth (used in module)
+src/lib/email/templates.ts:662 - getEmailTemplate
+src/lib/email/templates.ts:6 - EmailTemplate (used in module)
+src/lib/email/templates.ts:12 - EMAIL_TEMPLATES (used in module)
+src/lib/monitoring/performance.ts:252 - withPerformanceMonitoring
+src/lib/monitoring/performance.ts:284 - usePerformanceTimer
+src/lib/monitoring/performance.ts:309 - withApiPerformanceMonitoring
+src/lib/monitoring/performance.ts:28 - PerformanceMonitor (used in module)
+src/lib/monitoring/supabase-monitor.ts:7 - createMonitoredSupabaseClient (used in module)
+src/lib/monitoring/supabase-monitor.ts:131 - setupAuthMonitoring (used in module)
+src/lib/monitoring/supabase-monitor.ts:203 - SupabaseConnectionMonitor (used in module)
+src/lib/monitoring/supabase-monitor.ts:312 - SupabaseQueryAnalyzer (used in module)
+src/lib/monitoring/supabase-monitor.ts:380 - default
+src/lib/performance/bundleOptimization.ts:3 - BundleAnalysis (used in module)
+src/lib/performance/bundleOptimization.ts:11 - ChunkInfo (used in module)
+src/lib/performance/bundleOptimization.ts:20 - DependencyInfo (used in module)
+src/lib/performance/bundleOptimization.ts:29 - BundleAnalyzer (used in module)
+src/lib/performance/bundleOptimization.ts:161 - CodeSplitter (used in module)
+src/lib/performance/bundleOptimization.ts:289 - webpackOptimizationConfig (used in module)
+src/lib/performance/bundleOptimization.ts:368 - BundlePerformanceMonitor (used in module)
+src/lib/performance/bundleOptimization.ts:429 - React (used in module)
+src/lib/performance/bundleOptimization.ts:448 - BundleOptimizer
+src/lib/performance/cdnOptimization.ts:556 - useCDNOptimization
+src/lib/performance/cdnOptimization.ts:3 - CDNConfig (used in module)
+src/lib/performance/cdnOptimization.ts:23 - defaultCDNConfig (used in module)
+src/lib/performance/cdnOptimization.ts:44 - CDNUrlGenerator (used in module)
+src/lib/performance/cdnOptimization.ts:246 - AssetPreloader (used in module)
+src/lib/performance/cdnOptimization.ts:374 - ResourceHintsManager (used in module)
+src/lib/performance/cdnOptimization.ts:441 - CDNOptimizer (used in module)
+src/lib/performance/cdnOptimization.ts:586 - cdnOptimizer (used in module)
+src/lib/performance/cssOptimization.ts:3 - CSSOptimizationConfig (used in module)
+src/lib/performance/cssOptimization.ts:11 - defaultConfig (used in module)
+src/lib/performance/cssOptimization.ts:20 - CriticalCSSExtractor (used in module)
+src/lib/performance/cssOptimization.ts:140 - CSSLoader (used in module)
+src/lib/performance/cssOptimization.ts:218 - CSSPerformanceMonitor (used in module)
+src/lib/performance/cssOptimization.ts:304 - tailwindOptimizationConfig
+src/lib/performance/databaseOptimization.ts:5 - QueryPerformanceMetrics (used in module)
+src/lib/performance/databaseOptimization.ts:13 - DatabaseOptimizationConfig (used in module)
+src/lib/performance/databaseOptimization.ts:22 - defaultDBConfig (used in module)
+src/lib/performance/databaseOptimization.ts:87 - DatabasePerformanceMonitor (used in module)
+src/lib/performance/databaseOptimization.ts:257 - OptimizedSupabaseClient (used in module)
+src/lib/performance/databaseOptimization.ts:553 - OptimizedQueries
+src/lib/performance/databaseOptimization.ts:650 - optimizedDB
+src/lib/performance/databaseOptimization.ts:651 - dbMonitor
+src/lib/performance/fonts.ts:5 - inter (used in module)
+src/lib/performance/fonts.ts:15 - poppins (used in module)
+src/lib/performance/fonts.ts:25 - sourceSans (used in module)
+src/lib/performance/fonts.ts:35 - roboto (used in module)
+src/lib/performance/fonts.ts:45 - customFont (used in module)
+src/lib/performance/fonts.ts:70 - FontLoader (used in module)
+src/lib/performance/fonts.ts:221 - FontMetrics (used in module)
+src/lib/performance/fonts.ts:274 - fontVariables
+src/lib/performance/fonts.ts:283 - fontClasses
+src/lib/performance/fonts.ts:292 - tailwindFontConfig
+src/lib/performance/performanceInit.ts:439 - initPerformanceOptimizations (used in module)
+src/lib/performance/performanceInit.ts:10 - PerformanceConfig (used in module)
+src/lib/performance/performanceInit.ts:46 - defaultPerformanceConfig (used in module)
+src/lib/performance/performanceInit.ts:83 - PerformanceMetricsCollector (used in module)
+src/lib/performance/performanceInit.ts:495 - performanceUtils
+src/lib/performance/performanceTests.ts:662 - runPerformanceAudit
+src/lib/performance/performanceTests.ts:5 - PerformanceTest (used in module)
+src/lib/performance/performanceTests.ts:12 - PerformanceTestResult (used in module)
+src/lib/performance/performanceTests.ts:22 - PerformanceTestSuite (used in module)
+src/lib/performance/performanceTests.ts:28 - PerformanceTestSuiteResult (used in module)
+src/lib/performance/performanceTests.ts:43 - coreWebVitalsTests (used in module)
+src/lib/performance/performanceTests.ts:299 - performanceTests (used in module)
+src/lib/performance/performanceTests.ts:509 - PerformanceTestRunner (used in module)
+src/lib/performance/performanceTests.ts:659 - performanceTestRunner (used in module)
+src/lib/performance/serviceWorker.ts:353 - useServiceWorker
+src/lib/performance/serviceWorker.ts:5 - ServiceWorkerConfig (used in module)
+src/lib/performance/serviceWorker.ts:14 - defaultSWConfig (used in module)
+src/lib/performance/serviceWorker.ts:23 - ServiceWorkerManager (used in module)
+src/lib/performance/webVitals.ts:303 - useWebVitals
+src/lib/performance/webVitals.ts:12 - WebVitalData (used in module)
+src/lib/performance/webVitals.ts:21 - WebVitalsReport (used in module)
+src/lib/performance/webVitals.ts:44 - WebVitalsTracker (used in module)
+src/lib/seo/metadata-generator.ts:470 - createMetadataGenerator
+src/lib/seo/metadata-generator.ts:4 - SEOConfig
+src/lib/seo/metadata-generator.ts:20 - BreadcrumbItem
+src/lib/seo/metadata-generator.ts:465 - metadataGenerator
+src/lib/seo/seo-analytics.ts:585 - SEOAnalyticsProvider
+src/lib/seo/seo-analytics.ts:556 - seoAnalytics (used in module)
+src/lib/seo/seo-analytics.ts:594 - SEOMetrics (used in module)
+src/lib/seo/seo-analytics.ts:594 - SEOAnalyticsEvent (used in module)
+src/lib/seo/seo-analytics.ts:594 - SearchConsoleData (used in module)
+src/lib/seo/sitemap-generator.ts:518 - SitemapUrl (used in module)
+src/lib/seo/sitemap-generator.ts:518 - SitemapConfig (used in module)
+src/lib/seo/structured-data.ts:393 - useStructuredData
+src/lib/seo/structured-data.ts:368 - structuredDataGenerator (used in module)
+src/lib/seo/structured-data.ts:500 - StructuredDataConfig (used in module)
+src/lib/seo/structured-data.ts:500 - FAQItem (used in module)
+src/lib/seo/structured-data.ts:500 - Review (used in module)
+src/lib/seo/turkish-seo.ts:426 - turkishSEO
+src/lib/seo/turkish-seo.ts:518 - TurkishKeywordData (used in module)
+src/lib/seo/turkish-seo.ts:518 - TurkishContentOptimization (used in module)
+src/lib/storage/supabase-storage.ts:9 - FileUploadConfig
+src/lib/storage/supabase-storage.ts:15 - MaterialFile (used in module)
+src/lib/storage/supabase-storage.ts:29 - UploadResult (used in module)
+src/lib/storage/supabase-storage.ts:475 - default
+src/lib/types/auth.ts:42 - UserStatus (used in module)
+src/lib/types/auth.ts:87 - SSOConfig (used in module)
+src/lib/types/auth.ts:103 - SAMLConfig
+src/lib/types/auth.ts:180 - NetworkStatus (used in module)
+src/lib/types/auth.ts:187 - OfflineQueueStatus (used in module)
+src/lib/types/auth.ts:277 - DomainVerification
+src/lib/types/auth.ts:290 - SSOMetadata
+src/lib/validation/assessment.ts:28 - createQuestionSchema (used in module)
+src/lib/validation/assessment.ts:49 - updateQuestionSchema (used in module)
+src/lib/validation/assessment.ts:57 - submitQuizResponseSchema (used in module)
+src/lib/validation/assessment.ts:118 - questionBankQuerySchema (used in module)
+src/lib/validation/assessment.ts:134 - createQuestionBankSchema (used in module)
+src/lib/validation/assessment.ts:145 - manualGradingSchema (used in module)
+src/lib/validation/assessment.ts:155 - rubricSchema (used in module)
+src/lib/validation/assessment.ts:183 - cheatingReportSchema (used in module)
+src/lib/validation/assessment.ts:191 - browserSecuritySchema (used in module)
+src/lib/validation/assessment.ts:202 - adaptiveConfigSchema (used in module)
+src/lib/validation/assessment.ts:214 - UpdateQuestion
+src/lib/validation/assessment.ts:215 - StartQuizAttempt
+src/lib/validation/assessment.ts:216 - SubmitQuizResponse
+src/lib/validation/assessment.ts:218 - AssessmentQuery
+src/lib/validation/assessment.ts:219 - AttemptQuery
+src/lib/validation/assessment.ts:220 - AnalyticsQuery
+src/lib/validation/assessment.ts:221 - QuestionBankQuery
+src/lib/validation/assessment.ts:222 - CreateQuestionBank
+src/lib/validation/assessment.ts:224 - RubricDefinition
+src/lib/validation/assessment.ts:225 - CheatingReport
+src/lib/validation/assessment.ts:226 - BrowserSecurityConfig
+src/lib/validation/assessment.ts:227 - AdaptiveConfig
+src/lib/validation/courses.ts:57 - courseFiltersSchema (used in module)
+src/lib/validation/courses.ts:78 - CourseQuery
+src/lib/validation/courses.ts:81 - CourseFilters
+src/lib/validation/enrollments.ts:29 - EnrollmentRequest
+src/lib/validation/enrollments.ts:30 - ProgressUpdate
+src/lib/validation/enrollments.ts:31 - EnrollmentQuery
+src/lib/validation/enrollments.ts:32 - CancellationRequest
+src/lib/validation/middleware.ts:37 - withValidation (used in module)
+src/lib/validation/middleware.ts:13 - ValidationConfig (used in module)
+src/lib/validation/middleware.ts:423 - default
+src/lib/validation/progress.ts:59 - analyticsRequestSchema (used in module)
+src/lib/validation/progress.ts:77 - ProgressQuery
+src/lib/validation/progress.ts:78 - InstructorProgressQuery
+src/lib/validation/progress.ts:79 - AchievementQuery
+src/lib/validation/progress.ts:80 - BatchLessonCompletion
+src/lib/validation/progress.ts:81 - AnalyticsRequest
+src/lib/validation/schemas.ts:377 - validateRequest (used in module)
+src/lib/validation/schemas.ts:396 - validateQuery (used in module)
+src/lib/validation/schemas.ts:426 - sanitizeHtml (used in module)
+src/lib/validation/schemas.ts:437 - sanitizeSql (used in module)
+src/lib/validation/schemas.ts:450 - sanitizeUrl (used in module)
+src/lib/validation/schemas.ts:40 - emailSchema (used in module)
+src/lib/validation/schemas.ts:54 - passwordSchema (used in module)
+src/lib/validation/schemas.ts:82 - nameSchema (used in module)
+src/lib/validation/schemas.ts:96 - uuidSchema (used in module)
+src/lib/validation/schemas.ts:103 - positiveIntSchema (used in module)
+src/lib/validation/schemas.ts:111 - priceSchema (used in module)
+src/lib/validation/schemas.ts:120 - ratingSchema (used in module)
+src/lib/validation/schemas.ts:129 - urlSchema (used in module)
+src/lib/validation/schemas.ts:141 - searchQuerySchema (used in module)
+src/lib/validation/schemas.ts:157 - textContentSchema (used in module)
+src/lib/validation/schemas.ts:187 - registrationRequestSchema (used in module)
+src/lib/validation/schemas.ts:204 - passwordResetRequestSchema (used in module)
+src/lib/validation/schemas.ts:208 - passwordResetConfirmSchema (used in module)
+src/lib/validation/schemas.ts:223 - profileUpdateSchema (used in module)
+src/lib/validation/schemas.ts:242 - courseCreateSchema (used in module)
+src/lib/validation/schemas.ts:268 - courseUpdateSchema (used in module)
+src/lib/validation/schemas.ts:273 - courseSearchSchema (used in module)
+src/lib/validation/schemas.ts:290 - paymentIntentSchema (used in module)
+src/lib/validation/schemas.ts:300 - checkoutSessionSchema (used in module)
+src/lib/validation/schemas.ts:314 - assessmentSubmissionSchema (used in module)
+src/lib/validation/schemas.ts:335 - adminUserCreateSchema (used in module)
+src/lib/validation/schemas.ts:349 - fileUploadSchema (used in module)
+src/lib/validation/schemas.ts:468 - RegistrationRequest
+src/lib/validation/schemas.ts:469 - PasswordResetRequest
+src/lib/validation/schemas.ts:470 - ProfileUpdateRequest
+src/lib/validation/schemas.ts:471 - CourseCreateRequest
+src/lib/validation/schemas.ts:472 - CourseSearchRequest
+src/lib/validation/schemas.ts:473 - PaymentIntentRequest
+src/lib/validation/schemas.ts:474 - AssessmentSubmissionRequest
+src/lib/validation/schemas.ts:476 - default (used in module)
+src/pages/api/ping.ts:3 - default
+src/utils/supabase/server.ts:57 - createServerClient
+.next/types/app/beta-test/page.ts:54 - PageProps (used in module)
+.next/types/app/beta-test/page.ts:58 - LayoutProps
+.next/types/app/courses/page.ts:54 - PageProps (used in module)
+.next/types/app/courses/page.ts:58 - LayoutProps
+.next/types/app/dashboard/page.ts:54 - PageProps (used in module)
+.next/types/app/dashboard/page.ts:58 - LayoutProps
+.next/types/app/login/page.ts:54 - PageProps (used in module)
+.next/types/app/login/page.ts:58 - LayoutProps
+.next/types/app/marketplace/page.ts:54 - PageProps (used in module)
+.next/types/app/marketplace/page.ts:58 - LayoutProps
+.next/types/app/register/page.ts:54 - PageProps (used in module)
+.next/types/app/register/page.ts:58 - LayoutProps
+.next/types/app/robots.txt/route.ts:313 - PageProps
+.next/types/app/robots.txt/route.ts:317 - LayoutProps
+.next/types/app/settings/page.ts:54 - PageProps (used in module)
+.next/types/app/settings/page.ts:58 - LayoutProps
+.next/types/app/sitemap-blog.xml/route.ts:313 - PageProps
+.next/types/app/sitemap-blog.xml/route.ts:317 - LayoutProps
+.next/types/app/sitemap-categories.xml/route.ts:313 - PageProps
+.next/types/app/sitemap-categories.xml/route.ts:317 - LayoutProps
+.next/types/app/sitemap-courses.xml/route.ts:313 - PageProps
+.next/types/app/sitemap-courses.xml/route.ts:317 - LayoutProps
+.next/types/app/sitemap-instructors.xml/route.ts:313 - PageProps
+.next/types/app/sitemap-instructors.xml/route.ts:317 - LayoutProps
+.next/types/app/sitemap-main.xml/route.ts:313 - PageProps
+.next/types/app/sitemap-main.xml/route.ts:317 - LayoutProps
+.next/types/app/sitemap-tags.xml/route.ts:313 - PageProps
+.next/types/app/sitemap-tags.xml/route.ts:317 - LayoutProps
+.next/types/app/sitemap.xml/route.ts:313 - PageProps
+.next/types/app/sitemap.xml/route.ts:317 - LayoutProps
+.next/types/app/student/layout.ts:54 - PageProps
+.next/types/app/student/layout.ts:58 - LayoutProps (used in module)
+.next/types/app/student/page.ts:54 - PageProps (used in module)
+.next/types/app/student/page.ts:58 - LayoutProps
+src/app/courses/[courseId]/page-old-backup.tsx:114 - default
+src/lib/auth/providers/client-safe.ts:8 - ClientSSOProvider (used in module)
+src/lib/auth/providers/client-safe.ts:14 - ClientGoogleSSO (used in module)
+src/lib/auth/providers/client-safe.ts:56 - ClientMicrosoftSSO (used in module)
+src/lib/auth/providers/google.ts:11 - GoogleTokenResponse (used in module)
+src/lib/auth/providers/google.ts:20 - GoogleUserInfo (used in module)
+src/lib/auth/providers/google.ts:32 - GoogleGroupInfo (used in module)
+src/lib/auth/providers/google.ts:40 - GoogleSSOProvider (used in module)
+src/lib/auth/providers/google.ts:382 - googleSSO
+src/lib/auth/providers/microsoft.ts:12 - MicrosoftTokenResponse
+src/lib/auth/providers/microsoft.ts:21 - MicrosoftUserInfo (used in module)
+src/lib/auth/providers/microsoft.ts:36 - AzureADGroupInfo (used in module)
+src/lib/auth/providers/microsoft.ts:46 - MicrosoftSSOProvider (used in module)
+src/lib/auth/providers/microsoft.ts:465 - microsoftSSO
+.next/types/app/admin/courses/page.ts:54 - PageProps (used in module)
+.next/types/app/admin/courses/page.ts:58 - LayoutProps
+.next/types/app/admin/dashboard/page.ts:54 - PageProps (used in module)
+.next/types/app/admin/dashboard/page.ts:58 - LayoutProps
+.next/types/app/admin/payments/page.ts:54 - PageProps (used in module)
+.next/types/app/admin/payments/page.ts:58 - LayoutProps
+.next/types/app/admin/qna/page.ts:54 - PageProps (used in module)
+.next/types/app/admin/qna/page.ts:58 - LayoutProps
+.next/types/app/admin/settings/page.ts:54 - PageProps (used in module)
+.next/types/app/admin/settings/page.ts:58 - LayoutProps
+.next/types/app/admin/users/page.ts:54 - PageProps (used in module)
+.next/types/app/admin/users/page.ts:58 - LayoutProps
+.next/types/app/api/assessments/route.ts:313 - PageProps
+.next/types/app/api/assessments/route.ts:317 - LayoutProps
+.next/types/app/api/courses/route.ts:313 - PageProps
+.next/types/app/api/courses/route.ts:317 - LayoutProps
+.next/types/app/api/diag/route.ts:313 - PageProps
+.next/types/app/api/diag/route.ts:317 - LayoutProps
+.next/types/app/api/enrollments/route.ts:313 - PageProps
+.next/types/app/api/enrollments/route.ts:317 - LayoutProps
+.next/types/app/api/health/route.ts:313 - PageProps
+.next/types/app/api/health/route.ts:317 - LayoutProps
+.next/types/app/api/test/route.ts:313 - PageProps
+.next/types/app/api/test/route.ts:317 - LayoutProps
+.next/types/app/api/test-public/route.ts:313 - PageProps
+.next/types/app/api/test-public/route.ts:317 - LayoutProps
+.next/types/app/auth/reset-password/page.ts:54 - PageProps (used in module)
+.next/types/app/auth/reset-password/page.ts:58 - LayoutProps
+.next/types/app/auth/verification-error/page.ts:54 - PageProps (used in module)
+.next/types/app/auth/verification-error/page.ts:58 - LayoutProps
+.next/types/app/auth/verification-success/page.ts:54 - PageProps (used in module)
+.next/types/app/auth/verification-success/page.ts:58 - LayoutProps
+.next/types/app/auth/verify-email/page.ts:54 - PageProps (used in module)
+.next/types/app/auth/verify-email/page.ts:58 - LayoutProps
+.next/types/app/courses/[courseId]/page.ts:54 - PageProps (used in module)
+.next/types/app/courses/[courseId]/page.ts:58 - LayoutProps
+.next/types/app/marketplace/[courseId]/page.ts:54 - PageProps (used in module)
+.next/types/app/marketplace/[courseId]/page.ts:58 - LayoutProps
+.next/types/app/monitoring/tunnel/route.ts:313 - PageProps
+.next/types/app/monitoring/tunnel/route.ts:317 - LayoutProps
+.next/types/app/student/materials/page.ts:54 - PageProps (used in module)
+.next/types/app/student/materials/page.ts:58 - LayoutProps
+.next/types/app/student/questions/page.ts:54 - PageProps (used in module)
+.next/types/app/student/questions/page.ts:58 - LayoutProps
+src/app/admin/users/components/UserStats.tsx:38 - default
+src/app/api/auth/login/route-with-validation.ts:43 - POST
+.next/types/app/admin/courses/[courseId]/page.ts:54 - PageProps (used in module)
+.next/types/app/admin/courses/[courseId]/page.ts:58 - LayoutProps
+.next/types/app/admin/courses/new/page.ts:54 - PageProps (used in module)
+.next/types/app/admin/courses/new/page.ts:58 - LayoutProps
+.next/types/app/api/admin/courses/route.ts:313 - PageProps
+.next/types/app/api/admin/courses/route.ts:317 - LayoutProps
+.next/types/app/api/admin/qna/route.ts:313 - PageProps
+.next/types/app/api/admin/qna/route.ts:317 - LayoutProps
+.next/types/app/api/assessments/[id]/route.ts:313 - PageProps
+.next/types/app/api/assessments/[id]/route.ts:317 - LayoutProps
+.next/types/app/api/auth/[...nextauth]/route.ts:313 - PageProps
+.next/types/app/api/auth/[...nextauth]/route.ts:317 - LayoutProps
+.next/types/app/api/auth/login/route.ts:313 - PageProps
+.next/types/app/api/auth/login/route.ts:317 - LayoutProps
+.next/types/app/api/auth/logout/route.ts:313 - PageProps
+.next/types/app/api/auth/logout/route.ts:317 - LayoutProps
+.next/types/app/api/auth/profile/route.ts:313 - PageProps
+.next/types/app/api/auth/profile/route.ts:317 - LayoutProps
+.next/types/app/api/auth/refresh/route.ts:313 - PageProps
+.next/types/app/api/auth/refresh/route.ts:317 - LayoutProps
+.next/types/app/api/auth/register/route.ts:313 - PageProps
+.next/types/app/api/auth/register/route.ts:317 - LayoutProps
+.next/types/app/api/auth/request-password-reset/route.ts:313 - PageProps
+.next/types/app/api/auth/request-password-reset/route.ts:317 - LayoutProps
+.next/types/app/api/auth/reset-password/route.ts:313 - PageProps
+.next/types/app/api/auth/reset-password/route.ts:317 - LayoutProps
+.next/types/app/api/auth/send-verification/route.ts:313 - PageProps
+.next/types/app/api/auth/send-verification/route.ts:317 - LayoutProps
+.next/types/app/api/auth/verify-email/route.ts:313 - PageProps
+.next/types/app/api/auth/verify-email/route.ts:317 - LayoutProps
+.next/types/app/api/courses/[courseId]/route.ts:313 - PageProps
+.next/types/app/api/courses/[courseId]/route.ts:317 - LayoutProps
+.next/types/app/api/courses/search/route.ts:313 - PageProps
+.next/types/app/api/courses/search/route.ts:317 - LayoutProps
+.next/types/app/api/courses/stats/route.ts:313 - PageProps
+.next/types/app/api/courses/stats/route.ts:317 - LayoutProps
+.next/types/app/api/enroll/free/route.ts:313 - PageProps
+.next/types/app/api/enroll/free/route.ts:317 - LayoutProps
+.next/types/app/api/enrollments/[enrollmentId]/route.ts:313 - PageProps
+.next/types/app/api/enrollments/[enrollmentId]/route.ts:317 - LayoutProps
+.next/types/app/api/health/simple/route.ts:313 - PageProps
+.next/types/app/api/health/simple/route.ts:317 - LayoutProps
+.next/types/app/api/materials/upload/route.ts:313 - PageProps
+.next/types/app/api/materials/upload/route.ts:317 - LayoutProps
+.next/types/app/api/payments/create-checkout-session/route.ts:313 - PageProps
+.next/types/app/api/payments/create-checkout-session/route.ts:317 - LayoutProps
+.next/types/app/api/payments/create-payment-intent/route.ts:313 - PageProps
+.next/types/app/api/payments/create-payment-intent/route.ts:317 - LayoutProps
+.next/types/app/api/payments/customer-portal/route.ts:313 - PageProps
+.next/types/app/api/payments/customer-portal/route.ts:317 - LayoutProps
+.next/types/app/api/payments/history/route.ts:313 - PageProps
+.next/types/app/api/payments/history/route.ts:317 - LayoutProps
+.next/types/app/api/payments/subscriptions/route.ts:313 - PageProps
+.next/types/app/api/payments/subscriptions/route.ts:317 - LayoutProps
+.next/types/app/api/progress/course-stats/route.ts:313 - PageProps
+.next/types/app/api/progress/course-stats/route.ts:317 - LayoutProps
+.next/types/app/api/progress/update/route.ts:313 - PageProps
+.next/types/app/api/progress/update/route.ts:317 - LayoutProps
+.next/types/app/api/student/achievements/route.ts:313 - PageProps
+.next/types/app/api/student/achievements/route.ts:317 - LayoutProps
+.next/types/app/api/student/enroll/route.ts:313 - PageProps
+.next/types/app/api/student/enroll/route.ts:317 - LayoutProps
+.next/types/app/api/student/progress/route.ts:313 - PageProps
+.next/types/app/api/student/progress/route.ts:317 - LayoutProps
+.next/types/app/api/student/questions/route.ts:313 - PageProps
+.next/types/app/api/student/questions/route.ts:317 - LayoutProps
+.next/types/app/api/webhooks/stripe/route.ts:313 - PageProps
+.next/types/app/api/webhooks/stripe/route.ts:317 - LayoutProps
+.next/types/app/courses/[courseId]/modules/page.ts:54 - PageProps (used in module)
+.next/types/app/courses/[courseId]/modules/page.ts:58 - LayoutProps
+.next/types/app/courses/[courseId]/purchase/page.ts:54 - PageProps (used in module)
+.next/types/app/courses/[courseId]/purchase/page.ts:58 - LayoutProps
+.next/types/app/admin/courses/[courseId]/materials/page.ts:54 - PageProps (used in module)
+.next/types/app/admin/courses/[courseId]/materials/page.ts:58 - LayoutProps
+.next/types/app/api/admin/payments/refund/route.ts:313 - PageProps
+.next/types/app/api/admin/payments/refund/route.ts:317 - LayoutProps
+.next/types/app/api/admin/qna/[id]/route.ts:313 - PageProps
+.next/types/app/api/admin/qna/[id]/route.ts:317 - LayoutProps
+.next/types/app/api/assessments/[id]/analytics/route.ts:313 - PageProps
+.next/types/app/api/assessments/[id]/analytics/route.ts:317 - LayoutProps
+.next/types/app/api/assessments/[id]/attempts/route.ts:313 - PageProps
+.next/types/app/api/assessments/[id]/attempts/route.ts:317 - LayoutProps
+.next/types/app/api/assessments/[id]/submit/route.ts:313 - PageProps
+.next/types/app/api/assessments/[id]/submit/route.ts:317 - LayoutProps
+.next/types/app/api/courses/[courseId]/enroll/route.ts:313 - PageProps
+.next/types/app/api/courses/[courseId]/enroll/route.ts:317 - LayoutProps
+.next/types/app/api/courses/[courseId]/progress/route.ts:313 - PageProps
+.next/types/app/api/courses/[courseId]/progress/route.ts:317 - LayoutProps
+.next/types/app/api/instructor/progress/[courseId]/route.ts:313 - PageProps
+.next/types/app/api/instructor/progress/[courseId]/route.ts:317 - LayoutProps
+.next/types/app/api/materials/[id]/download/route.ts:313 - PageProps
+.next/types/app/api/materials/[id]/download/route.ts:317 - LayoutProps
+.next/types/app/api/student/progress/lesson/route.ts:313 - PageProps
+.next/types/app/api/student/progress/lesson/route.ts:317 - LayoutProps
+.next/types/app/api/student/progress/quiz/route.ts:313 - PageProps
+.next/types/app/api/student/progress/quiz/route.ts:317 - LayoutProps
+.next/types/app/api/admin/qna/[id]/reply/route.ts:313 - PageProps
+.next/types/app/api/admin/qna/[id]/reply/route.ts:317 - LayoutProps
+.next/types/app/api/student/progress/course/[courseId]/route.ts:313 - PageProps
+.next/types/app/api/student/progress/course/[courseId]/route.ts:317 - LayoutProps
+.next/types/app/courses/[courseId]/modules/[moduleId]/lessons/[lessonId]/page.ts:54 - PageProps (used in module)
+.next/types/app/courses/[courseId]/modules/[moduleId]/lessons/[lessonId]/page.ts:58 - LayoutProps
