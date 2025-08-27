@@ -1,22 +1,58 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { AuthProtectionMiddleware } from './middleware/auth-protection';
+/**
+ * SIMPLE EDGE-SAFE MIDDLEWARE
+ * NO NODE-ONLY DEPENDENCIES - EMERGENCY FIX
+ */
 
-export async function middleware(request: NextRequest) {
-  // 🔐 SECURITY: Enable comprehensive authentication and session protection
-  return await AuthProtectionMiddleware.protect(request);
+import { NextRequest, NextResponse } from 'next/server';
+
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  
+  // Skip middleware for API routes and static files
+  if (
+    pathname.startsWith('/api/') ||
+    pathname.startsWith('/_next/') ||
+    pathname.startsWith('/favicon.ico') ||
+    pathname === '/login' ||
+    pathname === '/' ||
+    pathname.startsWith('/auth/')
+  ) {
+    return NextResponse.next();
+  }
+  
+  // Check if user is on a protected route
+  const isProtectedRoute = pathname.startsWith('/admin') || 
+                          pathname.startsWith('/dashboard') ||
+                          pathname.startsWith('/student');
+  
+  if (!isProtectedRoute) {
+    return NextResponse.next();
+  }
+
+  // Check for session cookie (NextAuth session token)
+  const sessionToken = request.cookies.get('next-auth.session-token') || 
+                      request.cookies.get('__Secure-next-auth.session-token');
+
+  // If no session token, redirect to login
+  if (!sessionToken) {
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('callbackUrl', pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // If session exists, allow access
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
+     * - api (API routes)
      * - _next/static (static files)
-     * - _next/image (image optimization files)
+     * - _next/image (image optimization files)  
      * - favicon.ico (favicon file)
-     * - public folder
      */
-    '/((?!_next/static|_next/image|favicon.ico|public/).*)',
-    // Include API routes for security processing
-    '/api/:path*'
-  ]
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ],
 };
