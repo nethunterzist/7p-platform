@@ -26,11 +26,22 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): State {
+    // Ignore Supabase key errors - continue with fallback auth
+    if (error.message && error.message.includes('supabaseKey is required')) {
+      console.warn('Main ErrorBoundary: Ignoring Supabase key error, using fallback auth');
+      return { hasError: false };
+    }
     return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const { level = 'component', context } = this.props;
+    
+    // Ignore Supabase key errors - they're handled by fallback auth
+    if (error.message && error.message.includes('supabaseKey is required')) {
+      console.warn('Main ErrorBoundary: Supabase key error ignored in componentDidCatch');
+      return;
+    }
     
     // Log to Sentry with context
     const eventId = Sentry.captureException(error, {
