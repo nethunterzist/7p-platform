@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-// TEMPORARILY DISABLED FOR DEBUG
-// import { AuthErrorBoundary } from "@/components/auth/AuthErrorBoundary";
-// import { AuthProvider } from "@/lib/auth/simple-context";
+import { AuthErrorBoundary } from "@/components/auth/AuthErrorBoundary";
+import { AuthProvider } from "@/lib/auth/simple-context";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ErrorBoundary } from "@/components/monitoring/ErrorBoundary";
 import { Analytics } from '@vercel/analytics/react';
@@ -58,12 +57,11 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-              {/* TEMPORARILY DISABLED FOR DEBUG */}
-              {/* <AuthProvider> */}
-              {/* <AuthErrorBoundary> */}
+            <AuthProvider>
+              <AuthErrorBoundary>
                 {children}
-              {/* </AuthErrorBoundary> */}
-              {/* </AuthProvider> */}
+              </AuthErrorBoundary>
+            </AuthProvider>
           </ThemeProvider>
         </ErrorBoundary>
         
