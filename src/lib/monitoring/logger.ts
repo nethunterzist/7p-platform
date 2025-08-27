@@ -56,8 +56,8 @@ if (process.env.NODE_ENV !== 'production') {
   );
 }
 
-// File transports for production
-if (process.env.NODE_ENV === 'production') {
+// File transports for production (disabled on Vercel due to read-only filesystem)
+if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
   // Error log
   transports.push(
     new winston.transports.DailyRotateFile({
@@ -80,6 +80,16 @@ if (process.env.NODE_ENV === 'production') {
       maxSize: '20m',
       maxFiles: '7d',
       zippedArchive: true,
+    })
+  );
+}
+
+// Console transport for production on Vercel (since file logging is not available)
+if (process.env.NODE_ENV === 'production' && process.env.VERCEL) {
+  transports.push(
+    new winston.transports.Console({
+      format: logFormat,
+      level: 'info', // More restrictive than development
     })
   );
 }

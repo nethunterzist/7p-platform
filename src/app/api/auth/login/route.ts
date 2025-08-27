@@ -1,3 +1,5 @@
+export const runtime = 'nodejs'; // Force Node.js runtime for Supabase
+
 import { mockApi } from '@/lib/mock-api';
 /**
  * Authentication Login API Endpoint

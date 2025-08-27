@@ -1,3 +1,5 @@
+export const runtime = 'nodejs'; // Force Node.js runtime for Supabase
+
 /**
  * User Profile Management API
  * Handles profile updates, role management, and user preferences

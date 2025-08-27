@@ -1,3 +1,4 @@
+export const runtime = 'nodejs'; // Force Node.js runtime
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {

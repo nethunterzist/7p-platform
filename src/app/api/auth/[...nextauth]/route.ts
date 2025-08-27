@@ -3,6 +3,8 @@
  * Complete authentication system for 7P Education Platform
  */
 
+export const runtime = 'nodejs'; // Force Node.js runtime for bcrypt, Supabase admin client
+
 import NextAuth from 'next-auth'
 import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
