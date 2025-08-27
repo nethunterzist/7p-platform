@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { withApiMonitoring } from '@/middleware/monitoring';
-import { log } from '@/lib/monitoring/logger';
 import { STRIPE_ENABLED, NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_KEY } from '@/lib/env';
 
-export const GET = withApiMonitoring(async (request: NextRequest) => {
+export async function GET(request: NextRequest) {
   const startTime = performance.now();
   
   try {
@@ -52,10 +50,7 @@ export const GET = withApiMonitoring(async (request: NextRequest) => {
         const { data, error } = await supabase.from('courses').select('id').limit(1);
         
         if (error) {
-          log.warn('Database health check failed', {
-            error,
-            logType: 'health-check-db-fail',
-          });
+          console.warn('Database health check failed:', error);
           healthData.checks.database = false;
         } else {
           healthData.checks.database = true;
@@ -64,10 +59,7 @@ export const GET = withApiMonitoring(async (request: NextRequest) => {
         healthData.checks.database = false;
       }
     } catch (dbError) {
-      log.error('Database health check error', {
-        error: dbError as Error,
-        logType: 'health-check-db-error',
-      });
+      console.error('Database health check error:', dbError);
       healthData.checks.database = false;
     }
 
@@ -84,21 +76,14 @@ export const GET = withApiMonitoring(async (request: NextRequest) => {
           healthData.checks.stripe = stripeKey.startsWith('sk_');
           
           if (!healthData.checks.stripe) {
-            log.warn('Stripe health check failed - invalid key format', {
-              logType: 'health-check-stripe-fail',
-            });
+            console.warn('Stripe health check failed - invalid key format');
           }
         } else {
           healthData.checks.stripe = false;
-          log.warn('Stripe health check failed - missing secret key', {
-            logType: 'health-check-stripe-fail',
-          });
+          console.warn('Stripe health check failed - missing secret key');
         }
       } catch (stripeError) {
-        log.error('Stripe health check error', {
-          error: stripeError as Error,
-          logType: 'health-check-stripe-error',
-        });
+        console.error('Stripe health check error:', stripeError);
         healthData.checks.stripe = false;
       }
     }
@@ -112,10 +97,10 @@ export const GET = withApiMonitoring(async (request: NextRequest) => {
     healthData.status = allChecksHealthy ? 'healthy' : 'unhealthy';
 
     // Log health check
-    log.info('Health check performed', {
-      healthData,
+    console.log('Health check performed:', {
+      status: healthData.status,
       duration,
-      logType: 'health-check',
+      checks: healthData.checks,
     });
 
     // Return appropriate status code
@@ -126,10 +111,9 @@ export const GET = withApiMonitoring(async (request: NextRequest) => {
   } catch (error) {
     const duration = performance.now() - startTime;
     
-    log.error('Health check failed', {
-      error: error as Error,
+    console.error('Health check failed:', {
+      error: (error as Error).message,
       duration,
-      logType: 'health-check-failed',
     });
 
     return NextResponse.json({
@@ -138,13 +122,9 @@ export const GET = withApiMonitoring(async (request: NextRequest) => {
       timestamp: new Date().toISOString(),
     }, { status: 500 });
   }
-}, {
-  operationName: 'health-check',
-});
+}
 
 // Also support HEAD requests for simple checks
-export const HEAD = withApiMonitoring(async (request: NextRequest) => {
+export async function HEAD(request: NextRequest) {
   return new NextResponse(null, { status: 200 });
-}, {
-  operationName: 'health-check-head',
-});
+}
