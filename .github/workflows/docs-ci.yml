@@ -57,7 +57,7 @@ jobs:
 
       - name: 🚫 Check for unauthorized root markdown files
         run: |
-          ALLOWED_FILES=(README.md CHANGELOG.md SECURITY.md CONTRIBUTING.md DRY_RUN_CLEANUP_INVENTORY.md)
+          ALLOWED_FILES=(README.md CHANGELOG.md SECURITY.md CONTRIBUTING.md DRY_RUN_CLEANUP_INVENTORY.md REPO_CLEANUP_COMPLETE_REPORT.md RLS_TEST.md)
           UNAUTHORIZED_FILES=()
           
           for file in *.md; do

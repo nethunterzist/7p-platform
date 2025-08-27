@@ -103,6 +103,17 @@ function validateInternalLinks(filePath, links) {
       continue;
     }
     
+    // Skip false positive patterns (code examples, not real links)
+    const falsePositivePatterns = [
+      /^value$/,
+      /^etc\|proc\|sys\|root\|home\|var\|usr\|opt\|tmp$/,
+      /^windows\|winnt\|system32\|syswow64$/
+    ];
+    
+    if (falsePositivePatterns.some(pattern => pattern.test(url))) {
+      continue;
+    }
+    
     // Resolve relative path
     let targetPath;
     if (url.startsWith('./')) {
