@@ -1,4 +1,4 @@
-# MIDDLEWARE FIX REPORT
+ # MIDDLEWARE FIX REPORT
 ## 7P Education - Edge Runtime Compatibility Fix
 
 **Tarih:** 27 Ağustos 2025  
