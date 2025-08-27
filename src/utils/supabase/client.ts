@@ -21,14 +21,12 @@ export function createClient(): SupabaseClient {
     return clientInstance;
   }
   
-  // Get environment variables
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // Get environment variables with fallbacks
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
 
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error(
-      'Missing Supabase environment variables. Please check your .env.local file.'
-    );
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    console.warn('[Supabase] Environment variables missing, using fallback configuration');
   }
 
   if (process.env.NODE_ENV === 'development') {
@@ -181,5 +179,23 @@ async function trackAuthEvent(event: string, userId: string, metadata: any) {
   }
 }
 
-// Default export for easier importing
-export const supabase = createClient();
+// Safe client creation function
+export function createSafeClient(): SupabaseClient | null {
+  try {
+    return createClient();
+  } catch (error) {
+    console.error('[Supabase] Failed to create client:', error);
+    return null;
+  }
+}
+
+// Default export for easier importing - fallback safe
+let defaultSupabaseInstance: SupabaseClient | null = null;
+try {
+  defaultSupabaseInstance = createClient();
+} catch (error) {
+  console.warn('[Supabase] Default client creation failed, using null fallback');
+  defaultSupabaseInstance = null;
+}
+
+export const supabase = defaultSupabaseInstance;

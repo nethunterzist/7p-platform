@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import { createSafeClient } from '@/utils/supabase/client';
 import { useUnifiedAuth } from '@/lib/unified-auth';
 import { Bell, UserPlus, BookOpen, Award, X, Check } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -22,10 +22,10 @@ export default function RealtimeNotifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
-  const supabase = createClient();
+  const supabase = createSafeClient();
 
   useEffect(() => {
-    if (!isAdmin || !user) return;
+    if (!isAdmin || !user || !supabase) return;
 
     // Subscribe to admin notifications channel
     const channel = supabase
