@@ -350,42 +350,56 @@ export async function logSecurityEvent(event: {
  * @throws Error if required variables are missing
  */
 export function validateEnvironment(): void {
-  const required = [
+  // Check if payments are enabled
+  const paymentsMode = process.env.PAYMENTS_MODE ?? 'disabled';
+  const stripeEnabled = paymentsMode === 'stripe';
+  
+  // Core required variables (always needed)
+  const coreRequired = [
     'NEXT_PUBLIC_SUPABASE_URL',
     'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+  ];
+  
+  // Stripe variables (only required when payments enabled)
+  const stripeRequired = stripeEnabled ? [
     'STRIPE_SECRET_KEY',
     'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY',
     'STRIPE_WEBHOOK_SECRET',
-  ];
+  ] : [];
   
-  const missing = required.filter(key => !process.env[key]);
+  const allRequired = [...coreRequired, ...stripeRequired];
+  const missing = allRequired.filter(key => !process.env[key]);
   
   if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
   }
   
-  // Validate key formats
-  const stripeSecretKey = process.env.STRIPE_SECRET_KEY!;
-  const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!;
-  
-  if (!stripeSecretKey.startsWith('sk_')) {
-    throw new Error('Invalid Stripe secret key format');
-  }
-  
-  if (!stripePublishableKey.startsWith('pk_')) {
-    throw new Error('Invalid Stripe publishable key format');
-  }
-  
-  // Warn about development vs production keys
-  const isProduction = process.env.NODE_ENV === 'production';
-  const usingTestKeys = stripeSecretKey.includes('test') || stripePublishableKey.includes('test');
-  
-  if (isProduction && usingTestKeys) {
-    console.warn('WARNING: Using test Stripe keys in production environment');
-  }
-  
-  if (!isProduction && !usingTestKeys) {
-    console.warn('WARNING: Using live Stripe keys in development environment');
+  // Validate Stripe key formats (only when payments enabled)
+  if (stripeEnabled) {
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY!;
+    const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!;
+    
+    if (!stripeSecretKey.startsWith('sk_')) {
+      throw new Error('Invalid Stripe secret key format');
+    }
+    
+    if (!stripePublishableKey.startsWith('pk_')) {
+      throw new Error('Invalid Stripe publishable key format');
+    }
+    
+    // Warn about development vs production keys
+    const isProduction = process.env.NODE_ENV === 'production';
+    const usingTestKeys = stripeSecretKey.includes('test') || stripePublishableKey.includes('test');
+    
+    if (isProduction && usingTestKeys) {
+      console.warn('WARNING: Using test Stripe keys in production environment');
+    }
+    
+    if (!isProduction && !usingTestKeys) {
+      console.warn('WARNING: Using live Stripe keys in development environment');
+    }
+  } else {
+    console.log('INFO: Stripe payments disabled (PAYMENTS_MODE=disabled)');
   }
 }
 
