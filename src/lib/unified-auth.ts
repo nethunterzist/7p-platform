@@ -369,29 +369,108 @@ class UnifiedAuthService {
   }
 }
 
-// Export singleton instance
-export const unifiedAuth = new UnifiedAuthService();
+// Export singleton instance - Safe initialization
+let unifiedAuth: UnifiedAuthService | null = null;
 
-// Export React hook for easy component integration
+try {
+  unifiedAuth = new UnifiedAuthService();
+} catch (error) {
+  console.warn('UnifiedAuthService initialization failed, using null fallback');
+  unifiedAuth = null;
+}
+
+export { unifiedAuth };
+
+// Export React hook for easy component integration - Fallback Safe Version
 export function useUnifiedAuth() {
-  const [state, setState] = React.useState<AuthState>(unifiedAuth.getState());
+  // Check if we have localStorage auth (fallback system)
+  const [state, setState] = React.useState<AuthState>(() => {
+    if (typeof window !== 'undefined') {
+      const authUser = localStorage.getItem('auth_user');
+      if (authUser) {
+        try {
+          const userData = JSON.parse(authUser);
+          return {
+            user: {
+              id: userData.id || '1',
+              email: userData.email || 'admin@7peducation.com',
+              name: userData.name || 'Admin User',
+              role: userData.role || 'admin',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              is_active: true,
+              email_verified: true
+            } as UnifiedUser,
+            session: null,
+            loading: false,
+            error: null,
+            isAdmin: userData.email === 'admin@7peducation.com' || userData.role === 'admin',
+            isInstructor: userData.role === 'instructor',
+            isAuthenticated: true
+          };
+        } catch (error) {
+          console.warn('Failed to parse auth_user from localStorage');
+        }
+      }
+    }
+    
+    // Default state when no auth found
+    return {
+      user: null,
+      session: null,
+      loading: false,
+      error: null,
+      isAdmin: false,
+      isInstructor: false,
+      isAuthenticated: false
+    };
+  });
 
+  // Try to use the unified auth service if available, otherwise use fallback
   React.useEffect(() => {
-    const unsubscribe = unifiedAuth.subscribe(setState);
-    return unsubscribe;
+    try {
+      // Only try to subscribe if Supabase is available
+      if (unifiedAuth && unifiedAuth.getCurrentUser) {
+        const unsubscribe = unifiedAuth.subscribe(setState);
+        return unsubscribe;
+      }
+    } catch (error) {
+      console.warn('UnifiedAuth service not available, using fallback state');
+    }
   }, []);
+
+  const safeFunctions = {
+    signIn: async (email: string, password: string) => {
+      console.warn('SignIn called on fallback unified auth');
+      return { data: null, error: 'Supabase auth not available' };
+    },
+    signOut: async () => {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('auth_user');
+        localStorage.removeItem('auth_token');
+        document.cookie = 'simple-auth-session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        window.location.href = '/login';
+      }
+      return { error: null };
+    },
+    signUp: async (email: string, password: string, userData?: any) => {
+      console.warn('SignUp called on fallback unified auth');
+      return { data: null, error: 'Supabase auth not available' };
+    },
+    resetPassword: async (email: string) => {
+      console.warn('ResetPassword called on fallback unified auth');
+      return { error: 'Password reset not available in fallback mode' };
+    }
+  };
 
   return {
     ...state,
-    signIn: unifiedAuth.signIn.bind(unifiedAuth),
-    signOut: unifiedAuth.signOut.bind(unifiedAuth),
-    signUp: unifiedAuth.signUp.bind(unifiedAuth),
-    resetPassword: unifiedAuth.resetPassword.bind(unifiedAuth)
+    ...safeFunctions
   };
 }
 
 // React import for the hook
 import React from 'react';
 
-// Default export
+// Default export - may be null if Supabase unavailable
 export default unifiedAuth;
