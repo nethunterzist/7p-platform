@@ -1,4 +1,11 @@
-// Çok basit auth sistemi - localStorage ile
+/**
+ * SECURE AUTHENTICATION SYSTEM
+ * NextAuth-based authentication replacing localStorage fallbacks
+ */
+
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+
 export interface User {
   id: string;
   email: string;
@@ -6,57 +13,42 @@ export interface User {
   role: 'student' | 'admin';
 }
 
-// Mock users - gerçek sistemde backend'den gelir
-const MOCK_USERS = [
-  { id: '1', email: 'admin@7peducation.com', password: '123456', name: 'Admin User', role: 'admin' as const },
-  { id: '2', email: 'test@test.com', password: '123456', name: 'Test User', role: 'student' as const },
-  { id: '3', email: 'furkanyy@gmail.com', password: '123456', name: 'Furkan Y', role: 'student' as const }
-];
-
-export const login = async (email: string, password: string): Promise<{ user?: User; error?: string }> => {
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 300));
-  
-  const mockUser = MOCK_USERS.find(u => u.email === email && u.password === password);
-  
-  if (!mockUser) {
-    return { error: 'Email veya şifre hatalı' };
-  }
-  
-  const user: User = {
-    id: mockUser.id,
-    email: mockUser.email,
-    name: mockUser.name,
-    role: mockUser.role
-  };
-  
-  // Save to localStorage
-  localStorage.setItem('auth_user', JSON.stringify(user));
-  localStorage.setItem('auth_token', 'mock_token_' + Date.now());
-  
-  return { user };
-};
-
-export const logout = () => {
-  localStorage.removeItem('auth_user');
-  localStorage.removeItem('auth_token');
-};
-
+// Client-side authentication check (no localStorage)
 export const getCurrentUser = (): User | null => {
-  if (typeof window === 'undefined') return null;
-  
+  // For client-side, this should use NextAuth session
+  // Components should use useSession from next-auth/react instead
+  console.warn('getCurrentUser is deprecated. Use useSession from next-auth/react');
+  return null;
+};
+
+// Server-side authentication check
+export const getServerUser = async () => {
   try {
-    const userStr = localStorage.getItem('auth_user');
-    const token = localStorage.getItem('auth_token');
-    
-    if (!userStr || !token) return null;
-    
-    return JSON.parse(userStr);
+    const session = await getServerSession(authOptions);
+    if (session?.user) {
+      return {
+        id: session.user.id,
+        email: session.user.email || '',
+        name: session.user.name || 'User',
+        role: (session.user as any).role || 'student'
+      };
+    }
+    return null;
   } catch {
     return null;
   }
 };
 
+export const login = async (email: string, password: string): Promise<{ user?: User; error?: string }> => {
+  console.warn('login function is deprecated. Use NextAuth signIn instead');
+  return { error: 'Please use NextAuth authentication system' };
+};
+
+export const logout = async () => {
+  console.warn('logout function is deprecated. Use NextAuth signOut instead');
+};
+
 export const isAuthenticated = (): boolean => {
-  return getCurrentUser() !== null;
+  console.warn('isAuthenticated is deprecated. Use useSession from next-auth/react');
+  return false;
 };

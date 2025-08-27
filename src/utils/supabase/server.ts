@@ -4,10 +4,9 @@
  */
 
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-export function createClient(): SupabaseClient {
+export async function createClient(): Promise<SupabaseClient> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -17,7 +16,15 @@ export function createClient(): SupabaseClient {
     );
   }
 
-  const cookieStore = cookies();
+  // Import cookies dynamically to avoid build issues
+  let cookieStore;
+  try {
+    const { cookies } = await import('next/headers');
+    cookieStore = cookies();
+  } catch {
+    // Fallback for non-server environments
+    cookieStore = null;
+  }
 
   return createSupabaseClient(supabaseUrl, supabaseKey, {
     auth: {
@@ -25,11 +32,11 @@ export function createClient(): SupabaseClient {
       autoRefreshToken: false, // Server doesn't need to refresh tokens
       detectSessionInUrl: false // Server doesn't need to detect session in URL
     },
-    cookies: {
+    cookies: cookieStore ? {
       get(name: string) {
         return cookieStore.get(name)?.value;
       },
-    },
+    } : undefined,
   });
 }
 

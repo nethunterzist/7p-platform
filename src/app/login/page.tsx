@@ -26,49 +26,22 @@ export default function LoginPage() {
     setMessage('');
 
     try {
-      // Try Supabase first, fallback to simple auth
-      try {
-        const result = await supabaseAuth.signIn({ email, password });
+      const result = await supabaseAuth.signIn({ email, password });
 
-        if (result.error) {
-          throw new Error(result.error);
-        }
+      if (result.error) {
+        throw new Error(result.error);
+      }
 
-        if (result.user) {
-          setMessage('✅ Supabase giriş başarılı! Yönlendiriliyorsunuz...');
-          setTimeout(() => {
-            router.push('/dashboard');
-          }, 1000);
-          return;
-        }
-      } catch (supabaseError) {
-        console.warn('Supabase auth failed, using fallback:', supabaseError);
-        
-        // Fallback to simple auth
-        if (email === 'admin@7peducation.com' && password === 'admin123456') {
-          // Set simple auth data
-          const userData = {
-            id: '1',
-            email: email,
-            name: 'Admin User',
-            role: 'admin'
-          };
-          
-          localStorage.setItem('auth_user', JSON.stringify(userData));
-          localStorage.setItem('auth_token', 'simple-auth-token-' + Date.now());
-          
-          setMessage('✅ Fallback giriş başarılı! Yönlendiriliyorsunuz...');
-          setTimeout(() => {
-            window.location.href = '/admin/dashboard';
-          }, 1000);
-          return;
-        } else {
-          throw new Error('Geçersiz email veya şifre');
-        }
+      if (result.user) {
+        setMessage('✅ Giriş başarılı! Yönlendiriliyorsunuz...');
+        setTimeout(() => {
+          router.push('/dashboard');
+        }, 1000);
+        return;
       }
     } catch (error) {
       console.error('Login error:', error);
-      setMessage(`❌ ${error instanceof Error ? error.message : 'Beklenmeyen bir hata oluştu'}`);
+      setMessage(`❌ ${error instanceof Error ? error.message : 'Geçersiz email veya şifre'}`);
     } finally {
       setLoading(false);
     }
@@ -77,12 +50,10 @@ export default function LoginPage() {
   const handleClearAuth = async () => {
     try {
       await supabaseAuth.signOut();
-      localStorage.clear();
-      document.cookie = 'auth_token=; path=/; max-age=0';
       setMessage('✅ Oturum kapatıldı');
     } catch (error) {
       console.error('Logout error:', error);
-      setMessage('⚠️ Logout hatası oluştu ama yerel veriler temizlendi');
+      setMessage('⚠️ Logout hatası oluştu');
     }
   };
 
@@ -92,11 +63,11 @@ export default function LoginPage() {
         <h1 className="text-2xl font-bold text-center mb-8">7P Education Giriş</h1>
         
         <div className="mb-4 p-4 bg-blue-50 rounded-lg text-sm">
-          <p className="font-semibold mb-2">✅ Middleware Sorunu Çözüldü!</p>
+          <p className="font-semibold mb-2">✅ Güvenli Giriş Sistemi</p>
           <p className="font-semibold mb-2">Test Hesabı:</p>
           <p>• admin@7peducation.com : admin123456</p>
           <p className="text-xs text-gray-600 mt-2">
-            ℹ️ Gerçek Supabase backend kullanılıyor (fallback ile)
+            ℹ️ Supabase + NextAuth ile güvenli kimlik doğrulama
           </p>
         </div>
         
