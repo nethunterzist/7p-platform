@@ -3,7 +3,9 @@
  * Simple, reliable auth helpers for Next.js client components
  */
 
-import { supabase } from '@/utils/supabase/client';
+import { createSafeClient } from '@/utils/supabase/client';
+
+const supabase = createSafeClient();
 import type { User, Session } from '@supabase/supabase-js';
 
 export interface AuthUser {
@@ -29,6 +31,10 @@ export async function getCurrentSession(): Promise<{
   error: string | null;
 }> {
   try {
+    if (!supabase) {
+      return { session: null, user: null, error: 'Authentication service unavailable' };
+    }
+    
     const { data: { session }, error } = await supabase.auth.getSession();
     
     if (error) {

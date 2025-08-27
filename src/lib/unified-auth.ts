@@ -3,7 +3,7 @@
  * Replaces simple-auth.ts, useAdmin.ts and consolidates with Supabase Auth
  */
 
-import { createClient } from '@/utils/supabase/client';
+import { createSafeClient } from '@/utils/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
 
 export interface UnifiedUser {
@@ -30,7 +30,7 @@ export interface AuthState {
 }
 
 class UnifiedAuthService {
-  private supabase = createClient();
+  private supabase = createSafeClient();
   private listeners: Array<(state: AuthState) => void> = [];
   private currentState: AuthState = {
     user: null,
@@ -52,6 +52,17 @@ class UnifiedAuthService {
 
   private async initialize() {
     try {
+      if (!this.supabase) {
+        this.updateState({ 
+          loading: false, 
+          error: 'Authentication service unavailable',
+          isAuthenticated: false,
+          isAdmin: false,
+          isInstructor: false
+        });
+        return;
+      }
+
       // Get initial session
       const { data: { session }, error } = await this.supabase.auth.getSession();
       if (error) throw error;
@@ -59,7 +70,8 @@ class UnifiedAuthService {
       await this.updateAuthState(session);
 
       // Listen to auth changes
-      this.supabase.auth.onAuthStateChange(async (event, session) => {
+      if (this.supabase) {
+        this.supabase.auth.onAuthStateChange(async (event, session) => {
         await this.updateAuthState(session);
         
         // Handle specific events
@@ -72,6 +84,7 @@ class UnifiedAuthService {
             break;
         }
       });
+      }
 
     } catch (error) {
       console.error('Auth initialization error:', error);
