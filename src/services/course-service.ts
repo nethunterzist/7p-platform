@@ -19,7 +19,7 @@ export class CourseService {
       .from('courses')
       .select(`
         *,
-        instructor:users!instructor_id(id, name, email, avatar_url, bio),
+        instructor:user_profiles!instructor_id(id, full_name, email, avatar_url),
         category:course_categories(id, name, description),
         enrollment_count:enrollments(count),
         average_rating:course_reviews(rating)
@@ -95,7 +95,7 @@ export class CourseService {
       .from('courses')
       .select(`
         *,
-        instructor:users!instructor_id(*),
+        instructor:user_profiles!instructor_id(*),
         category:course_categories(*),
         modules:course_modules(
           id, title, description, order_index,
@@ -103,7 +103,7 @@ export class CourseService {
         ),
         recent_enrollments:enrollments(
           id, user_id, enrolled_at,
-          user:users(id, name, avatar_url)
+          user:user_profiles(id, full_name, avatar_url)
         )
       `)
       .eq('id', id)
@@ -147,7 +147,7 @@ export class CourseService {
       })
       .select(`
         *,
-        instructor:users!instructor_id(id, name, email, avatar_url),
+        instructor:user_profiles!instructor_id(id, full_name, email, avatar_url),
         category:course_categories(id, name, description)
       `)
       .single();
@@ -182,7 +182,7 @@ export class CourseService {
 
     // Check if user is the instructor or admin
     const { data: user } = await supabase
-      .from('users')
+      .from('user_profiles')
       .select('role')
       .eq('id', userId)
       .single();
@@ -197,7 +197,7 @@ export class CourseService {
       .eq('id', id)
       .select(`
         *,
-        instructor:users!instructor_id(id, name, email, avatar_url),
+        instructor:user_profiles!instructor_id(id, full_name, email, avatar_url),
         category:course_categories(id, name, description)
       `)
       .single();
@@ -227,7 +227,7 @@ export class CourseService {
     }
 
     const { data: user } = await supabase
-      .from('users')
+      .from('user_profiles')
       .select('role')
       .eq('id', userId)
       .single();

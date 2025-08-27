@@ -2,8 +2,9 @@ import { mockApi } from '@/lib/mock-api';
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserPaymentHistory } from '@/lib/payments';
 import { supabase } from '@/lib/supabase';
+import { withPaymentGuard } from '@/lib/payment-guard';
 
-export async function GET(request: NextRequest) {
+export const GET = withPaymentGuard(async (request: NextRequest) => {
   try {
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -37,4 +38,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

@@ -8,9 +8,10 @@ import {
   logPaymentEvent 
 } from '@/lib/payments';
 import { supabase } from '@/lib/supabase';
+import { withPaymentGuard } from '@/lib/payment-guard';
 import Stripe from 'stripe';
 
-export async function POST(request: NextRequest) {
+export const POST = withPaymentGuard(async (request: NextRequest) => {
   try {
     const { courseId, bundleId } = await request.json();
 
@@ -150,4 +151,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

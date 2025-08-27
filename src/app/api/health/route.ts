@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { withApiMonitoring } from '@/middleware/monitoring';
 import { log } from '@/lib/monitoring/logger';
+import { STRIPE_ENABLED, NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_KEY } from '@/lib/env';
 
 export const GET = withApiMonitoring(async (request: NextRequest) => {
   const startTime = performance.now();
@@ -18,6 +19,7 @@ export const GET = withApiMonitoring(async (request: NextRequest) => {
         database: false,
         memory: false,
         disk: false,
+        stripe: STRIPE_ENABLED ? false : null, // Only check Stripe if enabled
       },
       metrics: {
         responseTime: 0,
@@ -40,14 +42,14 @@ export const GET = withApiMonitoring(async (request: NextRequest) => {
 
     // Check database connection
     try {
-      if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      if (NEXT_PUBLIC_SUPABASE_URL && SUPABASE_SERVICE_KEY) {
         const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+          NEXT_PUBLIC_SUPABASE_URL,
+          SUPABASE_SERVICE_KEY
         );
 
-        // Simple query to test connection
-        const { data, error } = await supabase.from('profiles').select('count').limit(1);
+        // Simple query to test connection - use courses table instead of user_profiles
+        const { data, error } = await supabase.from('courses').select('id').limit(1);
         
         if (error) {
           log.warn('Database health check failed', {
@@ -72,12 +74,41 @@ export const GET = withApiMonitoring(async (request: NextRequest) => {
     // Basic disk check (always true in serverless)
     healthData.checks.disk = true;
 
+    // Check Stripe connection (only if payments are enabled)
+    if (STRIPE_ENABLED) {
+      try {
+        // Only check if we have Stripe configuration
+        if (process.env.STRIPE_SECRET_KEY) {
+          // Simple Stripe connection test - we'll just verify the key format
+          const stripeKey = process.env.STRIPE_SECRET_KEY;
+          healthData.checks.stripe = stripeKey.startsWith('sk_');
+          
+          if (!healthData.checks.stripe) {
+            log.warn('Stripe health check failed - invalid key format', {
+              logType: 'health-check-stripe-fail',
+            });
+          }
+        } else {
+          healthData.checks.stripe = false;
+          log.warn('Stripe health check failed - missing secret key', {
+            logType: 'health-check-stripe-fail',
+          });
+        }
+      } catch (stripeError) {
+        log.error('Stripe health check error', {
+          error: stripeError as Error,
+          logType: 'health-check-stripe-error',
+        });
+        healthData.checks.stripe = false;
+      }
+    }
+
     // Calculate response time
     const duration = performance.now() - startTime;
     healthData.metrics.responseTime = Math.round(duration);
 
     // Determine overall health status
-    const allChecksHealthy = Object.values(healthData.checks).every(check => check === true);
+    const allChecksHealthy = Object.values(healthData.checks).every(check => check === true || check === null);
     healthData.status = allChecksHealthy ? 'healthy' : 'unhealthy';
 
     // Log health check

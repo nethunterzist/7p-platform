@@ -92,8 +92,35 @@ export function applyRateLimit(
   }
 }
 
-// Helper function for middleware compatibility
-export const rateLimit = applyRateLimit;
+// Modern rate limiting interface for API routes
+export const rateLimit = {
+  check: async (
+    request: NextRequest, 
+    endpoint: string, 
+    config: { max: number; window: string }
+  ) => {
+    try {
+      // Convert window format ('1m' -> 60000ms)
+      const windowMs = config.window === '1m' ? 60 * 1000 : 60 * 1000;
+      const rateLimitConfig = { windowMs, maxRequests: config.max };
+      
+      const identifier = getClientIdentifier(request);
+      const isLimited = isRateLimited(`${endpoint}:${identifier}`, rateLimitConfig);
+      
+      return {
+        success: !isLimited,
+        limit: config.max,
+        remaining: isLimited ? 0 : config.max - 1,
+        reset: Date.now() + windowMs
+      };
+    } catch (error) {
+      console.error('Rate limit check failed:', error);
+      return { success: true, limit: config.max, remaining: config.max, reset: Date.now() + 60000 };
+    }
+  }
+};
+
+// Keep original function as legacy export for backward compatibility
 
 // =====================================
 // INPUT VALIDATION & SANITIZATION

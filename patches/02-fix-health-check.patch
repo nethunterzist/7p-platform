@@ -1,0 +1,23 @@
+diff --git a/src/app/api/health/route.ts b/src/app/api/health/route.ts
+index 1234567..abcdefg 100644
+--- a/src/app/api/health/route.ts
++++ b/src/app/api/health/route.ts
+@@ -40,9 +40,9 @@ export const GET = withApiMonitoring(async (request: NextRequest) => {
+ 
+     // Check database connection
+     try {
+-      if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
++      if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+         const supabase = createClient(
+           process.env.NEXT_PUBLIC_SUPABASE_URL,
+-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
++          process.env.SUPABASE_SERVICE_KEY
+         );
+ 
+-        // Simple query to test connection
+-        const { data, error } = await supabase.from('user_profiles').select('count').limit(1);
++        // Simple query to test connection - use courses table instead of user_profiles
++        const { data, error } = await supabase.from('courses').select('id').limit(1);
+         
+         if (error) {
+           log.warn('Database health check failed', {

@@ -1,13 +1,14 @@
 /**
- * SIMPLE MOCK SUPABASE CLIENT - 7P Education
- * Drop-in replacement for Supabase client using simple mock system
- * Provides basic functionality without complex chaining
+ * REAL SUPABASE CLIENT - 7P Education
+ * Production-ready Supabase client with full functionality
+ * Replaced mock system with real database connection
  */
 
-import { simpleMockClient } from './simple-supabase-mock';
+import { createClient } from '@/utils/supabase/client';
+import type { User, Session, SupabaseClient } from '@supabase/supabase-js';
 
-// Export simple mock client as drop-in replacement
-export const supabase = simpleMockClient;
+// Export real Supabase client
+export const supabase = createClient();
 
 // Re-export types for compatibility
-export type { MockUser as User, MockSession as Session } from './simple-supabase-mock';
+export type { User, Session, SupabaseClient };

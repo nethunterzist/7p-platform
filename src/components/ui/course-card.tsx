@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import MockPaymentModal from '@/components/beta/MockPaymentModal';
 import toast from 'react-hot-toast';
+import { usePaymentMode } from '@/hooks/usePaymentMode';
 
 interface CourseCardProps {
   course: {
@@ -58,6 +59,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
   const [showMockPayment, setShowMockPayment] = useState(false);
   const [enrolling, setEnrolling] = useState(false);
   const router = useRouter();
+  const { paymentsEnabled } = usePaymentMode();
   const formatPrice = (price: number, currency: string = 'TRY') => {
     const symbol = currency === 'TRY' ? '₺' : '$';
     return `${symbol}${price.toLocaleString()}`;
@@ -83,6 +85,37 @@ const CourseCard: React.FC<CourseCardProps> = ({
     : 0;
 
   const isListMode = className?.includes('flex-row');
+
+  const handleFreeEnrollment = async (courseId: string) => {
+    setEnrolling(true);
+    try {
+      const response = await fetch('/api/enroll/free', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          courseId,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Enrollment failed');
+      }
+
+      const data = await response.json();
+      toast.success('🎉 Kursa başarıyla kaydoldunuz! Dashboard\'a yönlendiriliyor...');
+      
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 2000);
+    } catch (error: any) {
+      toast.error(error.message || 'Kayıt sırasında bir hata oluştu');
+    } finally {
+      setEnrolling(false);
+    }
+  };
   
   return (
     <div className={`rounded-2xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-300 hover:border-blue-300 dark:hover:border-blue-500 group ${className}`}>
@@ -107,7 +140,13 @@ const CourseCard: React.FC<CourseCardProps> = ({
               ÜCRETSİZ
             </div>
           )}
-          {!isEnrolled && !course.is_free && (
+          {!isEnrolled && !course.is_free && !paymentsEnabled && (
+            <div key="test-badge" className="px-2 py-0.5 rounded-md text-xs bg-gradient-to-r from-orange-100 to-yellow-100 text-orange-700 border-0 inline-flex items-center font-semibold animate-pulse">
+              <Sparkles className="w-3 h-3 mr-1" />
+              TEST ÜCRETSİZ
+            </div>
+          )}
+          {!isEnrolled && !course.is_free && paymentsEnabled && (
             <div key="beta-badge" className="px-2 py-0.5 rounded-md text-xs bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 border-0 inline-flex items-center font-semibold animate-pulse">
               <Sparkles className="w-3 h-3 mr-1" />
               BETA ÜCRETSİZ
@@ -153,6 +192,16 @@ const CourseCard: React.FC<CourseCardProps> = ({
                   <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
                     ÜCRETSİZ
                   </span>
+                ) : !paymentsEnabled ? (
+                  <div className="flex flex-col">
+                    <span className="text-sm text-slate-400 dark:text-gray-500 line-through">
+                      {formatPrice(course.price, course.currency)}
+                    </span>
+                    <span className="text-xl font-bold text-orange-600 dark:text-orange-400 flex items-center gap-1">
+                      <Gift className="w-4 h-4" />
+                      TEST ÜCRETSİZ
+                    </span>
+                  </div>
                 ) : (
                   <div className="flex flex-col">
                     <span className="text-sm text-slate-400 dark:text-gray-500 line-through">
@@ -222,13 +271,17 @@ const CourseCard: React.FC<CourseCardProps> = ({
                 onClick={() => {
                   if (course.is_free) {
                     onPurchase?.(course.id);
+                  } else if (!paymentsEnabled) {
+                    // When payments are disabled, use free enrollment
+                    handleFreeEnrollment(course.id);
                   } else {
+                    // When payments are enabled, use mock payment (beta mode)
                     setShowMockPayment(true);
                   }
                 }}
                 disabled={loading || enrolling}
                 size="sm"
-                className={course.is_free 
+                className={course.is_free || !paymentsEnabled
                   ? "px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
                   : "px-4 py-2 rounded-xl bg-gradient-to-r from-green-600 to-blue-600 text-white hover:from-green-700 hover:to-blue-700 disabled:opacity-50 shadow-lg"
                 }
@@ -237,10 +290,15 @@ const CourseCard: React.FC<CourseCardProps> = ({
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></div>
                 ) : course.is_free ? (
                   <ShoppingCart className="h-4 w-4 mr-1" />
+                ) : !paymentsEnabled ? (
+                  <ShoppingCart className="h-4 w-4 mr-1" />
                 ) : (
                   <Sparkles className="h-4 w-4 mr-1" />
                 )}
-                {loading || enrolling ? 'İşleniyor...' : (course.is_free ? 'Ücretsiz Al' : 'Beta\'da Ücretsiz Al!')}
+                {loading || enrolling ? 'İşleniyor...' : 
+                  course.is_free ? 'Ücretsiz Al' : 
+                  !paymentsEnabled ? 'Enroll (Free/Test)' : 
+                  'Beta\'da Ücretsiz Al!'}
               </Button>
             )}
           </div>

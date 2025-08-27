@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/lib/supabase';
 import { formatAmount } from '@/lib/stripe';
+import { usePaymentMode } from '@/hooks/usePaymentMode';
 
 interface Course {
   id: string;
@@ -41,10 +42,18 @@ export default function CoursePurchasePage() {
   const [user, setUser] = useState<any>(null);
   const [hasAccess, setHasAccess] = useState(false);
   const [transactionId, setTransactionId] = useState<string | null>(null);
+  const { paymentsEnabled } = usePaymentMode();
 
   useEffect(() => {
     checkAuthAndLoadData();
   }, [courseId]);
+
+  useEffect(() => {
+    // Redirect to course page if payments are disabled
+    if (!paymentsEnabled && courseId) {
+      router.push(`/courses/${courseId}?payments=disabled`);
+    }
+  }, [paymentsEnabled, courseId, router]);
 
   const checkAuthAndLoadData = async () => {
     try {

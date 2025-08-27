@@ -15,6 +15,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { usePaymentMode } from '@/hooks/usePaymentMode';
+import toast from 'react-hot-toast';
 
 interface MarketplaceCourseCardProps {
   course: {
@@ -55,6 +57,8 @@ const MarketplaceCourseCard: React.FC<MarketplaceCourseCardProps> = ({
   loading = false
 }) => {
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const [enrolling, setEnrolling] = useState(false);
+  const { paymentsEnabled } = usePaymentMode();
 
   const formatPrice = (price: number, currency: string = 'TRY') => {
     const symbol = currency === 'TRY' ? '₺' : '$';
@@ -117,6 +121,37 @@ const MarketplaceCourseCard: React.FC<MarketplaceCourseCardProps> = ({
   const discountPercentage = course.original_price 
     ? Math.round(((course.original_price - course.price) / course.original_price) * 100)
     : 0;
+
+  const handleFreeEnrollment = async (courseId: string) => {
+    setEnrolling(true);
+    try {
+      const response = await fetch('/api/enroll/free', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          courseId,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Enrollment failed');
+      }
+
+      const data = await response.json();
+      toast.success('🎉 Kursa başarıyla kaydoldunuz! Dashboard\'a yönlendiriliyor...');
+      
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 2000);
+    } catch (error: any) {
+      toast.error(error.message || 'Kayıt sırasında bir hata oluştu');
+    } finally {
+      setEnrolling(false);
+    }
+  };
 
   return (
     <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden">
@@ -275,16 +310,24 @@ const MarketplaceCourseCard: React.FC<MarketplaceCourseCardProps> = ({
           <div className="flex items-center justify-between pt-4 border-t border-gray-100">
             <div className="flex flex-col">
               <div className="flex items-center space-x-2">
-                <span className="text-2xl font-bold text-gray-900">
-                  {formatPrice(course.price, course.currency)}
-                </span>
-                {course.original_price && course.original_price > course.price && (
+                {!paymentsEnabled ? (
+                  <span className="text-lg font-bold text-orange-600">
+                    TEST ÜCRETSİZ
+                  </span>
+                ) : (
+                  <span className="text-2xl font-bold text-gray-900">
+                    {formatPrice(course.price, course.currency)}
+                  </span>
+                )}
+                {course.original_price && course.original_price > course.price && paymentsEnabled && (
                   <span className="text-lg text-gray-500 line-through">
                     {formatPrice(course.original_price, course.currency)}
                   </span>
                 )}
               </div>
-              <span className="text-xs text-gray-500">Tek ödeme</span>
+              <span className="text-xs text-gray-500">
+                {!paymentsEnabled ? 'Test modunda kayıt' : 'Tek ödeme'}
+              </span>
             </div>
 
             <div className="flex space-x-2">
@@ -303,17 +346,23 @@ const MarketplaceCourseCard: React.FC<MarketplaceCourseCardProps> = ({
                 </Button>
               ) : (
                 <Button
-                  onClick={() => onPurchase?.(course.id)}
-                  disabled={loading}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  onClick={() => {
+                    if (!paymentsEnabled) {
+                      handleFreeEnrollment(course.id);
+                    } else {
+                      onPurchase?.(course.id);
+                    }
+                  }}
+                  disabled={loading || enrolling}
+                  className={!paymentsEnabled ? "bg-orange-600 hover:bg-orange-700" : "bg-blue-600 hover:bg-blue-700"}
                   size="sm"
                 >
-                  {loading ? (
+                  {loading || enrolling ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                   ) : (
                     <ShoppingCart className="h-4 w-4 mr-2" />
                   )}
-                  {loading ? 'İşleniyor...' : 'Satın Al'}
+                  {loading || enrolling ? 'İşleniyor...' : (!paymentsEnabled ? 'Enroll (Free/Test)' : 'Satın Al')}
                 </Button>
               )}
             </div>

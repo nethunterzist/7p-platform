@@ -1,0 +1,328 @@
+# 7P Education - Vercel Environment Variables Template
+
+**Date**: 2025-08-26  
+**Purpose**: Complete environment variables reference for Vercel deployment  
+**Security**: Variable names only - NO ACTUAL VALUES included  
+
+**⚠️ CRITICAL SECURITY NOTICE**:
+- This template contains ONLY variable names and descriptions
+- NEVER commit actual API keys, secrets, or credentials to repository
+- Use Vercel Dashboard → Settings → Environment Variables to set values
+- Mark all sensitive variables as "Production" environment only
+
+---
+
+## 🔐 Required Environment Variables
+
+### Supabase Configuration
+
+```bash
+# Supabase Project URL
+NEXT_PUBLIC_SUPABASE_URL=
+# Description: Your Supabase project URL (safe for browser)
+# Example: https://your-project-id.supabase.co
+# Required: Yes | Environment: Production
+# Public: Yes (safe to expose in browser)
+
+# Supabase Anonymous Key  
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+# Description: Supabase anonymous/public key (safe for browser)
+# Example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+# Required: Yes | Environment: Production
+# Public: Yes (safe to expose in browser)
+
+# Supabase Service Role Key
+SUPABASE_SERVICE_KEY=
+# Description: Supabase service role key (SERVER ONLY - never expose to browser)
+# Example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+# Required: Yes | Environment: Production
+# Public: No (server-side only, highly sensitive)
+```
+
+### Authentication Configuration
+
+```bash
+# NextAuth Secret
+NEXTAUTH_SECRET=
+# Description: NextAuth.js session encryption secret (32+ characters)
+# Generate with: openssl rand -hex 32
+# Required: Yes | Environment: Production
+# Public: No (server-side only, highly sensitive)
+
+# NextAuth URL
+NEXTAUTH_URL=
+# Description: Full production URL for NextAuth callbacks
+# Example: https://your-domain.vercel.app
+# Required: Yes | Environment: Production
+# Public: No (server-side only)
+# Note: Set AFTER first deployment when you know your domain
+```
+
+### Stripe Payment Configuration
+
+```bash
+# Stripe Publishable Key
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+# Description: Stripe publishable key (safe for browser)
+# Example: pk_live_51ABC... (production) or pk_test_51ABC... (test)
+# Required: Yes | Environment: Production
+# Public: Yes (safe to expose in browser)
+
+# Stripe Secret Key
+STRIPE_SECRET_KEY=
+# Description: Stripe secret key (SERVER ONLY - never expose to browser)
+# Example: sk_live_51ABC... (production) or sk_test_51ABC... (test)
+# Required: Yes | Environment: Production
+# Public: No (server-side only, highly sensitive)
+
+# Stripe Webhook Secret
+STRIPE_WEBHOOK_SECRET=
+# Description: Stripe webhook endpoint secret for signature verification
+# Example: whsec_1ABC...
+# Required: Yes | Environment: Production
+# Public: No (server-side only, sensitive)
+# Note: Set AFTER creating webhook endpoint in Stripe dashboard
+```
+
+### Monitoring & Analytics
+
+```bash
+# Sentry DSN
+NEXT_PUBLIC_SENTRY_DSN=
+# Description: Sentry error monitoring DSN (safe for browser)
+# Example: https://abc123@o123456.ingest.sentry.io/123456
+# Required: Recommended | Environment: Production
+# Public: Yes (safe to expose in browser)
+
+# Sentry Organization
+SENTRY_ORG=
+# Description: Sentry organization slug for sourcemap uploads
+# Example: your-organization
+# Required: Yes (if using Sentry) | Environment: Production
+# Public: No (build-time only)
+
+# Sentry Project
+SENTRY_PROJECT=
+# Description: Sentry project slug for sourcemap uploads
+# Example: 7p-education
+# Required: Yes (if using Sentry) | Environment: Production
+# Public: No (build-time only)
+
+# Sentry Auth Token
+SENTRY_AUTH_TOKEN=
+# Description: Sentry authentication token for sourcemap uploads
+# Generate from: Sentry Settings → Account → User Auth Tokens
+# Required: Yes (if using Sentry) | Environment: Production
+# Public: No (build-time only, sensitive)
+```
+
+### Application Settings
+
+```bash
+# Node Environment
+NODE_ENV=
+# Description: Node.js environment mode
+# Value: production (for production deployment)
+# Required: Yes | Environment: Production
+# Public: Yes
+
+# Application Environment
+NEXT_PUBLIC_APP_ENV=
+# Description: Application environment indicator
+# Value: production (for production deployment)
+# Required: Yes | Environment: Production
+# Public: Yes (safe to expose in browser)
+
+# Application URL
+NEXT_PUBLIC_APP_URL=
+# Description: Full production URL for your application
+# Example: https://your-domain.com
+# Required: Recommended | Environment: Production
+# Public: Yes (safe to expose in browser)
+```
+
+### Feature Flags
+
+```bash
+# Enable User Registration
+ENABLE_USER_REGISTRATION=
+# Description: Enable/disable user registration feature
+# Value: true or false
+# Required: No (defaults to true) | Environment: Production
+# Public: No (server-side only)
+
+# Enable Email Verification
+ENABLE_EMAIL_VERIFICATION=
+# Description: Enable/disable email verification flow
+# Value: true or false
+# Required: No (defaults to false for quick setup) | Environment: Production
+# Public: No (server-side only)
+
+# Enable Analytics
+NEXT_PUBLIC_ENABLE_ANALYTICS=
+# Description: Enable/disable analytics tracking
+# Value: true or false
+# Required: No (defaults to true) | Environment: Production
+# Public: Yes (safe to expose in browser)
+
+# Enable Debug Mode
+NEXT_PUBLIC_DEBUG_MODE=
+# Description: Enable debug logging and development features
+# Value: false (should be false in production)
+# Required: No (defaults to false) | Environment: Production
+# Public: Yes (safe to expose in browser)
+```
+
+### Database Configuration (Optional)
+
+```bash
+# Direct Database URL (if needed)
+DATABASE_URL=
+# Description: Direct PostgreSQL connection string (if using direct connections)
+# Example: postgresql://user:password@host:port/database
+# Required: No (Supabase handles this) | Environment: Production
+# Public: No (server-side only, highly sensitive)
+# Note: Only needed for direct database operations outside Supabase client
+```
+
+### Email Configuration (Optional - for custom SMTP)
+
+```bash
+# SMTP Host
+SMTP_HOST=
+# Description: SMTP server hostname for email sending
+# Example: smtp.gmail.com
+# Required: No (only if using custom email) | Environment: Production
+# Public: No (server-side only)
+
+# SMTP Port
+SMTP_PORT=
+# Description: SMTP server port
+# Example: 587 (TLS) or 465 (SSL)
+# Required: No (only if using custom email) | Environment: Production
+# Public: No (server-side only)
+
+# SMTP User
+SMTP_USER=
+# Description: SMTP authentication username
+# Example: your-email@domain.com
+# Required: No (only if using custom email) | Environment: Production
+# Public: No (server-side only, sensitive)
+
+# SMTP Password
+SMTP_PASSWORD=
+# Description: SMTP authentication password
+# Example: your-app-password
+# Required: No (only if using custom email) | Environment: Production
+# Public: No (server-side only, highly sensitive)
+```
+
+---
+
+## 📋 Environment Variables Checklist
+
+### Essential Variables (Required for Basic Functionality)
+- [ ] NEXT_PUBLIC_SUPABASE_URL
+- [ ] NEXT_PUBLIC_SUPABASE_ANON_KEY
+- [ ] SUPABASE_SERVICE_KEY
+- [ ] NEXTAUTH_SECRET
+- [ ] NEXTAUTH_URL (set after deployment)
+- [ ] NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+- [ ] STRIPE_SECRET_KEY
+- [ ] NODE_ENV=production
+- [ ] NEXT_PUBLIC_APP_ENV=production
+
+### Stripe Integration (Required for Payments)
+- [ ] STRIPE_WEBHOOK_SECRET (set after webhook creation)
+
+### Monitoring (Recommended)
+- [ ] NEXT_PUBLIC_SENTRY_DSN
+- [ ] SENTRY_ORG
+- [ ] SENTRY_PROJECT
+- [ ] SENTRY_AUTH_TOKEN
+
+### Optional Variables
+- [ ] NEXT_PUBLIC_APP_URL
+- [ ] ENABLE_USER_REGISTRATION
+- [ ] ENABLE_EMAIL_VERIFICATION
+- [ ] NEXT_PUBLIC_ENABLE_ANALYTICS
+
+---
+
+## 🔧 How to Set Variables in Vercel
+
+### Via Vercel Dashboard (Recommended)
+1. Go to your project in Vercel Dashboard
+2. Navigate to **Settings** → **Environment Variables**
+3. Click **Add New**
+4. Enter **Key** and **Value**
+5. Select **Environment**: Production (for all production variables)
+6. Click **Save**
+
+### Via Vercel CLI
+```bash
+# Set individual variables
+vercel env add NEXT_PUBLIC_SUPABASE_URL production
+vercel env add SUPABASE_SERVICE_KEY production
+
+# List all variables
+vercel env ls
+
+# Pull environment variables locally (for testing)
+vercel env pull .env.local
+```
+
+---
+
+## 🛡️ Security Best Practices
+
+### Variable Classification
+- **Public Variables** (NEXT_PUBLIC_*): Safe to expose in browser, can be seen by users
+- **Server Variables**: Never exposed to browser, only available in server-side code
+- **Sensitive Variables**: API keys, secrets, database URLs - never commit to repository
+
+### Key Security Rules
+1. **Never commit actual values** to your repository
+2. **Use Vercel Dashboard** for setting sensitive variables
+3. **Mark variables as Production** environment only
+4. **Regularly rotate secrets** (monthly for high-security)
+5. **Use separate keys** for development and production
+6. **Monitor for leaked keys** using GitHub secret scanning
+
+### Production vs Development
+- **Production Keys**: Live Stripe keys (pk_live_*, sk_live_*), production Supabase
+- **Development Keys**: Test Stripe keys (pk_test_*, sk_test_*), development Supabase
+- **Never mix environments**: Production app should only use production keys
+
+---
+
+## 🚨 Emergency Procedures
+
+### If Keys Are Compromised
+1. **Immediately revoke** the compromised key in the service dashboard
+2. **Generate new key** and update in Vercel environment variables
+3. **Trigger new deployment** to use updated keys
+4. **Monitor logs** for any suspicious activity
+5. **Review access logs** in respective services
+
+### Required Actions After Setting Variables
+1. **Trigger new deployment** for environment variables to take effect
+2. **Test all integrations** (auth, payments, database)
+3. **Verify Stripe webhooks** are receiving events
+4. **Check Sentry integration** is capturing errors
+5. **Validate all API endpoints** are working correctly
+
+---
+
+## 📖 Related Documentation
+- **VERCEL_DEPLOY_CHECKLIST.md**: Step-by-step deployment guide
+- **STRIPE_WEBHOOK_SETUP.md**: Webhook configuration after deployment
+- **SENTRY_SOURCEMAPS_GUIDE.md**: Error monitoring setup
+- **POST_DEPLOY_SMOKE.md**: Post-deployment testing procedures
+
+---
+
+**Last Updated**: 2025-08-26  
+**Template Version**: 1.0  
+**Project**: 7P Education Platform  
+**Security Level**: Production Ready 🔒
