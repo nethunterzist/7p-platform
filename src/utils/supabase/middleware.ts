@@ -6,14 +6,13 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
-export function createClient(request: NextRequest) {
+export function createClient(request: NextRequest): ReturnType<typeof createSupabaseClient> | null {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
-    throw new Error(
-      'Missing Supabase environment variables. Please check your .env.local file.'
-    );
+    console.warn('Missing Supabase environment variables in middleware, returning null client');
+    return null;
   }
 
   return createSupabaseClient(supabaseUrl, supabaseKey, {
@@ -49,6 +48,12 @@ export function updateSession(request: NextRequest) {
 
     const response = NextResponse.next();
     const supabase = createClient(request);
+    
+    // If client creation failed, skip session handling
+    if (!supabase) {
+      console.warn('Failed to create Supabase client in middleware, skipping session update');
+      return response;
+    }
 
     // Let Supabase handle session refresh
     return response;
