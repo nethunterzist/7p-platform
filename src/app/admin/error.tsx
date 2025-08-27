@@ -14,12 +14,10 @@ export default function AdminError({
   useEffect(() => {
     console.warn('Admin error handler triggered:', error.message);
     
-    // If it's a Supabase error, set up fallback auth and continue
+    // If it's a Supabase error, just redirect to a working page
     if (error.message && error.message.includes('supabaseKey is required')) {
-      console.warn('Admin error handler: Setting up fallback auth for admin');
-      
       if (typeof window !== 'undefined') {
-        // Ensure fallback auth is set
+        // Set fallback auth
         localStorage.setItem('auth_user', JSON.stringify({
           id: '1',
           email: 'admin@7peducation.com',
@@ -28,10 +26,8 @@ export default function AdminError({
         }));
         localStorage.setItem('auth_token', 'fallback-token');
         
-        // Force refresh to retry with fallback auth
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+        // Go to login page instead of infinite reload
+        window.location.href = '/login';
       }
       return;
     }
