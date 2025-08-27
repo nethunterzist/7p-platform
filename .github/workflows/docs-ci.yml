@@ -1,0 +1,179 @@
+name: 📚 Documentation CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths: ['docs/**', '*.md', 'src/**/*.md']
+  pull_request:
+    branches: [main, develop]
+    paths: ['docs/**', '*.md', 'src/**/*.md']
+  workflow_dispatch:
+
+jobs:
+  docs-quality:
+    name: 🔍 Documentation Quality Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: ⚡ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Check docs quality
+        run: npm run docs:check
+
+      - name: 🗺️ Verify route map is current
+        run: |
+          npm run routemap:gen
+          if git diff --exit-code docs/ROUTEMAP.md; then
+            echo "✅ Route map is up to date"
+          else
+            echo "❌ Route map is outdated. Please run 'npm run routemap:gen' and commit changes."
+            git diff docs/ROUTEMAP.md
+            exit 1
+          fi
+
+      - name: 🌍 Check environment documentation
+        run: npm run env:report
+
+      - name: 🧪 Scan for orphan tests
+        run: npm run tests:orphan-scan
+
+  docs-structure-validation:
+    name: 📁 Documentation Structure Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🚫 Check for unauthorized root markdown files
+        run: |
+          ALLOWED_FILES=(README.md CHANGELOG.md SECURITY.md CONTRIBUTING.md DRY_RUN_CLEANUP_INVENTORY.md REPO_CLEANUP_COMPLETE_REPORT.md RLS_TEST.md)
+          UNAUTHORIZED_FILES=()
+          
+          for file in *.md; do
+            if [[ -f "$file" ]]; then
+              file_allowed=false
+              for allowed in "${ALLOWED_FILES[@]}"; do
+                if [[ "$file" == "$allowed" ]]; then
+                  file_allowed=true
+                  break
+                fi
+              done
+              
+              if [[ "$file_allowed" == false ]]; then
+                UNAUTHORIZED_FILES+=("$file")
+              fi
+            fi
+          done
+          
+          if [[ ${#UNAUTHORIZED_FILES[@]} -gt 0 ]]; then
+            echo "❌ Found unauthorized root-level markdown files:"
+            printf '%s\n' "${UNAUTHORIZED_FILES[@]}"
+            echo "Please move these files to docs/ directory or add to exceptions in workflow."
+            exit 1
+          else
+            echo "✅ No unauthorized root-level markdown files found"
+          fi
+
+      - name: 🧪 Check for unauthorized test files outside tests/
+        run: |
+          UNAUTHORIZED_TESTS=$(find . -name "*.test.*" -o -name "*.spec.*" -o -path "*/__tests__/*" | grep -v "^./tests/" | grep -v "node_modules" || true)
+          
+          if [[ -n "$UNAUTHORIZED_TESTS" ]]; then
+            echo "❌ Found test files outside tests/ directory:"
+            echo "$UNAUTHORIZED_TESTS"
+            echo "Please move these files to tests/ directory."
+            exit 1
+          else
+            echo "✅ All test files are in proper location"
+          fi
+
+  security-scan:
+    name: 🔒 Documentation Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🔍 Scan for sensitive information in docs
+        run: |
+          SENSITIVE_PATTERNS=(
+            "password.*[:=]"
+            "secret.*[:=]"
+            "token.*[:=]"
+            "api[_-]?key.*[:=]"
+            "private[_-]?key"
+            "-----BEGIN.*PRIVATE.*KEY-----"
+            "sk_live_"
+            "sk_test_"
+            "pk_live_"
+            "postgres://.*:.*@"
+            "mysql://.*:.*@"
+            "mongodb://.*:.*@"
+          )
+          
+          FOUND_ISSUES=0
+          
+          for pattern in "${SENSITIVE_PATTERNS[@]}"; do
+            if grep -ri "$pattern" docs/ 2>/dev/null; then
+              echo "🚨 Found potential sensitive information: $pattern"
+              FOUND_ISSUES=1
+            fi
+          done
+          
+          if [[ $FOUND_ISSUES -eq 1 ]]; then
+            echo "❌ Security scan failed - sensitive information detected in documentation"
+            exit 1
+          else
+            echo "✅ No sensitive information detected in documentation"
+          fi
+
+  summary:
+    name: 📊 CI Summary
+    runs-on: ubuntu-latest
+    needs: [docs-quality, docs-structure-validation, security-scan]
+    if: always()
+    
+    steps:
+      - name: 📊 Generate CI summary
+        run: |
+          echo "## 📚 Documentation CI Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ needs.docs-quality.result }}" == "success" ]]; then
+            echo "✅ **Documentation Quality**: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Documentation Quality**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [[ "${{ needs.docs-structure-validation.result }}" == "success" ]]; then
+            echo "✅ **Structure Validation**: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Structure Validation**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [[ "${{ needs.security-scan.result }}" == "success" ]]; then
+            echo "✅ **Security Scan**: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Security Scan**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🎯 What This CI Checks:" >> $GITHUB_STEP_SUMMARY
+          echo "- No unauthorized root-level .md files" >> $GITHUB_STEP_SUMMARY
+          echo "- All test files in proper location (tests/)" >> $GITHUB_STEP_SUMMARY
+          echo "- Route map is up to date" >> $GITHUB_STEP_SUMMARY
+          echo "- Environment variables are documented" >> $GITHUB_STEP_SUMMARY
+          echo "- No sensitive information in docs" >> $GITHUB_STEP_SUMMARY
+          echo "- Documentation structure is valid" >> $GITHUB_STEP_SUMMARY

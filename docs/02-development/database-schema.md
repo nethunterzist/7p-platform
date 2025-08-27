@@ -970,12 +970,9 @@ $$ LANGUAGE plpgsql;
 
 ## 🔗 İlgili Dosyalar
 
-- [PostgreSQL Schema](../database/postgresql-schema.md) - Detailed schema documentation
-- [Supabase Integration](../database/supabase-integration.md) - BaaS integration guide
-- [RLS Policies](../database/rls-policies.md) - Row Level Security implementation
-- [Performance Tuning](../database/performance-tuning.md) - Database optimization strategies
-- [Data Migration](../database/data-migration.md) - Migration best practices
-- [Backup Recovery](../database/backup-recovery.md) - Data protection strategies
+- [Database Schema](../../docs/DB/SCHEMA.md) - Complete database schema reference
+- [Environment Setup](../../docs/ENVIRONMENT.md) - Database configuration guide
+- [Operations Runbook](../../docs/OPERATIONS/RUNBOOK.md) - Database maintenance procedures
 
 ## 📚 Kaynaklar
 

@@ -69,6 +69,7 @@ export default function LoginPage() {
     } catch (error) {
       console.error('Login error:', error);
       setMessage(`❌ ${error instanceof Error ? error.message : 'Beklenmeyen bir hata oluştu'}`);
+    } finally {
       setLoading(false);
     }
   };

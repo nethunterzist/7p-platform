@@ -157,6 +157,13 @@ npm run db:push                # Push schema changes
 
 ## 📚 Documentation
 
+**Quick Access Links:**
+- 📋 **[Documentation Index](docs/DOC_INDEX.md)** - Complete documentation catalog and navigation
+- 🗺️ **[Route Map](docs/ROUTEMAP.md)** - All pages and API endpoints with runtime info
+- ⚙️ **[Environment Setup](docs/ENVIRONMENT.md)** - Environment variables and configuration
+- 🔐 **[Authentication System](docs/AUTH.md)** - NextAuth + Supabase integration guide
+- 💳 **[Payment System](docs/PAYMENTS.md)** - Payment modes and Stripe integration
+
 Comprehensive documentation is available in the `docs/` folder:
 
 - **[Setup Guide](docs/01-setup/)** - Installation and deployment
