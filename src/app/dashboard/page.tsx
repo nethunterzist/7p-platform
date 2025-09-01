@@ -11,6 +11,7 @@ import RecentMaterials from '@/components/dashboard/RecentMaterials';
 import { getUserEnrolledCourses } from '@/lib/enrollment';
 import { ALL_COURSES } from '@/data/courses';
 import toast, { Toaster } from 'react-hot-toast';
+import { safeLocalStorage } from '@/utils/clientStorage';
 import { Button } from '@/components/ui/button';
 import { 
   ShoppingCart, 
@@ -126,8 +127,8 @@ export default function DashboardPage() {
   const handleLogout = () => {
     // Clean up all auth tokens
     document.cookie = 'auth_token=; path=/; max-age=0';
-    localStorage.removeItem('auth_user');
-    localStorage.removeItem('auth_token');
+    safeLocalStorage.removeItem('auth_user');
+    safeLocalStorage.removeItem('auth_token');
     window.location.href = '/login';
   };
 

@@ -1,4 +1,5 @@
-// Çok basit auth sistemi - localStorage ile
+// Çok basit auth sistemi - localStorage ile (SSR safe)
+import { safeLocalStorage, getStorageJson, setStorageJson } from '@/utils/clientStorage';
 export interface User {
   id: string;
   email: string;
@@ -30,28 +31,28 @@ export const login = async (email: string, password: string): Promise<{ user?: U
     role: mockUser.role
   };
   
-  // Save to localStorage
-  localStorage.setItem('auth_user', JSON.stringify(user));
-  localStorage.setItem('auth_token', 'mock_token_' + Date.now());
+  // Save to localStorage (SSR safe)
+  setStorageJson('auth_user', user);
+  safeLocalStorage.setItem('auth_token', 'mock_token_' + Date.now());
   
   return { user };
 };
 
 export const logout = () => {
-  localStorage.removeItem('auth_user');
-  localStorage.removeItem('auth_token');
+  safeLocalStorage.removeItem('auth_user');
+  safeLocalStorage.removeItem('auth_token');
 };
 
 export const getCurrentUser = (): User | null => {
   if (typeof window === 'undefined') return null;
   
   try {
-    const userStr = localStorage.getItem('auth_user');
-    const token = localStorage.getItem('auth_token');
+    const user = getStorageJson<User>('auth_user');
+    const token = safeLocalStorage.getItem('auth_token');
     
-    if (!userStr || !token) return null;
+    if (!user || !token) return null;
     
-    return JSON.parse(userStr);
+    return user;
   } catch {
     return null;
   }

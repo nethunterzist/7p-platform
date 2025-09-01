@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { login, getCurrentUser } from '@/lib/simple-auth';
+import { safeLocalStorage } from '@/utils/clientStorage';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('test@test.com');
@@ -43,7 +44,7 @@ export default function LoginPage() {
   };
 
   const handleClearAuth = () => {
-    localStorage.clear();
+    safeLocalStorage.clear();
     document.cookie = 'auth_token=; path=/; max-age=0';
     setMessage('✅ Auth temizlendi');
   };

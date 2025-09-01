@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { setStorageJson } from '@/utils/clientStorage';
 import { useAdmin } from '@/lib/useAdmin';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
@@ -398,7 +399,7 @@ export default function NewCoursePage() {
       }))
     };
     
-    localStorage.setItem(`course_${courseId}`, JSON.stringify(courseData));
+    setStorageJson(`course_${courseId}`, courseData);
     
     console.log('Saving course:', courseData);
     toast.success('Kurs başarıyla oluşturuldu! Şimdi ünitelere içerik ekleyebilirsiniz.');

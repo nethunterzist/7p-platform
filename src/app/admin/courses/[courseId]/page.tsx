@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { getStorageJson, safeLocalStorage } from '@/utils/clientStorage';
 import { useAdmin } from '@/lib/useAdmin';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
@@ -486,9 +487,9 @@ export default function CourseDetailPage() {
       setCourse(courseData);
     } else {
       // Check localStorage for newly created course
-      const storedCourse = localStorage.getItem(`course_${courseId}`);
+      const storedCourse = getStorageJson(`course_${courseId}`);
       if (storedCourse) {
-        setCourse(JSON.parse(storedCourse));
+        setCourse(storedCourse);
       } else {
         // Fallback: create basic template
         setCourse({
@@ -694,7 +695,7 @@ export default function CourseDetailPage() {
 
   const handleDeleteCourse = () => {
     // Mock deletion - in real app would delete from database
-    localStorage.removeItem(`course_${courseId}`);
+    safeLocalStorage.removeItem(`course_${courseId}`);
     toast.success('Kurs silindi');
     router.push('/admin/courses');
   };

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { mockApi } from '@/lib/mock-api';
 import { Button } from '@/components/ui/button';
 import { getCurrentUser } from '@/lib/simple-auth';
+import { safeLocalStorage, setStorageJson } from '@/utils/clientStorage';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,7 +51,7 @@ export default function DashboardHeader({
     if (currentUser) {
       // Update user role in localStorage
       const updatedUser = { ...currentUser, role: newRole };
-      localStorage.setItem('auth_user', JSON.stringify(updatedUser));
+      setStorageJson('auth_user', updatedUser);
       
       // Navigate to appropriate dashboard with forced navigation
       if (newRole === 'admin') {
@@ -66,7 +67,7 @@ export default function DashboardHeader({
       await mockApi.auth.signOut();
       // Also clear legacy tokens
       document.cookie = 'auth_token=; path=/; max-age=0';
-      localStorage.removeItem('auth_user');
+      safeLocalStorage.removeItem('auth_user');
       router.push('/login');
     } catch (error) {
       console.error('Error signing out:', error);
