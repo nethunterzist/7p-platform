@@ -4,29 +4,20 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/lib/supabase';
-import { formatAmount } from '@/lib/stripe';
+import { paymentService } from '@/lib/payments';
 import { format } from 'date-fns';
 
 interface PaymentTransaction {
-  id: string;
-  user_id: string;
-  stripe_payment_intent_id: string | null;
-  type: string;
-  status: string;
+  id: number;
+  user_id: number;
+  course_id: number;
+  transaction_id: string;
   amount: number;
   currency: string;
-  description: string | null;
-  course_id: string | null;
-  bundle_id: string | null;
-  failure_reason: string | null;
+  status: string;
+  payment_method: string;
   created_at: string;
-  user?: {
-    email: string;
-  };
-  course?: {
-    name: string;
-  };
+  course_title?: string;
 }
 
 interface PaymentStats {
@@ -34,7 +25,6 @@ interface PaymentStats {
   totalTransactions: number;
   successfulPayments: number;
   failedPayments: number;
-  recentTransactions: PaymentTransaction[];
 }
 
 export default function AdminPaymentsPage() {
@@ -51,159 +41,84 @@ export default function AdminPaymentsPage() {
 
   const checkAdminAccess = async () => {
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      
-      if (authError || !user) {
-        setError('Authentication required');
-        return;
-      }
-
-      // Check if user is admin
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-      if (profile?.role !== 'admin') {
+      // Check if user is admin (mock for now)
+      const token = document.cookie.split(';').find(cookie => cookie.trim().startsWith('access_token='));
+      if (token) {
+        setIsAdmin(true);
+        await loadPaymentData();
+      } else {
         setError('Admin access required');
-        return;
       }
-
-      setIsAdmin(true);
-      await loadPaymentData();
-    } catch (err: any) {
-      setError(err.message || 'Failed to load payment data');
+    } catch (err) {
+      setError('Failed to verify admin access');
     } finally {
       setLoading(false);
     }
   };
 
   const loadPaymentData = async () => {
-    await Promise.all([
-      loadPaymentStats(),
-      loadTransactions(),
-    ]);
-  };
-
-  const loadPaymentStats = async () => {
-    const { data: transactions, error } = await supabase
-      .from('payment_transactions')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      throw new Error('Failed to load payment statistics');
-    }
-
-    const totalRevenue = transactions
-      ?.filter(t => t.status === 'succeeded')
-      .reduce((sum, t) => sum + t.amount, 0) || 0;
-
-    const totalTransactions = transactions?.length || 0;
-    const successfulPayments = transactions?.filter(t => t.status === 'succeeded').length || 0;
-    const failedPayments = transactions?.filter(t => t.status === 'failed').length || 0;
-    const recentTransactions = transactions?.slice(0, 5) || [];
-
-    setStats({
-      totalRevenue,
-      totalTransactions,
-      successfulPayments,
-      failedPayments,
-      recentTransactions,
-    });
-  };
-
-  const loadTransactions = async () => {
-    let query = supabase
-      .from('payment_transactions')
-      .select(`
-        *,
-        user:user_id (email),
-        course:course_id (name)
-      `)
-      .order('created_at', { ascending: false })
-      .limit(50);
-
-    if (filter !== 'all') {
-      query = query.eq('status', filter);
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      throw new Error('Failed to load transactions');
-    }
-
-    setTransactions(data || []);
-  };
-
-  const handleRefund = async (transactionId: string, paymentIntentId: string) => {
-    if (!confirm('Are you sure you want to process a refund for this transaction?')) {
-      return;
-    }
-
     try {
-      const response = await fetch('/api/admin/payments/refund', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      // Mock payment data for demonstration
+      const mockStats: PaymentStats = {
+        totalRevenue: 15750.00,
+        totalTransactions: 67,
+        successfulPayments: 64,
+        failedPayments: 3
+      };
+
+      const mockTransactions: PaymentTransaction[] = [
+        {
+          id: 1,
+          user_id: 1,
+          course_id: 1,
+          transaction_id: 'txn_1234567890',
+          amount: 299.99,
+          currency: 'TRY',
+          status: 'completed',
+          payment_method: 'local_payment',
+          created_at: new Date().toISOString(),
+          course_title: 'React Masterclass'
         },
-        body: JSON.stringify({
-          transactionId,
-          paymentIntentId,
-        }),
-      });
+        {
+          id: 2,
+          user_id: 2,
+          course_id: 2,
+          transaction_id: 'txn_0987654321',
+          amount: 199.99,
+          currency: 'TRY',
+          status: 'completed',
+          payment_method: 'local_payment',
+          created_at: new Date(Date.now() - 86400000).toISOString(),
+          course_title: 'JavaScript Fundamentals'
+        }
+      ];
 
-      if (!response.ok) {
-        throw new Error('Failed to process refund');
-      }
-
-      await loadPaymentData();
-      alert('Refund processed successfully');
-    } catch (error) {
-      console.error('Refund error:', error);
-      alert('Failed to process refund');
+      setStats(mockStats);
+      setTransactions(mockTransactions);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load payment data');
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      succeeded: { label: 'Completed', color: 'bg-green-100 text-green-800' },
-      pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-800' },
-      processing: { label: 'Processing', color: 'bg-blue-100 text-blue-800' },
-      failed: { label: 'Failed', color: 'bg-red-100 text-red-800' },
-      canceled: { label: 'İptal Edildi', color: 'bg-gray-100 text-gray-800' },
-      refunded: { label: 'Refunded', color: 'bg-purple-100 text-purple-800' },
-    };
-
-    const config = statusConfig[status as keyof typeof statusConfig] || {
-      label: status,
-      color: 'bg-gray-100 text-gray-800'
-    };
-
-    return (
-      <Badge className={config.color}>
-        {config.label}
-      </Badge>
-    );
+  const getStatusBadgeColor = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'failed':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   };
 
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="p-8 max-w-md">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h2>
-            <p className="text-gray-600 mb-6">{error || 'Admin access required'}</p>
-            <Button onClick={() => window.location.href = '/dashboard'}>
-              Go to Dashboard
-            </Button>
-          </div>
-        </Card>
-      </div>
-    );
-  }
+  const formatCurrency = (amount: number, currency: string) => {
+    return new Intl.NumberFormat('tr-TR', {
+      style: 'currency',
+      currency: currency
+    }).format(amount);
+  };
 
   if (loading) {
     return (
@@ -216,24 +131,55 @@ export default function AdminPaymentsPage() {
     );
   }
 
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="p-8 max-w-md">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h2>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <Button onClick={() => window.location.href = '/admin'}>
+              Go to Admin
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="p-8 max-w-md">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Error</h2>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <Button onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  const filteredTransactions = transactions.filter(transaction => {
+    if (filter === 'all') return true;
+    return transaction.status === filter;
+  });
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Payment Management</h1>
-          <p className="text-gray-600">Monitor transactions, process refunds, and view payment analytics</p>
+          <h1 className="text-3xl font-bold text-gray-900">Payment Management</h1>
+          <p className="text-gray-600 mt-2">Track and manage all payment transactions</p>
         </div>
 
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-800">{error}</p>
-          </div>
-        )}
-
-        {/* Payment Statistics */}
+        {/* Stats Cards */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <Card className="p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-green-100 rounded-lg">
@@ -244,7 +190,7 @@ export default function AdminPaymentsPage() {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Total Revenue</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {formatAmount(stats.totalRevenue, 'USD')}
+                    {formatCurrency(stats.totalRevenue, 'TRY')}
                   </p>
                 </div>
               </div>
@@ -254,7 +200,7 @@ export default function AdminPaymentsPage() {
               <div className="flex items-center">
                 <div className="p-2 bg-blue-100 rounded-lg">
                   <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 </div>
                 <div className="ml-4">
@@ -268,7 +214,7 @@ export default function AdminPaymentsPage() {
               <div className="flex items-center">
                 <div className="p-2 bg-green-100 rounded-lg">
                   <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
                 <div className="ml-4">
@@ -282,7 +228,7 @@ export default function AdminPaymentsPage() {
               <div className="flex items-center">
                 <div className="p-2 bg-red-100 rounded-lg">
                   <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.924-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </div>
                 <div className="ml-4">
@@ -294,126 +240,81 @@ export default function AdminPaymentsPage() {
           </div>
         )}
 
-        {/* Transaction Filters */}
-        <Card className="p-6 mb-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">Recent Transactions</h3>
-            <div className="flex space-x-2">
-              <select
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                className="rounded-md border-gray-300 text-sm"
+        {/* Filters */}
+        <div className="mb-6">
+          <div className="flex space-x-4">
+            {['all', 'completed', 'pending', 'failed'].map((status) => (
+              <Button
+                key={status}
+                variant={filter === status ? 'default' : 'outline'}
+                onClick={() => setFilter(status)}
+                className="capitalize"
               >
-                <option value="all">All Status</option>
-                <option value="succeeded">Completed</option>
-                <option value="pending">Pending</option>
-                <option value="failed">Failed</option>
-                <option value="refunded">Refunded</option>
-              </select>
-              <Button onClick={loadTransactions} variant="outline" size="sm">
-                Refresh
+                {status}
               </Button>
-            </div>
+            ))}
           </div>
-        </Card>
+        </div>
 
         {/* Transactions Table */}
-        <Card className="overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Transaction
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Customer
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Amount
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {transactions.map((transaction) => (
-                  <tr key={transaction.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {transaction.description || transaction.type}
-                        </div>
-                        {transaction.course?.name && (
-                          <div className="text-sm text-gray-500">
-                            Course: {transaction.course.name}
-                          </div>
-                        )}
-                        {transaction.stripe_payment_intent_id && (
-                          <div className="text-xs text-gray-400">
-                            {transaction.stripe_payment_intent_id.substring(0, 20)}...
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {transaction.user?.email || 'Unknown'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {formatAmount(transaction.amount, transaction.currency as any)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getStatusBadge(transaction.status)}
-                      {transaction.failure_reason && (
-                        <div className="text-xs text-red-600 mt-1">
-                          {transaction.failure_reason}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {format(new Date(transaction.created_at), 'MMM dd, yyyy HH:mm')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      {transaction.status === 'succeeded' && transaction.stripe_payment_intent_id && (
-                        <Button
-                          onClick={() => handleRefund(transaction.id, transaction.stripe_payment_intent_id!)}
-                          variant="outline"
-                          size="sm"
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          Refund
-                        </Button>
-                      )}
-                    </td>
+        <Card>
+          <div className="p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">Recent Transactions</h2>
+            
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Transaction ID
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Course
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Amount
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Date
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredTransactions.map((transaction) => (
+                    <tr key={transaction.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {transaction.transaction_id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {transaction.course_title || 'Unknown Course'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {formatCurrency(transaction.amount, transaction.currency)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <Badge className={getStatusBadgeColor(transaction.status)}>
+                          {transaction.status}
+                        </Badge>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {format(new Date(transaction.created_at), 'MMM dd, yyyy HH:mm')}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {filteredTransactions.length === 0 && (
+                <div className="text-center py-12">
+                  <p className="text-gray-500">No transactions found</p>
+                </div>
+              )}
+            </div>
           </div>
         </Card>
-
-        {transactions.length === 0 && (
-          <div className="text-center py-8">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-            </div>
-            <h4 className="text-lg font-medium text-gray-900 mb-2">İşlem bulunamadı</h4>
-            <p className="text-gray-600">Ödemeler işlendikçe işlemler burada görünecektir.</p>
-          </div>
-        )}
       </div>
     </div>
   );

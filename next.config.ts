@@ -1,25 +1,38 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Development configurations for faster iteration
+  // Production configuration
+  output: 'standalone',
+  
   eslint: {
-    // Temporarily ignore ESLint during build for development
     ignoreDuringBuilds: true,
   },
   
   typescript: {
-    // Temporarily ignore TypeScript errors during build for development
     ignoreBuildErrors: true,
   },
   
   images: {
-    domains: ['localhost', '127.0.0.1'],
+    domains: ['7p-education.7peducation.com', 'localhost', '127.0.0.1'],
     remotePatterns: [
       {
         protocol: 'https',
         hostname: '**',
       },
     ],
+  },
+  
+  // Enable experimental features for better performance
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['7p-education.7peducation.com', 'localhost:3002']
+    }
+  },
+  
+  // Runtime configuration
+  serverRuntimeConfig: {
+    DATABASE_URL: process.env.DATABASE_URL,
+    JWT_SECRET: process.env.JWT_SECRET,
   },
 };
 

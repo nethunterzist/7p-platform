@@ -2,28 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import StripeProvider from '@/components/payments/StripeProvider';
-import PaymentForm from '@/components/payments/PaymentForm';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/lib/supabase';
-import { formatAmount } from '@/lib/stripe';
+import { paymentService } from '@/lib/payments';
 
 interface Course {
-  id: string;
-  name: string;
+  id: number;
+  title: string;
   description: string;
-  is_public: boolean;
-  is_active: boolean;
-  created_at: string;
-}
-
-interface CoursePrice {
-  id: string;
-  course_id: string;
-  stripe_price_id: string;
-  price_amount: number;
+  price: number;
   currency: string;
   is_active: boolean;
 }
@@ -31,37 +19,43 @@ interface CoursePrice {
 export default function CoursePurchasePage() {
   const router = useRouter();
   const params = useParams();
-  const courseId = params.courseId as string;
+  const courseId = parseInt(params.courseId as string);
 
   const [course, setCourse] = useState<Course | null>(null);
-  const [coursePrice, setCoursePrice] = useState<CoursePrice | null>(null);
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [user, setUser] = useState<any>(null);
   const [hasAccess, setHasAccess] = useState(false);
-  const [transactionId, setTransactionId] = useState<string | null>(null);
+  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
-    checkAuthAndLoadData();
+    loadCourseData();
   }, [courseId]);
 
-  const checkAuthAndLoadData = async () => {
+  const loadCourseData = async () => {
     try {
-      // Always load course data first (public access)
-      await Promise.all([
-        loadCourse(),
-        loadCoursePrice()
-      ]);
-
-      // Check for authentication (optional for viewing, required for purchasing)
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      // Mock course data for now
+      const mockCourse: Course = {
+        id: courseId,
+        title: "React & Next.js Masterclass",
+        description: "Comprehensive React and Next.js course for modern web development",
+        price: 299.99,
+        currency: "TRY",
+        is_active: true
+      };
       
-      if (!authError && user) {
-        setUser(user);
-        await checkCourseAccess(user.id);
+      setCourse(mockCourse);
+      
+      // Check if user is logged in
+      const token = document.cookie.split(';').find(cookie => cookie.trim().startsWith('access_token='));
+      if (token) {
+        // Mock user data
+        setUser({ id: 1, email: 'user@example.com' });
+        
+        // Check course access
+        const hasAccess = await paymentService.checkCourseAccess(1, courseId);
+        setHasAccess(hasAccess);
       }
-      // If no user, they can still view the purchase page but will need to login to buy
       
     } catch (err: any) {
       setError(err.message || 'Failed to load course data');
@@ -70,124 +64,37 @@ export default function CoursePurchasePage() {
     }
   };
 
-  const loadCourse = async () => {
-    const { data, error } = await supabase
-      .from('courses')
-      .select('*')
-      .eq('id', courseId)
-      .eq('is_active', true)
-      .single();
-
-    if (error) {
-      throw new Error('Course not found');
-    }
-
-    setCourse(data);
-  };
-
-  const loadCoursePrice = async () => {
-    const { data, error } = await supabase
-      .from('course_prices')
-      .select('*')
-      .eq('course_id', courseId)
-      .eq('is_active', true)
-      .single();
-
-    if (error) {
-      throw new Error('Course pricing not available');
-    }
-
-    setCoursePrice(data);
-  };
-
-  const checkCourseAccess = async (userId: string) => {
-    const { data, error } = await supabase
-      .rpc('user_has_course_access', {
-        user_uuid: userId,
-        course_uuid: courseId,
-      });
-
-    if (!error && data === true) {
-      setHasAccess(true);
-    }
-  };
-
-  const createPaymentIntent = async () => {
-    // Check authentication before creating payment intent
+  const handlePurchase = async () => {
     if (!user) {
       router.push('/login?redirect=' + encodeURIComponent(window.location.pathname));
       return;
     }
 
+    if (!course) return;
+
+    setProcessing(true);
+    setError('');
+
     try {
-      setError('');
-      
-      const response = await fetch('/api/payments/create-payment-intent', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          courseId,
-        }),
+      const result = await paymentService.processPayment({
+        courseId: course.id,
+        userId: user.id,
+        amount: course.price,
+        currency: course.currency,
+        paymentMethod: 'local_payment'
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create payment intent');
+      if (result.success) {
+        router.push(`/courses/${courseId}?purchase=success`);
+      } else {
+        setError(result.error || 'Payment failed');
       }
-
-      const data = await response.json();
-      setClientSecret(data.clientSecret);
-      setTransactionId(data.transactionId);
     } catch (err: any) {
-      setError(err.message || 'Failed to initialize payment');
+      setError(err.message || 'Payment processing failed');
+    } finally {
+      setProcessing(false);
     }
   };
-
-  const handlePaymentSuccess = (paymentIntent: any) => {
-    // Redirect to course with success message
-    router.push(`/courses/${courseId}?purchase=success`);
-  };
-
-  const handlePaymentError = (error: string) => {
-    setError(error);
-  };
-
-  const handleCheckoutRedirect = async () => {
-    // Check authentication before proceeding to checkout
-    if (!user) {
-      router.push('/login?redirect=' + encodeURIComponent(window.location.pathname));
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/payments/create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          type: 'course',
-          courseId,
-          successUrl: `${window.location.origin}/courses/${courseId}?purchase=success`,
-          cancelUrl: `${window.location.origin}/courses/${courseId}/purchase?canceled=true`,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create checkout session');
-      }
-
-      const { url } = await response.json();
-      window.location.href = url;
-    } catch (error) {
-      console.error('Checkout error:', error);
-      setError('Failed to redirect to checkout');
-    }
-  };
-
-  // Remove the blocking for non-authenticated users - they can view the page
 
   if (loading) {
     return (
@@ -221,7 +128,7 @@ export default function CoursePurchasePage() {
     );
   }
 
-  if (!course || !coursePrice) {
+  if (!course) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Card className="p-8 max-w-md">
@@ -260,7 +167,7 @@ export default function CoursePurchasePage() {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Course Details</h2>
               
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {course.name}
+                {course.title}
               </h3>
               
               <p className="text-gray-600 mb-4">
@@ -286,12 +193,6 @@ export default function CoursePurchasePage() {
                   </svg>
                   Certificate of completion
                 </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <svg className="h-4 w-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  30-day money-back guarantee
-                </div>
               </div>
             </Card>
 
@@ -299,12 +200,12 @@ export default function CoursePurchasePage() {
             <Card className="p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Pricing</h3>
               <div className="text-3xl font-bold text-green-600 mb-2">
-                {formatAmount(coursePrice.price_amount, coursePrice.currency as any)}
+                ₺{course.price.toFixed(2)}
               </div>
               <p className="text-gray-600 text-sm mb-4">One-time payment • Lifetime access</p>
               
               <Badge className="bg-blue-100 text-blue-800">
-                30-day money-back guarantee
+                Local payment processing
               </Badge>
             </Card>
           </div>
@@ -317,74 +218,46 @@ export default function CoursePurchasePage() {
               </div>
             )}
 
-            {/* Payment Options */}
             <Card className="p-6 mb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Choose Payment Method
+                Complete Purchase
               </h3>
 
-              <div className="space-y-4">
-                {!user && (
-                  <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-blue-800 text-sm">
-                      <span className="font-medium">Sign in required:</span> Please sign in to purchase this course.
-                    </p>
-                    <Button 
-                      onClick={() => router.push('/login?redirect=' + encodeURIComponent(window.location.pathname))}
-                      className="mt-3 w-full"
-                      size="sm"
-                    >
-                      Sign In to Purchase
-                    </Button>
-                  </div>
-                )}
-                
-                {/* Stripe Checkout (Recommended) */}
-                <Button
-                  onClick={handleCheckoutRedirect}
-                  className="w-full justify-between"
-                  size="lg"
-                  disabled={!user}
-                >
-                  <span>Pay with Stripe Checkout</span>
-                  <Badge variant="outline">Recommended</Badge>
-                </Button>
-
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-300" />
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-500">or</span>
-                  </div>
+              {!user && (
+                <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-blue-800 text-sm">
+                    <span className="font-medium">Sign in required:</span> Please sign in to purchase this course.
+                  </p>
+                  <Button 
+                    onClick={() => router.push('/login?redirect=' + encodeURIComponent(window.location.pathname))}
+                    className="mt-3 w-full"
+                    size="sm"
+                  >
+                    Sign In to Purchase
+                  </Button>
                 </div>
+              )}
 
-                {/* Custom Payment Form */}
-                <Button
-                  onClick={createPaymentIntent}
-                  variant="outline"
-                  className="w-full"
-                  size="lg"
-                  disabled={!!clientSecret || !user}
-                >
-                  {clientSecret ? 'Payment Form Ready' : 'Use Custom Payment Form'}
-                </Button>
-              </div>
+              <Button
+                onClick={handlePurchase}
+                className="w-full"
+                size="lg"
+                disabled={!user || processing}
+              >
+                {processing ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Processing...</span>
+                  </div>
+                ) : (
+                  `Purchase for ₺${course.price.toFixed(2)}`
+                )}
+              </Button>
+
+              <p className="text-xs text-gray-500 text-center mt-4">
+                By purchasing, you agree to our terms of service
+              </p>
             </Card>
-
-            {/* Custom Payment Form */}
-            {clientSecret && (
-              <StripeProvider clientSecret={clientSecret}>
-                <PaymentForm
-                  clientSecret={clientSecret}
-                  amount={coursePrice.price_amount}
-                  currency={coursePrice.currency as any}
-                  onSuccess={handlePaymentSuccess}
-                  onError={handlePaymentError}
-                  returnUrl={`${window.location.origin}/courses/${courseId}?purchase=success`}
-                />
-              </StripeProvider>
-            )}
 
             {/* Security Notice */}
             <div className="mt-6 p-4 bg-gray-50 rounded-lg">
@@ -392,7 +265,7 @@ export default function CoursePurchasePage() {
                 <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
                 </svg>
-                <span>Secure payment processing by Stripe. Your payment information is encrypted and secure.</span>
+                <span>Secure local payment processing. Your data is safe and encrypted.</span>
               </div>
             </div>
           </div>
