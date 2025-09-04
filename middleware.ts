@@ -25,10 +25,14 @@ export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
   if (!token) {
     const loginUrl = new URL('/login', request.url);
-    return NextResponse.redirect(loginUrl);
+    const res = NextResponse.redirect(loginUrl);
+    res.headers.set('x-auth-status', 'no-token');
+    return res;
   }
 
-  return NextResponse.next();
+  const res = NextResponse.next();
+  res.headers.set('x-auth-status', 'ok');
+  return res;
 }
 
 export const config = {
