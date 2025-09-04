@@ -1,5 +1,6 @@
 import NextAuth from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
+import CredentialsProvider from 'next-auth/providers/credentials'
 import type { NextAuthOptions } from 'next-auth'
 import { db } from '@/lib/database'
 
@@ -10,7 +11,42 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    })
+    }),
+    ...(process.env.TEST_CREDENTIALS_ENABLED === 'true'
+      ? [
+          CredentialsProvider({
+            name: 'Test Credentials',
+            credentials: {
+              email: { label: 'Email', type: 'email' },
+              password: { label: 'Password', type: 'password' },
+            },
+            async authorize(credentials) {
+              const email = credentials?.email?.toString().toLowerCase() || '';
+              const password = credentials?.password?.toString() || '';
+              const expected = process.env.TEST_CREDENTIALS_PASSWORD || '';
+              if (!email || !password || !expected) return null;
+              if (password !== expected) return null;
+              // Create or fetch user from DB for session enrichment
+              try {
+                const existing = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+                if (existing.rows.length === 0) {
+                  await db.query(
+                    'INSERT INTO users (email, full_name, password_hash, role, is_active, is_verified, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())',
+                    [email, 'Test User', null, 'student', true, true]
+                  );
+                }
+              } catch (e) {
+                console.error('Credentials authorize DB error:', e);
+              }
+              return {
+                id: email,
+                email,
+                name: 'Test User',
+              } as any;
+            },
+          }),
+        ]
+      : []),
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
@@ -35,6 +71,9 @@ export const authOptions: NextAuthOptions = {
           console.error('Error during Google sign in:', error)
           return false
         }
+      }
+      if (account?.provider === 'credentials') {
+        return true;
       }
       
       return true
