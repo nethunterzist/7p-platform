@@ -7,6 +7,13 @@ const PROTECTED_ROUTES = ['/dashboard', '/admin'];
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Temporary kill-switch for auth (set at build-time in env)
+  if (process.env.DISABLE_AUTH_MIDDLEWARE === 'true') {
+    const res = NextResponse.next();
+    res.headers.set('x-auth-status', 'bypassed');
+    return res;
+  }
+
   // Skip internal and static routes early
   if (
     pathname.startsWith('/_next/') ||
