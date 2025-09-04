@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { getCurrentUser } from '@/lib/simple-auth';
+import { useSession } from 'next-auth/react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { DashboardSection } from '@/components/layout/DashboardContent';
 import ContinueLearning from '@/components/dashboard/ContinueLearning';
@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 
 export default function DashboardPage() {
+  const { data: session, status } = useSession();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [lastLesson, setLastLesson] = useState<any>(null);
@@ -37,14 +38,19 @@ export default function DashboardPage() {
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
-        // Check authentication using localStorage
-        const currentUser = getCurrentUser();
-        if (!currentUser) {
+        // Enforce authentication using NextAuth session
+        if (status === 'loading') return; // wait
+        if (status !== 'authenticated' || !session?.user) {
           window.location.href = '/login';
           return;
         }
 
-        setUser(currentUser);
+        setUser({
+          id: (session.user as any).id || 'na',
+          email: session.user.email,
+          name: session.user.name || (session.user as any).fullName || session.user.email?.split('@')[0] || 'Kullanıcı',
+          role: (session.user as any).role || 'student',
+        });
         
         // Load dashboard data
         const enrolledCourseIds = getUserEnrolledCourses();
@@ -122,14 +128,14 @@ export default function DashboardPage() {
     };
 
     loadDashboardData();
-  }, []);
+  }, [status, session]);
 
   const handleLogout = () => {
-    // Clean up all auth tokens
+    // For now, just clear any legacy mock data and redirect
     document.cookie = 'auth_token=; path=/; max-age=0';
     safeLocalStorage.removeItem('auth_user');
     safeLocalStorage.removeItem('auth_token');
-    window.location.href = '/login';
+    window.location.href = '/api/auth/signout?callbackUrl=/login';
   };
 
   if (loading) {
