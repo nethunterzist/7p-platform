@@ -66,7 +66,10 @@ const authOptions: NextAuthOptions = {
         token.accessToken = account.access_token
       }
       return token
-    }
+    },
+    async redirect({ url, baseUrl }) {
+      return baseUrl + '/dashboard'
+    },
   },
   pages: {
     signIn: '/login',
