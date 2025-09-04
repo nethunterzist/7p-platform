@@ -3,7 +3,7 @@ import GoogleProvider from 'next-auth/providers/google'
 import type { NextAuthOptions } from 'next-auth'
 import { db } from '@/lib/database'
 
-const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthOptions = {
   debug: true,
   trustHost: true,
   providers: [

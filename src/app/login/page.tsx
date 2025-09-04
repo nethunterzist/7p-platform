@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { signIn, getSession } from 'next-auth/react';
+import { signIn } from 'next-auth/react';
 import { login } from '@/lib/simple-auth';
 
 export default function LoginPage() {
@@ -10,18 +10,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
-  // Check if already logged in via NextAuth
-  useEffect(() => {
-    const checkSession = async () => {
-      const session = await getSession();
-      if (session && typeof window !== 'undefined') {
-        setTimeout(() => {
-          window.location.href = '/dashboard';
-        }, 100);
-      }
-    };
-    checkSession();
-  }, []);
+  // Otomatik yönlendirmeyi kaldırdık; sadece başarılı giriş sonrası redirect olacak.
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
